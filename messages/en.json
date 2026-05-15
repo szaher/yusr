@@ -1,0 +1,216 @@
+{
+  "common": {
+    "appName": "Yusr Academy for Quran Learning",
+    "appNameShort": "Yusr Academy",
+    "loading": "Loading...",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "search": "Search",
+    "filter": "Filter",
+    "actions": "Actions",
+    "status": "Status",
+    "yes": "Yes",
+    "no": "No",
+    "confirm": "Confirm",
+    "back": "Back",
+    "next": "Next",
+    "submit": "Submit",
+    "close": "Close",
+    "noResults": "No results found"
+  },
+  "auth": {
+    "login": "Log In",
+    "logout": "Log Out",
+    "register": "Register",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "forgotPassword": "Forgot Password?",
+    "resetPassword": "Reset Password",
+    "newPassword": "New Password",
+    "name": "Full Name",
+    "loginTitle": "Log in to your account",
+    "registerTitle": "Create a new account",
+    "forgotPasswordTitle": "Recover your password",
+    "resetPasswordTitle": "Set a new password",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?",
+    "invalidCredentials": "Invalid email or password",
+    "registrationSuccess": "Registration successful. Your application is under review.",
+    "resetLinkSent": "A reset link has been sent to your email",
+    "passwordResetSuccess": "Password changed successfully"
+  },
+  "registration": {
+    "title": "Registration Form",
+    "fullName": "Full Name",
+    "dateOfBirth": "Date of Birth",
+    "gender": "Gender",
+    "male": "Male",
+    "female": "Female",
+    "phone": "Phone Number",
+    "country": "Country",
+    "timezone": "Timezone",
+    "currentQuranLevel": "Current Quran Memorization Level",
+    "currentTajweedLevel": "Current Tajweed Level",
+    "previousBackground": "Previous Memorization Background",
+    "parentContact": "Parent/Guardian Contact",
+    "preferredDay": "Preferred Recitation Day",
+    "availabilityNotes": "Availability Notes",
+    "consentLabel": "I agree to the academy's terms and conditions",
+    "enrollmentClosed": "Enrollment is currently closed",
+    "enrollmentClosedDesc": "Sorry, enrollment is not available at this time. Please check back later.",
+    "pendingReview": "Your application is under review",
+    "pendingReviewDesc": "Your application has been received and will be reviewed by the administration. You will be notified of the result."
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "profile": "Profile",
+    "assignments": "Assignments",
+    "sessions": "Sessions",
+    "grades": "Grades",
+    "leaveRequests": "Leave Requests",
+    "exams": "Exams",
+    "announcements": "Announcements",
+    "notifications": "Notifications",
+    "groups": "Groups",
+    "students": "Students",
+    "enrollment": "Enrollment",
+    "users": "Users",
+    "levels": "Levels",
+    "classes": "Classes",
+    "featureFlags": "Feature Flags",
+    "settings": "Settings",
+    "auditLogs": "Audit Logs",
+    "tickets": "Support Tickets"
+  },
+  "admin": {
+    "dashboard": {
+      "title": "Admin Dashboard",
+      "pendingRegistrations": "Pending Registrations",
+      "activeStudents": "Active Students",
+      "activeModerators": "Active Moderators",
+      "enrollmentStatus": "Enrollment Status"
+    },
+    "enrollment": {
+      "title": "Enrollment Management",
+      "approve": "Approve",
+      "reject": "Reject",
+      "waitlist": "Waitlist",
+      "reviewNote": "Review Note",
+      "applicantName": "Applicant Name",
+      "submittedAt": "Submitted At",
+      "status": "Status",
+      "statusPending": "Pending Review",
+      "statusApproved": "Approved",
+      "statusRejected": "Rejected",
+      "statusWaitlisted": "Waitlisted"
+    },
+    "users": {
+      "title": "User Management",
+      "createModerator": "Add Moderator",
+      "ban": "Ban",
+      "deactivate": "Deactivate",
+      "reactivate": "Reactivate",
+      "role": "Role",
+      "roleAdmin": "Admin",
+      "roleModerator": "Moderator",
+      "roleStudent": "Student",
+      "roleSupport": "Support"
+    },
+    "organization": {
+      "createLevel": "Add Level",
+      "createClass": "Add Class",
+      "createGroup": "Add Group",
+      "levelName": "Level Name",
+      "className": "Class Name",
+      "groupName": "Group Name",
+      "assignModerator": "Assign Moderator",
+      "assignStudent": "Add Student"
+    },
+    "featureFlags": {
+      "title": "Feature Flags",
+      "enabled": "Enabled",
+      "disabled": "Disabled"
+    },
+    "settings": {
+      "title": "System Settings",
+      "enrollmentState": "Enrollment State",
+      "open": "Open",
+      "closed": "Closed",
+      "paused": "Paused",
+      "waitlistOnly": "Waitlist Only"
+    },
+    "auditLogs": {
+      "title": "Audit Logs",
+      "actor": "Actor",
+      "action": "Action",
+      "entity": "Entity",
+      "date": "Date"
+    }
+  },
+  "student": {
+    "dashboard": {
+      "title": "Student Dashboard",
+      "myLevel": "Level",
+      "myClass": "Class",
+      "myGroup": "Group",
+      "myModerator": "Moderator",
+      "nextSession": "Next Session",
+      "noGroupAssigned": "You have not been assigned to a group yet"
+    },
+    "profile": {
+      "title": "Profile",
+      "editProfile": "Edit Profile"
+    }
+  },
+  "landing": {
+    "hero": {
+      "title": "Yusr Academy for Quran Learning",
+      "verse": "And We have certainly made the Quran easy for remembrance, so is there any who will remember?",
+      "verseRef": "Surah Al-Qamar - Verse 17",
+      "cta": "Register Now",
+      "ctaClosed": "Enrollment is currently closed"
+    },
+    "about": {
+      "title": "About the Academy",
+      "description": "Yusr Academy is a free online Quran memorization platform, supervised by qualified moderators, with weekly follow-up sessions and a comprehensive evaluation system."
+    },
+    "features": {
+      "title": "Academy Features",
+      "weeklySessions": "Weekly Recitation Sessions",
+      "weeklySessionsDesc": "Regular recitation sessions with qualified moderators online",
+      "qualifiedModerators": "Qualified Moderators",
+      "qualifiedModeratorsDesc": "A team of specialized Quran and Tajweed educators",
+      "progressTracking": "Progress Tracking",
+      "progressTrackingDesc": "Comprehensive system to track your memorization, revision, and grades",
+      "aiAssisted": "AI Recitation Assistant",
+      "aiAssistedDesc": "Preliminary AI-powered recitation assessment to help you improve",
+      "curriculum": "Structured Curriculum",
+      "curriculumDesc": "Clear learning path from beginner to advanced levels",
+      "free": "Completely Free",
+      "freeDesc": "The academy is free for all students with no fees"
+    },
+    "howItWorks": {
+      "title": "How It Works",
+      "step1Title": "Create Your Account",
+      "step1Desc": "Sign up and complete the registration form",
+      "step2Title": "Wait for Approval",
+      "step2Desc": "Your application will be reviewed and you'll be assigned to a suitable group",
+      "step3Title": "Start Memorizing",
+      "step3Desc": "Listen to required materials and attend weekly recitation sessions"
+    },
+    "contact": {
+      "title": "Contact Us",
+      "email": "Email",
+      "facebook": "Our Facebook Page"
+    },
+    "footer": {
+      "rights": "All rights reserved",
+      "login": "Log In",
+      "register": "Register"
+    }
+  }
+}

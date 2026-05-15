@@ -1,0 +1,216 @@
+{
+  "common": {
+    "appName": "أكاديمية يُسر لتعليم القرآن الكريم",
+    "appNameShort": "أكاديمية يُسر",
+    "loading": "جاري التحميل...",
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "delete": "حذف",
+    "edit": "تعديل",
+    "create": "إنشاء",
+    "search": "بحث",
+    "filter": "تصفية",
+    "actions": "الإجراءات",
+    "status": "الحالة",
+    "yes": "نعم",
+    "no": "لا",
+    "confirm": "تأكيد",
+    "back": "رجوع",
+    "next": "التالي",
+    "submit": "إرسال",
+    "close": "إغلاق",
+    "noResults": "لا توجد نتائج"
+  },
+  "auth": {
+    "login": "تسجيل الدخول",
+    "logout": "تسجيل الخروج",
+    "register": "التسجيل",
+    "email": "البريد الإلكتروني",
+    "password": "كلمة المرور",
+    "confirmPassword": "تأكيد كلمة المرور",
+    "forgotPassword": "نسيت كلمة المرور؟",
+    "resetPassword": "إعادة تعيين كلمة المرور",
+    "newPassword": "كلمة المرور الجديدة",
+    "name": "الاسم الكامل",
+    "loginTitle": "تسجيل الدخول إلى حسابك",
+    "registerTitle": "إنشاء حساب جديد",
+    "forgotPasswordTitle": "استعادة كلمة المرور",
+    "resetPasswordTitle": "تعيين كلمة مرور جديدة",
+    "noAccount": "ليس لديك حساب؟",
+    "hasAccount": "لديك حساب بالفعل؟",
+    "invalidCredentials": "البريد الإلكتروني أو كلمة المرور غير صحيحة",
+    "registrationSuccess": "تم التسجيل بنجاح. طلبك قيد المراجعة.",
+    "resetLinkSent": "تم إرسال رابط إعادة التعيين إلى بريدك الإلكتروني",
+    "passwordResetSuccess": "تم تغيير كلمة المرور بنجاح"
+  },
+  "registration": {
+    "title": "نموذج التسجيل",
+    "fullName": "الاسم الكامل",
+    "dateOfBirth": "تاريخ الميلاد",
+    "gender": "الجنس",
+    "male": "ذكر",
+    "female": "أنثى",
+    "phone": "رقم الهاتف",
+    "country": "البلد",
+    "timezone": "المنطقة الزمنية",
+    "currentQuranLevel": "مستوى الحفظ الحالي",
+    "currentTajweedLevel": "مستوى التجويد الحالي",
+    "previousBackground": "الخبرة السابقة في الحفظ",
+    "parentContact": "بيانات ولي الأمر",
+    "preferredDay": "اليوم المفضل للتسميع",
+    "availabilityNotes": "ملاحظات التوفر",
+    "consentLabel": "أوافق على شروط وأحكام الأكاديمية",
+    "enrollmentClosed": "التسجيل مغلق حالياً",
+    "enrollmentClosedDesc": "عذراً، التسجيل غير متاح في الوقت الحالي. يرجى المتابعة لمعرفة موعد فتح التسجيل.",
+    "pendingReview": "طلبك قيد المراجعة",
+    "pendingReviewDesc": "تم استلام طلبك وسيتم مراجعته من قبل الإدارة. سنقوم بإشعارك بالنتيجة."
+  },
+  "nav": {
+    "dashboard": "لوحة التحكم",
+    "profile": "الملف الشخصي",
+    "assignments": "الواجبات",
+    "sessions": "الحلقات",
+    "grades": "الدرجات",
+    "leaveRequests": "طلبات الإجازة",
+    "exams": "الاختبارات",
+    "announcements": "الإعلانات",
+    "notifications": "الإشعارات",
+    "groups": "المجموعات",
+    "students": "الطلاب",
+    "enrollment": "التسجيل",
+    "users": "المستخدمون",
+    "levels": "المستويات",
+    "classes": "الفصول",
+    "featureFlags": "إعدادات الميزات",
+    "settings": "الإعدادات",
+    "auditLogs": "سجل المراجعة",
+    "tickets": "تذاكر الدعم"
+  },
+  "admin": {
+    "dashboard": {
+      "title": "لوحة تحكم المدير",
+      "pendingRegistrations": "طلبات تسجيل معلقة",
+      "activeStudents": "طلاب نشطون",
+      "activeModerators": "مشرفون نشطون",
+      "enrollmentStatus": "حالة التسجيل"
+    },
+    "enrollment": {
+      "title": "إدارة التسجيل",
+      "approve": "قبول",
+      "reject": "رفض",
+      "waitlist": "قائمة الانتظار",
+      "reviewNote": "ملاحظة المراجعة",
+      "applicantName": "اسم المتقدم",
+      "submittedAt": "تاريخ التقديم",
+      "status": "الحالة",
+      "statusPending": "قيد المراجعة",
+      "statusApproved": "مقبول",
+      "statusRejected": "مرفوض",
+      "statusWaitlisted": "قائمة الانتظار"
+    },
+    "users": {
+      "title": "إدارة المستخدمين",
+      "createModerator": "إضافة مشرف",
+      "ban": "حظر",
+      "deactivate": "تعطيل",
+      "reactivate": "إعادة تفعيل",
+      "role": "الدور",
+      "roleAdmin": "مدير",
+      "roleModerator": "مشرف",
+      "roleStudent": "طالب",
+      "roleSupport": "دعم"
+    },
+    "organization": {
+      "createLevel": "إضافة مستوى",
+      "createClass": "إضافة فصل",
+      "createGroup": "إضافة مجموعة",
+      "levelName": "اسم المستوى",
+      "className": "اسم الفصل",
+      "groupName": "اسم المجموعة",
+      "assignModerator": "تعيين مشرف",
+      "assignStudent": "إضافة طالب"
+    },
+    "featureFlags": {
+      "title": "إعدادات الميزات",
+      "enabled": "مفعّل",
+      "disabled": "معطّل"
+    },
+    "settings": {
+      "title": "إعدادات النظام",
+      "enrollmentState": "حالة التسجيل",
+      "open": "مفتوح",
+      "closed": "مغلق",
+      "paused": "متوقف مؤقتاً",
+      "waitlistOnly": "قائمة انتظار فقط"
+    },
+    "auditLogs": {
+      "title": "سجل المراجعة",
+      "actor": "المنفّذ",
+      "action": "الإجراء",
+      "entity": "الكيان",
+      "date": "التاريخ"
+    }
+  },
+  "student": {
+    "dashboard": {
+      "title": "لوحة تحكم الطالب",
+      "myLevel": "المستوى",
+      "myClass": "الفصل",
+      "myGroup": "المجموعة",
+      "myModerator": "المشرف",
+      "nextSession": "الحلقة القادمة",
+      "noGroupAssigned": "لم يتم تعيينك في مجموعة بعد"
+    },
+    "profile": {
+      "title": "الملف الشخصي",
+      "editProfile": "تعديل الملف الشخصي"
+    }
+  },
+  "landing": {
+    "hero": {
+      "title": "أكاديمية يُسر لتعليم القرآن الكريم",
+      "verse": "وَلَقَدْ يَسَّرْنَا الْقُرْآنَ لِلذِّكْرِ فَهَلْ مِن مُّدَّكِرٍ",
+      "verseRef": "سورة القمر - الآية 17",
+      "cta": "سجّل الآن",
+      "ctaClosed": "التسجيل مغلق حالياً"
+    },
+    "about": {
+      "title": "عن الأكاديمية",
+      "description": "أكاديمية يُسر هي منصة تعليمية مجانية لحفظ القرآن الكريم عبر الإنترنت، تحت إشراف مشرفين مؤهلين، مع متابعة أسبوعية ونظام تقييم متكامل."
+    },
+    "features": {
+      "title": "مميزات الأكاديمية",
+      "weeklySessions": "حلقات تسميع أسبوعية",
+      "weeklySessionsDesc": "جلسات تسميع منتظمة مع مشرفين مؤهلين عبر الإنترنت",
+      "qualifiedModerators": "مشرفون مؤهلون",
+      "qualifiedModeratorsDesc": "فريق من المشرفين المتخصصين في تعليم القرآن والتجويد",
+      "progressTracking": "متابعة التقدم",
+      "progressTrackingDesc": "نظام متكامل لتتبع حفظك ومراجعتك ودرجاتك",
+      "aiAssisted": "مساعد ذكي للتلاوة",
+      "aiAssistedDesc": "تقييم أولي للتلاوة بالذكاء الاصطناعي لمساعدتك في التحسين",
+      "curriculum": "منهج منظم",
+      "curriculumDesc": "خطة تعليمية واضحة من المستوى المبتدئ إلى المتقدم",
+      "free": "مجاني بالكامل",
+      "freeDesc": "الأكاديمية مجانية لجميع الطلاب بدون أي رسوم"
+    },
+    "howItWorks": {
+      "title": "كيف تعمل الأكاديمية؟",
+      "step1Title": "سجّل حسابك",
+      "step1Desc": "أنشئ حسابك وأكمل نموذج التسجيل",
+      "step2Title": "انتظر الموافقة",
+      "step2Desc": "ستتم مراجعة طلبك وتعيينك في مجموعة مناسبة",
+      "step3Title": "ابدأ الحفظ",
+      "step3Desc": "استمع للمواد المطلوبة واحضر حلقات التسميع الأسبوعية"
+    },
+    "contact": {
+      "title": "تواصل معنا",
+      "email": "البريد الإلكتروني",
+      "facebook": "صفحتنا على فيسبوك"
+    },
+    "footer": {
+      "rights": "جميع الحقوق محفوظة",
+      "login": "تسجيل الدخول",
+      "register": "التسجيل"
+    }
+  }
+}
