@@ -1,0 +1,317 @@
+generator client {
+  provider = "prisma-client"
+  output   = "./generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ============================================================
+// Auth & RBAC
+// ============================================================
+
+model User {
+  id           String         @id @default(cuid())
+  email        String         @unique
+  passwordHash String
+  name         String
+  nameAr       String?
+  roleId       String
+  role         Role           @relation(fields: [roleId], references: [id])
+  accountStatus AccountStatus?
+  locale       String         @default("ar")
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  studentProfile        StudentProfile?
+  moderatorProfile      ModeratorProfile?
+  enrollmentApplication EnrollmentApplication?
+  permissionOverrides   UserPermissionOverride[]
+  notifications         Notification[]
+  auditLogs             AuditLog[]             @relation("actor")
+  passwordResetTokens   PasswordResetToken[]
+
+  @@index([email])
+  @@index([roleId])
+  @@index([accountStatus])
+}
+
+enum AccountStatus {
+  ACTIVE
+  DEACTIVATED
+  BANNED
+  EXPELLED
+}
+
+model Role {
+  id          String           @id @default(cuid())
+  name        String           @unique
+  nameAr      String
+  description String?
+  users       User[]
+  permissions RolePermission[]
+}
+
+model Permission {
+  id              String                  @id @default(cuid())
+  key             String                  @unique
+  description     String?
+  rolePermissions RolePermission[]
+  userOverrides   UserPermissionOverride[]
+}
+
+model RolePermission {
+  roleId       String
+  permissionId String
+  role         Role       @relation(fields: [roleId], references: [id])
+  permission   Permission @relation(fields: [permissionId], references: [id])
+
+  @@id([roleId, permissionId])
+}
+
+model UserPermissionOverride {
+  userId       String
+  permissionId String
+  granted      Boolean
+  user         User       @relation(fields: [userId], references: [id])
+  permission   Permission @relation(fields: [permissionId], references: [id])
+
+  @@id([userId, permissionId])
+}
+
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  userId    String
+  token     String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  user      User      @relation(fields: [userId], references: [id])
+
+  @@index([token])
+  @@index([userId, expiresAt])
+}
+
+// ============================================================
+// Student & Enrollment
+// ============================================================
+
+model StudentProfile {
+  id                  String   @id @default(cuid())
+  userId              String   @unique
+  user                User     @relation(fields: [userId], references: [id])
+  dateOfBirth         DateTime?
+  gender              String?
+  phone               String?
+  country             String?
+  timezone            String?  @default("UTC")
+  currentQuranLevel   String?
+  currentTajweedLevel String?
+  previousBackground  String?
+  parentContact       String?
+  preferredDay        String?
+  availabilityNotes   String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  groupStudents GroupStudent[]
+}
+
+model EnrollmentApplication {
+  id                 String             @id @default(cuid())
+  userId             String             @unique
+  user               User               @relation(fields: [userId], references: [id])
+  registrationStatus RegistrationStatus @default(PENDING_REVIEW)
+  submittedAt        DateTime?
+  reviewedById       String?
+  reviewedAt         DateTime?
+  reviewNote         String?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  @@index([registrationStatus])
+}
+
+enum RegistrationStatus {
+  DRAFT
+  SUBMITTED
+  PENDING_REVIEW
+  APPROVED
+  REJECTED
+  WAITLISTED
+}
+
+// ============================================================
+// Organization: Level > Class > Group
+// ============================================================
+
+model Level {
+  id          String   @id @default(cuid())
+  nameAr      String
+  nameEn      String?
+  description String?
+  sortOrder   Int      @default(0)
+  active      Boolean  @default(true)
+  classes     Class[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Class {
+  id           String   @id @default(cuid())
+  name         String
+  levelId      String
+  level        Level    @relation(fields: [levelId], references: [id])
+  defaultDay   String?
+  timezone     String   @default("UTC")
+  sessionTime  String?
+  capacity     Int?
+  genderPolicy String?
+  active       Boolean  @default(true)
+  groups       Group[]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([levelId])
+}
+
+model Group {
+  id                String            @id @default(cuid())
+  name              String
+  classId           String
+  class             Class             @relation(fields: [classId], references: [id])
+  moderatorId       String?
+  moderator         ModeratorProfile? @relation(fields: [moderatorId], references: [id])
+  weeklyDay         String?
+  weeklyTime        String?
+  meetingLinkPolicy String?
+  active            Boolean           @default(true)
+  students          GroupStudent[]
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  @@index([classId])
+  @@index([moderatorId])
+}
+
+model GroupStudent {
+  groupId    String
+  studentId  String
+  group      Group          @relation(fields: [groupId], references: [id])
+  student    StudentProfile @relation(fields: [studentId], references: [id])
+  assignedAt DateTime       @default(now())
+
+  @@id([groupId, studentId])
+}
+
+model ModeratorProfile {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id])
+  groups    Group[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ============================================================
+// Quran Reference (read-only, seeded)
+// ============================================================
+
+model QuranSurah {
+  number         Int         @id
+  nameAr         String
+  nameEn         String
+  revelationType String
+  ayahCount      Int
+  ayahs          QuranAyah[]
+}
+
+model QuranAyah {
+  id            Int        @id @default(autoincrement())
+  surahNumber   Int
+  ayahNumber    Int
+  juzNumber     Int
+  hizbNumber    Int
+  quarterNumber Int
+  pageNumber    Int?
+  surah         QuranSurah @relation(fields: [surahNumber], references: [number])
+
+  @@unique([surahNumber, ayahNumber])
+  @@index([juzNumber])
+  @@index([hizbNumber])
+  @@index([quarterNumber])
+}
+
+model QuranJuz {
+  number Int     @id
+  nameAr String?
+}
+
+model QuranHizb {
+  number    Int @id
+  juzNumber Int
+}
+
+model QuranQuarter {
+  number     Int @id
+  hizbNumber Int
+}
+
+// ============================================================
+// System
+// ============================================================
+
+model FeatureFlag {
+  key         String  @id
+  enabled     Boolean @default(false)
+  description String?
+}
+
+model SystemSetting {
+  key         String @id
+  value       String
+  description String?
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String?
+  actor      User?    @relation("actor", fields: [actorId], references: [id])
+  action     String
+  entityType String
+  entityId   String
+  metadata   Json?
+  createdAt  DateTime @default(now())
+
+  @@index([actorId])
+  @@index([action])
+  @@index([entityType, entityId])
+  @@index([createdAt])
+}
+
+model Notification {
+  id          String   @id @default(cuid())
+  recipientId String
+  recipient   User     @relation(fields: [recipientId], references: [id])
+  type        String
+  title       String
+  body        String?
+  read        Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  @@index([recipientId, read])
+  @@index([createdAt])
+}
+
+model Announcement {
+  id          String    @id @default(cuid())
+  title       String
+  body        String
+  priority    String    @default("normal")
+  targetType  String?
+  targetId    String?
+  publishDate DateTime  @default(now())
+  expiryDate  DateTime?
+  createdById String
+  createdAt   DateTime  @default(now())
+}
