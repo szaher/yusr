@@ -60,6 +60,14 @@ export async function createClass(input: CreateClassInput, actorId: string) {
   return cls;
 }
 
+export async function getAllModerators() {
+  return db.moderatorProfile.findMany({
+    include: {
+      user: { select: { id: true, name: true, email: true } },
+    },
+  });
+}
+
 export async function getAllGroups() {
   return db.group.findMany({
     include: {

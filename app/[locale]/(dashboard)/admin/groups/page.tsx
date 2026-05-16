@@ -1,6 +1,6 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
 import { requireApprovedUser } from "@/server/auth/session";
-import { getAllGroups, getAllClasses } from "@/server/services/organization";
+import { getAllGroups, getAllClasses, getAllModerators } from "@/server/services/organization";
 import { createGroupAction } from "@/server/actions/organization";
 
 const createGroup = createGroupAction as unknown as (formData: FormData) => void;
@@ -33,7 +33,7 @@ export default async function AdminGroupsPage({
   await requireApprovedUser();
 
   const t = await getTranslations("admin.organization");
-  const [groups, classes] = await Promise.all([getAllGroups(), getAllClasses()]);
+  const [groups, classes, moderators] = await Promise.all([getAllGroups(), getAllClasses(), getAllModerators()]);
 
   return (
     <div className="space-y-6">
@@ -67,7 +67,18 @@ export default async function AdminGroupsPage({
             </div>
             <div className="space-y-2">
               <Label htmlFor="moderatorId">{t("assignModerator")}</Label>
-              <Input id="moderatorId" name="moderatorId" placeholder="Moderator Profile ID" />
+              <select
+                id="moderatorId"
+                name="moderatorId"
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              >
+                <option value="">{locale === "ar" ? "-- بدون مشرف --" : "-- No moderator --"}</option>
+                {moderators.map((mod) => (
+                  <option key={mod.id} value={mod.id}>
+                    {mod.user.name} ({mod.user.email})
+                  </option>
+                ))}
+              </select>
             </div>
             <div className="sm:col-span-3">
               <Button type="submit">{t("createGroup")}</Button>

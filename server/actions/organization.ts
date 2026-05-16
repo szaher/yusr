@@ -59,9 +59,11 @@ export async function createGroupAction(formData: FormData) {
   const session = await auth();
   if (!session?.user) throw new Error("Not authenticated");
 
-  const parsed = createGroupSchema.safeParse(
-    Object.fromEntries(formData.entries())
-  );
+  const raw = Object.fromEntries(formData.entries());
+  const parsed = createGroupSchema.safeParse({
+    ...raw,
+    moderatorId: raw.moderatorId || undefined,
+  });
   if (!parsed.success) return { error: "validationError" };
 
   await createGroup(parsed.data, session.user.id);

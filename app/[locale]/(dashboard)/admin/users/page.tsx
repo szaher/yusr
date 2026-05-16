@@ -1,11 +1,12 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
 import { requireApprovedUser } from "@/server/auth/session";
 import { getAllUsers } from "@/server/services/user";
-import { createModeratorAction, updateAccountStatusAction } from "@/server/actions/user";
+import { createModeratorAction, updateAccountStatusAction, promoteToModeratorAction } from "@/server/actions/user";
 import { StatusBadge } from "@/components/shared/status-badge";
 
 const createModerator = createModeratorAction as unknown as (formData: FormData) => void;
 const updateStatus = updateAccountStatusAction as unknown as (formData: FormData) => void;
+const promoteModerator = promoteToModeratorAction as unknown as (formData: FormData) => void;
 import {
   Table,
   TableBody,
@@ -92,11 +93,19 @@ export default async function AdminUsersPage({
               </TableCell>
               <TableCell>
                 <div className="flex gap-2">
+                  {user.role?.name !== "moderator" && user.role?.name !== "admin" && (
+                    <form action={promoteModerator}>
+                      <input type="hidden" name="userId" value={user.id} />
+                      <Button size="sm" variant="outline" type="submit">
+                        {locale === "ar" ? "ترقية لمشرف" : "Promote to Moderator"}
+                      </Button>
+                    </form>
+                  )}
                   {user.accountStatus === "ACTIVE" && (
                     <form action={updateStatus}>
                       <input type="hidden" name="userId" value={user.id} />
                       <input type="hidden" name="status" value="DEACTIVATED" />
-                      <Button size="sm" variant="outline">
+                      <Button size="sm" variant="outline" type="submit">
                         {t("deactivate")}
                       </Button>
                     </form>
@@ -105,7 +114,7 @@ export default async function AdminUsersPage({
                     <form action={updateStatus}>
                       <input type="hidden" name="userId" value={user.id} />
                       <input type="hidden" name="status" value="ACTIVE" />
-                      <Button size="sm" variant="outline">
+                      <Button size="sm" variant="outline" type="submit">
                         {t("reactivate")}
                       </Button>
                     </form>
@@ -114,7 +123,7 @@ export default async function AdminUsersPage({
                     <form action={updateStatus}>
                       <input type="hidden" name="userId" value={user.id} />
                       <input type="hidden" name="status" value="BANNED" />
-                      <Button size="sm" variant="destructive">
+                      <Button size="sm" variant="destructive" type="submit">
                         {t("ban")}
                       </Button>
                     </form>

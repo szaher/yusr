@@ -20,13 +20,11 @@ export function Hero({ enrollmentOpen }: { enrollmentOpen: boolean }) {
         <p className="mt-2 text-sm text-muted-foreground">{t("verseRef")}</p>
         <div className="mt-10">
           {enrollmentOpen ? (
-            <Button
-              size="lg"
-              className="text-lg"
-              render={<Link href={`/${locale}/register`} />}
-            >
-              {t("cta")}
-            </Button>
+            <Link href={`/${locale}/register`}>
+              <Button size="lg" className="text-lg">
+                {t("cta")}
+              </Button>
+            </Link>
           ) : (
             <p className="text-lg font-medium text-muted-foreground">
               {t("ctaClosed")}

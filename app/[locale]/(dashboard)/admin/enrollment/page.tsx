@@ -63,7 +63,7 @@ export default async function AdminEnrollmentPage({
                         value={app.id}
                       />
                       <input type="hidden" name="action" value="approve" />
-                      <Button size="sm" variant="default">
+                      <Button size="sm" variant="default" type="submit">
                         {t("approve")}
                       </Button>
                     </form>
@@ -74,7 +74,7 @@ export default async function AdminEnrollmentPage({
                         value={app.id}
                       />
                       <input type="hidden" name="action" value="reject" />
-                      <Button size="sm" variant="destructive">
+                      <Button size="sm" variant="destructive" type="submit">
                         {t("reject")}
                       </Button>
                     </form>

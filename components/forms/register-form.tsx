@@ -45,7 +45,7 @@ export function RegisterForm() {
       <CardContent>
         <form action={formAction} className="space-y-4">
           {state?.error && (
-            <p className="text-sm text-destructive">{state.error}</p>
+            <p className="text-sm text-destructive">{t(`auth.${state.error}`)}</p>
           )}
           <div className="space-y-2">
             <Label htmlFor="name">{t("registration.fullName")}</Label>

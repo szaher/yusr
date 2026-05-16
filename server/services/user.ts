@@ -48,6 +48,37 @@ export async function createModerator(
   return user;
 }
 
+export async function promoteToModerator(userId: string, actorId: string) {
+  const moderatorRole = await db.role.findUnique({
+    where: { name: "moderator" },
+  });
+  if (!moderatorRole) throw new Error("Moderator role not found");
+
+  const user = await db.user.findUnique({
+    where: { id: userId },
+    include: { role: true, moderatorProfile: true },
+  });
+  if (!user) throw new Error("User not found");
+  if (user.role.name === "moderator") throw new Error("Already a moderator");
+
+  await db.$transaction(async (tx) => {
+    await tx.user.update({
+      where: { id: userId },
+      data: { roleId: moderatorRole.id },
+    });
+    if (!user.moderatorProfile) {
+      await tx.moderatorProfile.create({ data: { userId } });
+    }
+  });
+
+  await createAuditLog({
+    actorId,
+    action: "user.promoted_to_moderator",
+    entityType: "User",
+    entityId: userId,
+  });
+}
+
 export async function updateAccountStatus(
   userId: string,
   status: string,

@@ -1,15 +1,15 @@
 import { z } from "zod";
 
 export const loginSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(8),
+  email: z.string().email({ message: "invalidEmail" }),
+  password: z.string().min(8, { message: "passwordTooShort" }),
 });
 
 export const registerSchema = z
   .object({
-    name: z.string().min(2).max(100),
-    email: z.string().email(),
-    password: z.string().min(8).max(100),
+    name: z.string().min(2, { message: "nameTooShort" }).max(100),
+    email: z.string().email({ message: "invalidEmail" }),
+    password: z.string().min(8, { message: "passwordTooShort" }).max(100),
     confirmPassword: z.string(),
     phone: z.string().optional(),
     country: z.string().optional(),
@@ -27,7 +27,7 @@ export const registerSchema = z
     }),
   })
   .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords do not match",
+    message: "passwordsMismatch",
     path: ["confirmPassword"],
   });
 
@@ -37,11 +37,11 @@ export const forgotPasswordSchema = z.object({
 
 export const resetPasswordSchema = z
   .object({
-    password: z.string().min(8).max(100),
+    password: z.string().min(8, { message: "passwordTooShort" }).max(100),
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords do not match",
+    message: "passwordsMismatch",
     path: ["confirmPassword"],
   });
 

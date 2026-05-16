@@ -39,6 +39,10 @@
     "noAccount": "Don't have an account?",
     "hasAccount": "Already have an account?",
     "invalidCredentials": "Invalid email or password",
+    "invalidEmail": "Invalid email address",
+    "passwordTooShort": "Password must be at least 8 characters",
+    "passwordsMismatch": "Passwords do not match",
+    "nameTooShort": "Name must be at least 2 characters",
     "registrationSuccess": "Registration successful. Your application is under review.",
     "resetLinkSent": "A reset link has been sent to your email",
     "passwordResetSuccess": "Password changed successfully"

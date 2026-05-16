@@ -67,7 +67,7 @@ export default async function AdminFeatureFlagsPage({
                     name="enabled"
                     value={String(!flag.enabled)}
                   />
-                  <Button size="sm" variant="outline">
+                  <Button size="sm" variant="outline" type="submit">
                     {flag.enabled ? t("disabled") : t("enabled")}
                   </Button>
                 </form>

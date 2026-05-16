@@ -6,6 +6,7 @@ import { auth } from "@/server/auth/config";
 import {
   createModerator,
   updateAccountStatus,
+  promoteToModerator,
 } from "@/server/services/user";
 import {
   createModeratorSchema,
@@ -35,6 +36,24 @@ export async function createModeratorAction(formData: FormData) {
       return { error: "emailExists" };
     }
     return { error: "unknownError" };
+  }
+}
+
+export async function promoteToModeratorAction(formData: FormData) {
+  await requirePermission(PERMISSIONS.MODERATORS_ASSIGN);
+
+  const session = await auth();
+  if (!session?.user) throw new Error("Not authenticated");
+
+  const userId = formData.get("userId") as string;
+  if (!userId) return { error: "validationError" };
+
+  try {
+    await promoteToModerator(userId, session.user.id);
+    revalidatePath("/ar/admin/users");
+    return { success: true };
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "unknownError" };
   }
 }
 
