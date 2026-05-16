@@ -44,3 +44,8 @@ next-env.d.ts
 
 # prisma
 prisma/generated
+
+# playwright
+e2e/.auth/
+test-results/
+playwright-report/
