@@ -1,6 +1,6 @@
 "use server";
 
-import { signIn, signOut } from "@/server/auth/config";
+import { signIn, signOut, auth } from "@/server/auth/config";
 import { registerStudent, getEnrollmentState } from "@/server/services/enrollment";
 import { registerSchema, forgotPasswordSchema } from "@/lib/validations/auth";
 import { redirect } from "next/navigation";
@@ -21,7 +21,16 @@ export async function loginAction(formData: FormData) {
     return { error: "invalidCredentials" };
   }
 
-  redirect("/ar/student/dashboard");
+  const session = await auth();
+  const role = session?.user?.role ?? "student";
+  const roleRedirects: Record<string, string> = {
+    admin: "/ar/admin/dashboard",
+    moderator: "/ar/moderator/dashboard",
+    student: "/ar/student/dashboard",
+    support: "/ar/support/dashboard",
+  };
+
+  redirect(roleRedirects[role] ?? "/ar/student/dashboard");
 }
 
 export async function logoutAction() {
