@@ -34,17 +34,20 @@ const adminNav: NavItem[] = [
   { labelKey: "featureFlags", href: "/admin/feature-flags", icon: ToggleLeft },
   { labelKey: "settings", href: "/admin/settings", icon: Settings },
   { labelKey: "auditLogs", href: "/admin/audit-logs", icon: ScrollText },
+  { labelKey: "assignments", href: "/admin/assignments", icon: BookOpen },
 ];
 
 const moderatorNav: NavItem[] = [
   { labelKey: "dashboard", href: "/moderator/dashboard", icon: LayoutDashboard },
   { labelKey: "groups", href: "/moderator/groups", icon: UsersRound },
   { labelKey: "students", href: "/moderator/students", icon: GraduationCap },
+  { labelKey: "assignments", href: "/moderator/assignments", icon: BookOpen },
 ];
 
 const studentNav: NavItem[] = [
   { labelKey: "dashboard", href: "/student/dashboard", icon: LayoutDashboard },
   { labelKey: "profile", href: "/student/profile", icon: Users },
+  { labelKey: "assignments", href: "/student/assignments", icon: BookOpen },
 ];
 
 const supportNav: NavItem[] = [
