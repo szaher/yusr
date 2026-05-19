@@ -19,10 +19,7 @@ test.describe("Landing page", () => {
     db,
   }) => {
     // Seed sets enrollment to "closed" — flip it to "open" for this test
-    await db.systemSetting.update({
-      where: { key: "enrollment_state" },
-      data: { value: "open" },
-    });
+    await db.upsertSystemSetting("enrollment_state", "open");
 
     await page.goto("/ar");
 
@@ -34,10 +31,7 @@ test.describe("Landing page", () => {
     expect(page.url()).toContain("/ar/register");
 
     // Restore enrollment to "closed" so other tests are not affected
-    await db.systemSetting.update({
-      where: { key: "enrollment_state" },
-      data: { value: "closed" },
-    });
+    await db.upsertSystemSetting("enrollment_state", "closed");
   });
 
   test("features section is visible", async ({ page }) => {

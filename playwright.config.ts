@@ -34,6 +34,7 @@ export default defineConfig({
     command: "pnpm dev",
     url: "http://localhost:3000",
     reuseExistingServer: !process.env.CI,
+    timeout: 120000,
     env: {
       DATABASE_URL: TEST_DATABASE_URL,
     },

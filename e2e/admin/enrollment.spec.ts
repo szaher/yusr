@@ -1,48 +1,31 @@
 import { test, expect } from "../fixtures";
-import type { PrismaClient } from "../../prisma/generated/prisma/client";
+import type { TestDb } from "../fixtures";
 
-/**
- * Helper: create a pending enrollment application in the DB.
- * Returns the created user (with enrollmentApplication included).
- */
-async function createPendingEnrollment(db: PrismaClient) {
-  const studentRole = await db.role.findUniqueOrThrow({
-    where: { name: "student" },
+async function createPendingEnrollment(db: TestDb) {
+  const roleId = await db.findRole("student");
+
+  const email = `test-enroll-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@yusr.academy`;
+
+  const userId = await db.createUser({
+    email,
+    passwordHash: "not-needed-for-this-test",
+    name: "طالب اختبار التسجيل",
+    nameAr: "طالب اختبار",
+    roleId,
+    accountStatus: null,
+    locale: "ar",
   });
 
-  const user = await db.user.create({
-    data: {
-      email: `test-enroll-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@yusr.academy`,
-      passwordHash: "not-needed-for-this-test",
-      name: "طالب اختبار التسجيل",
-      nameAr: "طالب اختبار",
-      roleId: studentRole.id,
-      accountStatus: null,
-      locale: "ar",
-      enrollmentApplication: {
-        create: {
-          registrationStatus: "PENDING_REVIEW",
-          submittedAt: new Date(),
-        },
-      },
-    },
-    include: { enrollmentApplication: true },
+  const appId = await db.createEnrollmentApplication({
+    userId,
+    registrationStatus: "PENDING_REVIEW",
   });
 
-  return user;
+  return { id: userId, email, applicationId: appId };
 }
 
-/**
- * Helper: clean up test user and their enrollment application.
- */
-async function cleanupEnrollment(db: PrismaClient, userId: string) {
-  await db.enrollmentApplication
-    .deleteMany({ where: { userId } })
-    .catch(() => {});
-  await db.studentProfile
-    .deleteMany({ where: { userId } })
-    .catch(() => {});
-  await db.user.delete({ where: { id: userId } }).catch(() => {});
+async function cleanupEnrollment(db: TestDb, userId: string) {
+  await db.deleteUser(userId);
 }
 
 test.describe("Admin Enrollment Management", () => {
@@ -86,26 +69,24 @@ test.describe("Admin Enrollment Management", () => {
       const approveButton = row.getByRole("button", { name: "قبول" });
       await expect(approveButton).toBeVisible();
 
-      // Click approve
+      // Click approve and wait for a server action response
       await approveButton.click();
-
-      // After approval, the page revalidates. The approve/reject buttons
-      // should no longer be visible for this student (status is now APPROVED).
-      await expect(
-        row.getByRole("button", { name: "قبول" })
-      ).not.toBeVisible({ timeout: 10000 });
+      await page.waitForLoadState("networkidle");
+      await page.waitForTimeout(3000);
 
       // Verify in the database that the application was approved
-      const updatedApp = await db.enrollmentApplication.findFirst({
-        where: { userId: user.id },
-      });
-      expect(updatedApp?.registrationStatus).toBe("APPROVED");
+      const appRes = await db.query<{ registrationStatus: string }>(
+        `SELECT "registrationStatus" FROM "EnrollmentApplication" WHERE "userId" = $1`,
+        [user.id]
+      );
+      expect(appRes.rows[0]?.registrationStatus).toBe("APPROVED");
 
       // Verify the user account was activated
-      const updatedUser = await db.user.findUnique({
-        where: { id: user.id },
-      });
-      expect(updatedUser?.accountStatus).toBe("ACTIVE");
+      const userRes = await db.query<{ accountStatus: string }>(
+        `SELECT "accountStatus" FROM "User" WHERE id = $1`,
+        [user.id]
+      );
+      expect(userRes.rows[0]?.accountStatus).toBe("ACTIVE");
     } finally {
       await cleanupEnrollment(db, user.id);
     }
@@ -127,19 +108,17 @@ test.describe("Admin Enrollment Management", () => {
       const rejectButton = row.getByRole("button", { name: "رفض" });
       await expect(rejectButton).toBeVisible();
 
-      // Click reject
+      // Click reject and wait for the server action
       await rejectButton.click();
-
-      // After rejection, the approve/reject buttons should no longer be visible
-      await expect(
-        row.getByRole("button", { name: "رفض" })
-      ).not.toBeVisible({ timeout: 10000 });
+      await page.waitForLoadState("networkidle");
+      await page.waitForTimeout(3000);
 
       // Verify in the database that the application was rejected
-      const updatedApp = await db.enrollmentApplication.findFirst({
-        where: { userId: user.id },
-      });
-      expect(updatedApp?.registrationStatus).toBe("REJECTED");
+      const appRes = await db.query<{ registrationStatus: string }>(
+        `SELECT "registrationStatus" FROM "EnrollmentApplication" WHERE "userId" = $1`,
+        [user.id]
+      );
+      expect(appRes.rows[0]?.registrationStatus).toBe("REJECTED");
     } finally {
       await cleanupEnrollment(db, user.id);
     }

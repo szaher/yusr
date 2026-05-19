@@ -6,7 +6,7 @@ test.describe.serial("Admin organization management (levels, classes, groups)", 
   test("create level", async ({ page }) => {
     await page.goto("/ar/admin/levels");
 
-    await expect(page.getByText("إضافة مستوى")).toBeVisible({
+    await expect(page.getByRole("heading", { name: "إضافة مستوى" })).toBeVisible({
       timeout: 15000,
     });
 
@@ -34,7 +34,7 @@ test.describe.serial("Admin organization management (levels, classes, groups)", 
   test("create class under level", async ({ page }) => {
     await page.goto("/ar/admin/classes");
 
-    await expect(page.getByText("إضافة فصل")).toBeVisible({
+    await expect(page.getByRole("heading", { name: "إضافة فصل" })).toBeVisible({
       timeout: 15000,
     });
 
@@ -64,14 +64,16 @@ test.describe.serial("Admin organization management (levels, classes, groups)", 
   test("create group under class without moderator", async ({ page }) => {
     await page.goto("/ar/admin/groups");
 
-    await expect(page.getByText("إضافة مجموعة")).toBeVisible({
+    await expect(page.getByRole("heading", { name: "إضافة مجموعة" })).toBeVisible({
       timeout: 15000,
     });
 
     // Fill the create group form
     await page.locator("#name").fill("مجموعة 1");
     // Class dropdown options show "class.name — class.level.nameAr"
-    await page.locator("#classId").selectOption({ label: /الفصل أ/ });
+    const classOption = page.locator("#classId option").filter({ hasText: "الفصل أ" });
+    const classValue = await classOption.getAttribute("value");
+    await page.locator("#classId").selectOption(classValue!);
     // Leave moderator as default "-- بدون مشرف --"
 
     // Submit the form
@@ -91,41 +93,39 @@ test.describe.serial("Admin organization management (levels, classes, groups)", 
 
     // Moderator column should show "—" (no moderator assigned)
     const groupRow = page.locator("tr", { hasText: "مجموعة 1" });
-    await expect(groupRow.getByText("—")).toBeVisible();
+    await expect(groupRow.getByText("—", { exact: true })).toBeVisible();
   });
 
   test("create group with moderator", async ({ page, db }) => {
     // Create a moderator user via DB
-    const moderatorRole = await db.role.findUniqueOrThrow({
-      where: { name: "moderator" },
+    const roleId = await db.findRole("moderator");
+    modUserId = await db.createUser({
+      email: `test-mod-${Date.now()}@yusr.academy`,
+      passwordHash: "not-needed",
+      name: "مشرف اختبار",
+      nameAr: "مشرف اختبار",
+      roleId,
+      accountStatus: "ACTIVE",
+      locale: "ar",
     });
-    const modUser = await db.user.create({
-      data: {
-        email: `test-mod-${Date.now()}@yusr.academy`,
-        passwordHash: "not-needed",
-        name: "مشرف اختبار",
-        nameAr: "مشرف اختبار",
-        roleId: moderatorRole.id,
-        accountStatus: "ACTIVE",
-        locale: "ar",
-        moderatorProfile: { create: {} },
-      },
-      include: { moderatorProfile: true },
-    });
-    modUserId = modUser.id;
+    await db.createModeratorProfile(modUserId);
 
     // Navigate to the groups page (reload to pick up the new moderator)
     await page.goto("/ar/admin/groups");
 
-    await expect(page.getByText("إضافة مجموعة")).toBeVisible({
+    await expect(page.getByRole("heading", { name: "إضافة مجموعة" })).toBeVisible({
       timeout: 15000,
     });
 
     // Fill the create group form
     await page.locator("#name").fill("مجموعة 2");
-    await page.locator("#classId").selectOption({ label: /الفصل أ/ });
+    const classOption = page.locator("#classId option").filter({ hasText: "الفصل أ" });
+    const classValue = await classOption.getAttribute("value");
+    await page.locator("#classId").selectOption(classValue!);
     // Select the moderator from dropdown — option shows "moderatorName (moderatorEmail)"
-    await page.locator("#moderatorId").selectOption({ label: new RegExp("مشرف اختبار") });
+    const modOption = page.locator("#moderatorId option").filter({ hasText: "مشرف اختبار" });
+    const modValue = await modOption.getAttribute("value");
+    await page.locator("#moderatorId").selectOption(modValue!);
 
     // Submit the form
     await Promise.all([
@@ -147,20 +147,13 @@ test.describe.serial("Admin organization management (levels, classes, groups)", 
 
   test("cleanup test data", async ({ db }) => {
     // Delete in reverse dependency order: groups -> classes -> levels
-    await db.group.deleteMany({
-      where: { name: { in: ["مجموعة 1", "مجموعة 2"] } },
-    });
-    await db.class.deleteMany({ where: { name: "الفصل أ" } });
-    await db.level.deleteMany({ where: { nameAr: "المستوى الأول" } });
+    await db.deleteByQuery("Group", `name IN ($1, $2)`, ["مجموعة 1", "مجموعة 2"]);
+    await db.deleteByQuery("Class", `name = $1`, ["الفصل أ"]);
+    await db.deleteByQuery("Level", `"nameAr" = $1`, ["المستوى الأول"]);
 
     // Clean up the moderator user
     if (modUserId) {
-      await db.moderatorProfile
-        .deleteMany({ where: { userId: modUserId } })
-        .catch(() => {});
-      await db.user
-        .delete({ where: { id: modUserId } })
-        .catch(() => {});
+      await db.deleteUser(modUserId);
     }
   });
 });

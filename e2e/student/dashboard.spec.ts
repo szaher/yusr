@@ -1,35 +1,29 @@
 import { test, expect } from "../fixtures";
-import { hashPassword } from "../../server/auth/password";
+import { hashPassword } from "../fixtures";
 
 test.use({ storageState: { cookies: [], origins: [] } });
 
 test.describe("Student dashboard", () => {
   test("approved student sees dashboard", async ({ page, db }) => {
-    const studentRole = await db.role.findUniqueOrThrow({
-      where: { name: "student" },
-    });
+    const roleId = await db.findRole("student");
     const password = "TestPass123!";
     const email = `test-student-dash-${Date.now()}@yusr.academy`;
 
-    const student = await db.user.create({
-      data: {
-        email,
-        passwordHash: await hashPassword(password),
-        name: "طالب اختبار",
-        nameAr: "طالب اختبار",
-        roleId: studentRole.id,
-        accountStatus: "ACTIVE",
-        locale: "ar",
-        enrollmentApplication: {
-          create: {
-            registrationStatus: "APPROVED",
-            submittedAt: new Date(),
-            reviewedAt: new Date(),
-          },
-        },
-        studentProfile: { create: {} },
-      },
+    const userId = await db.createUser({
+      email,
+      passwordHash: await hashPassword(password),
+      name: "طالب اختبار",
+      nameAr: "طالب اختبار",
+      roleId,
+      accountStatus: "ACTIVE",
+      locale: "ar",
     });
+
+    await db.createEnrollmentApplication({
+      userId,
+      registrationStatus: "APPROVED",
+    });
+    await db.createStudentProfile(userId);
 
     try {
       await page.goto("/ar/login");
@@ -40,11 +34,7 @@ test.describe("Student dashboard", () => {
 
       await expect(page.locator("h1")).toBeVisible();
     } finally {
-      await db.studentProfile.deleteMany({ where: { userId: student.id } });
-      await db.enrollmentApplication.deleteMany({
-        where: { userId: student.id },
-      });
-      await db.user.delete({ where: { id: student.id } });
+      await db.deleteUser(userId);
     }
   });
 
@@ -52,31 +42,25 @@ test.describe("Student dashboard", () => {
     page,
     db,
   }) => {
-    const studentRole = await db.role.findUniqueOrThrow({
-      where: { name: "student" },
-    });
+    const roleId = await db.findRole("student");
     const password = "TestPass123!";
     const email = `test-student-nav-${Date.now()}@yusr.academy`;
 
-    const student = await db.user.create({
-      data: {
-        email,
-        passwordHash: await hashPassword(password),
-        name: "طالب قائمة",
-        nameAr: "طالب قائمة",
-        roleId: studentRole.id,
-        accountStatus: "ACTIVE",
-        locale: "ar",
-        enrollmentApplication: {
-          create: {
-            registrationStatus: "APPROVED",
-            submittedAt: new Date(),
-            reviewedAt: new Date(),
-          },
-        },
-        studentProfile: { create: {} },
-      },
+    const userId = await db.createUser({
+      email,
+      passwordHash: await hashPassword(password),
+      name: "طالب قائمة",
+      nameAr: "طالب قائمة",
+      roleId,
+      accountStatus: "ACTIVE",
+      locale: "ar",
     });
+
+    await db.createEnrollmentApplication({
+      userId,
+      registrationStatus: "APPROVED",
+    });
+    await db.createStudentProfile(userId);
 
     try {
       await page.goto("/ar/login");
@@ -93,11 +77,7 @@ test.describe("Student dashboard", () => {
       await expect(sidebar.getByText("المستخدمون")).not.toBeVisible();
       await expect(sidebar.getByText("إعدادات الميزات")).not.toBeVisible();
     } finally {
-      await db.studentProfile.deleteMany({ where: { userId: student.id } });
-      await db.enrollmentApplication.deleteMany({
-        where: { userId: student.id },
-      });
-      await db.user.delete({ where: { id: student.id } });
+      await db.deleteUser(userId);
     }
   });
 });

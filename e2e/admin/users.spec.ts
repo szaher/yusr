@@ -46,11 +46,12 @@ test.describe("Admin users management", () => {
     ).toBeVisible({ timeout: 10000 });
 
     // Cleanup
-    const created = await db.user.findUnique({
-      where: { email: uniqueEmail },
-    });
-    if (created) {
-      await db.user.delete({ where: { id: created.id } }).catch(() => {});
+    const res = await db.query<{ id: string }>(
+      `SELECT id FROM "User" WHERE email = $1`,
+      [uniqueEmail]
+    );
+    if (res.rows.length > 0) {
+      await db.deleteUser(res.rows[0].id);
     }
   });
 
@@ -83,21 +84,16 @@ test.describe.serial("Admin user actions", () => {
 
   test("promote user to moderator", async ({ page, db }) => {
     // Create a student user via DB
-    const studentRole = await db.role.findUniqueOrThrow({
-      where: { name: "student" },
+    const roleId = await db.findRole("student");
+    testUserId = await db.createUser({
+      email: testUserEmail,
+      passwordHash: "not-needed",
+      name: "Test Student",
+      nameAr: "طالب اختبار",
+      roleId,
+      accountStatus: "ACTIVE",
+      locale: "ar",
     });
-    const user = await db.user.create({
-      data: {
-        email: testUserEmail,
-        passwordHash: "not-needed",
-        name: "Test Student",
-        nameAr: "طالب اختبار",
-        roleId: studentRole.id,
-        accountStatus: "ACTIVE",
-        locale: "ar",
-      },
-    });
-    testUserId = user.id;
 
     await page.goto("/ar/admin/users");
     await expect(page.getByText("إدارة المستخدمين")).toBeVisible({
@@ -111,19 +107,17 @@ test.describe.serial("Admin user actions", () => {
     const promoteButton = userRow.getByRole("button", { name: /ترقية لمشرف/ });
     await expect(promoteButton).toBeVisible();
 
-    await Promise.all([
-      page.waitForResponse(
-        (resp) => resp.url().includes("/admin/users") && resp.status() === 200
-      ),
-      promoteButton.click(),
-    ]);
+    await promoteButton.click();
 
     await page.waitForLoadState("networkidle");
+    await page.waitForTimeout(2000);
+    await page.reload();
+    await page.waitForLoadState("networkidle");
 
-    // After promotion, the promote button should no longer be visible for this user
+    // After promotion, the user's role should show as moderator
     const updatedRow = page.locator("tr", { hasText: testUserEmail });
     await expect(updatedRow).toBeVisible({ timeout: 10000 });
-    await expect(updatedRow.getByText("moderator")).toBeVisible();
+    await expect(updatedRow.getByText("moderator")).toBeVisible({ timeout: 10000 });
   });
 
   test("deactivate user", async ({ page }) => {
@@ -138,19 +132,18 @@ test.describe.serial("Admin user actions", () => {
     const deactivateButton = userRow.getByRole("button", { name: /تعطيل/ });
     await expect(deactivateButton).toBeVisible();
 
-    await Promise.all([
-      page.waitForResponse(
-        (resp) => resp.url().includes("/admin/users") && resp.status() === 200
-      ),
-      deactivateButton.click(),
-    ]);
+    await deactivateButton.click();
 
+    // Wait for the page to reflect the change
+    await page.waitForLoadState("networkidle");
+    await page.waitForTimeout(2000);
+    await page.reload();
     await page.waitForLoadState("networkidle");
 
     // Status should now show DEACTIVATED
     const updatedRow = page.locator("tr", { hasText: testUserEmail });
     await expect(updatedRow).toBeVisible({ timeout: 10000 });
-    await expect(updatedRow.getByText(/DEACTIVATED/i)).toBeVisible();
+    await expect(updatedRow.getByText(/DEACTIVATED/i)).toBeVisible({ timeout: 10000 });
   });
 
   test("reactivate user", async ({ page }) => {
@@ -167,19 +160,17 @@ test.describe.serial("Admin user actions", () => {
     });
     await expect(reactivateButton).toBeVisible();
 
-    await Promise.all([
-      page.waitForResponse(
-        (resp) => resp.url().includes("/admin/users") && resp.status() === 200
-      ),
-      reactivateButton.click(),
-    ]);
+    await reactivateButton.click();
 
+    await page.waitForLoadState("networkidle");
+    await page.waitForTimeout(2000);
+    await page.reload();
     await page.waitForLoadState("networkidle");
 
     // Status should now show ACTIVE again
     const updatedRow = page.locator("tr", { hasText: testUserEmail });
     await expect(updatedRow).toBeVisible({ timeout: 10000 });
-    await expect(updatedRow.getByText(/ACTIVE/i)).toBeVisible();
+    await expect(updatedRow.getByText(/ACTIVE/i)).toBeVisible({ timeout: 10000 });
   });
 
   test("ban user", async ({ page, db }) => {
@@ -194,23 +185,21 @@ test.describe.serial("Admin user actions", () => {
     const banButton = userRow.getByRole("button", { name: /حظر/ });
     await expect(banButton).toBeVisible();
 
-    await Promise.all([
-      page.waitForResponse(
-        (resp) => resp.url().includes("/admin/users") && resp.status() === 200
-      ),
-      banButton.click(),
-    ]);
+    await banButton.click();
 
+    await page.waitForLoadState("networkidle");
+    await page.waitForTimeout(2000);
+    await page.reload();
     await page.waitForLoadState("networkidle");
 
     // Status should now show BANNED
     const updatedRow = page.locator("tr", { hasText: testUserEmail });
     await expect(updatedRow).toBeVisible({ timeout: 10000 });
-    await expect(updatedRow.getByText(/BANNED/i)).toBeVisible();
+    await expect(updatedRow.getByText(/BANNED/i)).toBeVisible({ timeout: 10000 });
 
     // Cleanup the test user
     if (testUserId) {
-      await db.user.delete({ where: { id: testUserId } }).catch(() => {});
+      await db.deleteUser(testUserId);
     }
   });
 });

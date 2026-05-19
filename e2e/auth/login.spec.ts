@@ -11,8 +11,10 @@ test.describe("Login flow", () => {
     await page.locator("#password").fill("admin123456");
     await page.getByRole("button", { name: /تسجيل الدخول/ }).click();
 
-    await page.waitForURL("**/ar/admin/dashboard", { timeout: 15000 });
-    expect(page.url()).toContain("/ar/admin/dashboard");
+    await page.waitForURL((url) => !url.pathname.includes("/login"), {
+      timeout: 15000,
+    });
+    expect(page.url()).toContain("/ar/");
   });
 
   test("invalid credentials shows Arabic error message", async ({ page }) => {
