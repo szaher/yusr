@@ -155,6 +155,81 @@
       "date": "التاريخ"
     }
   },
+  "moderator": {
+    "dashboard": {
+      "title": "لوحة تحكم المشرف",
+      "myGroups": "مجموعاتي",
+      "totalStudents": "إجمالي الطلاب",
+      "noGroups": "لم يتم تعيين مجموعات لك بعد"
+    },
+    "groups": {
+      "title": "المجموعات",
+      "groupName": "اسم المجموعة",
+      "className": "الفصل",
+      "levelName": "المستوى",
+      "studentCount": "عدد الطلاب",
+      "weeklyDay": "يوم الحلقة",
+      "weeklyTime": "وقت الحلقة",
+      "noGroups": "لا توجد مجموعات مسندة إليك"
+    },
+    "students": {
+      "title": "الطلاب",
+      "studentName": "اسم الطالب",
+      "email": "البريد الإلكتروني",
+      "phone": "الهاتف",
+      "country": "البلد",
+      "quranLevel": "مستوى الحفظ",
+      "group": "المجموعة",
+      "noStudents": "لا يوجد طلاب في مجموعاتك"
+    }
+  },
+  "assignments": {
+    "title": "الواجبات",
+    "create": "إنشاء واجب",
+    "type": "نوع الواجب",
+    "typeQuranMemorization": "حفظ قرآن",
+    "typeQuranRevision": "مراجعة قرآن",
+    "typeTajweed": "تجويد",
+    "typeHomework": "واجب منزلي",
+    "targetGroup": "المجموعة المستهدفة",
+    "targetClass": "الفصل المستهدف",
+    "targetLevel": "المستوى المستهدف",
+    "target": "الهدف",
+    "dueDate": "تاريخ الاستحقاق",
+    "requiredRepetitions": "عدد مرات الاستماع المطلوبة",
+    "fromSurah": "من سورة",
+    "fromAyah": "من آية",
+    "toSurah": "إلى سورة",
+    "toAyah": "إلى آية",
+    "topicTitle": "عنوان الدرس",
+    "topicDescription": "وصف الدرس",
+    "instructions": "التعليمات",
+    "materials": "المواد التعليمية",
+    "addMaterial": "إضافة مادة",
+    "materialUrl": "رابط المادة",
+    "materialType": "نوع المادة",
+    "audioUrl": "رابط صوتي",
+    "videoUrl": "رابط فيديو",
+    "iframeEmbed": "تضمين صفحة",
+    "progress": "التقدم",
+    "completed": "مكتمل",
+    "inProgress": "قيد التنفيذ",
+    "assigned": "مُسند",
+    "confirmListening": "لقد استمعت",
+    "confirmDisclaimer": "تأكيد الاستماع أمانة",
+    "noAssignments": "لا توجد واجبات",
+    "studentProgress": "تقدم الطلاب",
+    "eligible": "مؤهل",
+    "notEligible": "غير مؤهل",
+    "completionStats": "الواجبات المكتملة",
+    "createdBy": "أنشأه",
+    "deleteAssignment": "حذف الواجب",
+    "assignmentDetail": "تفاصيل الواجب",
+    "quranRange": "النطاق القرآني",
+    "repetitions": "مرات",
+    "lastConfirmation": "آخر تأكيد",
+    "materialTitle": "عنوان المادة"
+  },
   "student": {
     "dashboard": {
       "title": "لوحة تحكم الطالب",
@@ -167,7 +242,15 @@
     },
     "profile": {
       "title": "الملف الشخصي",
-      "editProfile": "تعديل الملف الشخصي"
+      "editProfile": "تعديل الملف الشخصي",
+      "name": "الاسم",
+      "email": "البريد الإلكتروني",
+      "phone": "رقم الهاتف",
+      "country": "البلد",
+      "quranLevel": "مستوى الحفظ",
+      "tajweedLevel": "مستوى التجويد",
+      "preferredDay": "اليوم المفضل",
+      "saved": "تم حفظ التغييرات بنجاح"
     }
   },
   "landing": {

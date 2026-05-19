@@ -155,6 +155,81 @@
       "date": "Date"
     }
   },
+  "moderator": {
+    "dashboard": {
+      "title": "Moderator Dashboard",
+      "myGroups": "My Groups",
+      "totalStudents": "Total Students",
+      "noGroups": "No groups have been assigned to you yet"
+    },
+    "groups": {
+      "title": "Groups",
+      "groupName": "Group Name",
+      "className": "Class",
+      "levelName": "Level",
+      "studentCount": "Students",
+      "weeklyDay": "Weekly Day",
+      "weeklyTime": "Weekly Time",
+      "noGroups": "No groups assigned to you"
+    },
+    "students": {
+      "title": "Students",
+      "studentName": "Student Name",
+      "email": "Email",
+      "phone": "Phone",
+      "country": "Country",
+      "quranLevel": "Quran Level",
+      "group": "Group",
+      "noStudents": "No students in your groups"
+    }
+  },
+  "assignments": {
+    "title": "Assignments",
+    "create": "Create Assignment",
+    "type": "Assignment Type",
+    "typeQuranMemorization": "Quran Memorization",
+    "typeQuranRevision": "Quran Revision",
+    "typeTajweed": "Tajweed",
+    "typeHomework": "Homework",
+    "targetGroup": "Target Group",
+    "targetClass": "Target Class",
+    "targetLevel": "Target Level",
+    "target": "Target",
+    "dueDate": "Due Date",
+    "requiredRepetitions": "Required Listening Repetitions",
+    "fromSurah": "From Surah",
+    "fromAyah": "From Ayah",
+    "toSurah": "To Surah",
+    "toAyah": "To Ayah",
+    "topicTitle": "Topic Title",
+    "topicDescription": "Topic Description",
+    "instructions": "Instructions",
+    "materials": "Materials",
+    "addMaterial": "Add Material",
+    "materialUrl": "Material URL",
+    "materialType": "Material Type",
+    "audioUrl": "Audio URL",
+    "videoUrl": "Video URL",
+    "iframeEmbed": "Iframe Embed",
+    "progress": "Progress",
+    "completed": "Completed",
+    "inProgress": "In Progress",
+    "assigned": "Assigned",
+    "confirmListening": "I have listened",
+    "confirmDisclaimer": "Listening confirmation is a trust",
+    "noAssignments": "No assignments",
+    "studentProgress": "Student Progress",
+    "eligible": "Eligible",
+    "notEligible": "Not Eligible",
+    "completionStats": "Assignments Completed",
+    "createdBy": "Created by",
+    "deleteAssignment": "Delete Assignment",
+    "assignmentDetail": "Assignment Detail",
+    "quranRange": "Quran Range",
+    "repetitions": "repetitions",
+    "lastConfirmation": "Last Confirmation",
+    "materialTitle": "Material Title"
+  },
   "student": {
     "dashboard": {
       "title": "Student Dashboard",
@@ -167,7 +242,15 @@
     },
     "profile": {
       "title": "Profile",
-      "editProfile": "Edit Profile"
+      "editProfile": "Edit Profile",
+      "name": "Name",
+      "email": "Email",
+      "phone": "Phone Number",
+      "country": "Country",
+      "quranLevel": "Quran Level",
+      "tajweedLevel": "Tajweed Level",
+      "preferredDay": "Preferred Day",
+      "saved": "Changes saved successfully"
     }
   },
   "landing": {
