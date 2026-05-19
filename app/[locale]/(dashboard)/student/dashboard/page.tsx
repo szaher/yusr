@@ -3,6 +3,7 @@ import { auth } from "@/server/auth/config";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { redirect } from "next/navigation";
+import { getStudentEligibility } from "@/server/services/assignment";
 
 export default async function StudentDashboardPage({
   params,
@@ -62,6 +63,7 @@ export default async function StudentDashboardPage({
   });
 
   const groupAssignment = studentProfile?.groupStudents[0];
+  const eligibility = await getStudentEligibility(session.user.id);
 
   return (
     <div>
@@ -120,6 +122,18 @@ export default async function StudentDashboardPage({
             <CardContent>
               <p className="text-lg font-semibold">
                 {groupAssignment.group.moderator?.user?.name ?? "-"}
+              </p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm text-muted-foreground">
+                {locale === "ar" ? "الواجبات المكتملة" : "Assignments Completed"}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className={`text-lg font-semibold ${eligibility.eligible ? "text-green-600" : "text-yellow-600"}`}>
+                {eligibility.completed}/{eligibility.total}
               </p>
             </CardContent>
           </Card>
