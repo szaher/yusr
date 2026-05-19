@@ -164,7 +164,7 @@ export async function getModeratorAssignments(userId: string) {
 }
 
 export async function getAdminAssignments() {
-  return db.assignment.findMany({
+  const assignments = await db.assignment.findMany({
     include: {
       createdBy: { select: { name: true } },
       quranAssignment: {
@@ -183,6 +183,35 @@ export async function getAdminAssignments() {
     },
     orderBy: { createdAt: "desc" },
   });
+
+  const enriched = await Promise.all(
+    assignments.map(async (a) => {
+      let targetGroup = null;
+      let targetClass = null;
+      let targetLevel = null;
+
+      if (a.targetType === "GROUP") {
+        targetGroup = await db.group.findUnique({
+          where: { id: a.targetId },
+          select: { name: true },
+        });
+      } else if (a.targetType === "CLASS") {
+        targetClass = await db.class.findUnique({
+          where: { id: a.targetId },
+          select: { name: true },
+        });
+      } else if (a.targetType === "LEVEL") {
+        targetLevel = await db.level.findUnique({
+          where: { id: a.targetId },
+          select: { nameAr: true },
+        });
+      }
+
+      return { ...a, targetGroup, targetClass, targetLevel };
+    })
+  );
+
+  return enriched;
 }
 
 export async function getStudentAssignments(userId: string) {
