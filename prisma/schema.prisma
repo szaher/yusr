@@ -31,6 +31,7 @@ model User {
   notifications         Notification[]
   auditLogs             AuditLog[]             @relation("actor")
   passwordResetTokens   PasswordResetToken[]
+  createdAssignments    Assignment[]           @relation("assignmentCreator")
 
   @@index([email])
   @@index([roleId])
@@ -114,7 +115,8 @@ model StudentProfile {
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
 
-  groupStudents GroupStudent[]
+  groupStudents      GroupStudent[]
+  studentAssignments StudentAssignment[]
 }
 
 model EnrollmentApplication {
@@ -214,6 +216,130 @@ model ModeratorProfile {
 }
 
 // ============================================================
+// Assignments
+// ============================================================
+
+enum AssignmentType {
+  QURAN_MEMORIZATION
+  QURAN_REVISION
+  TAJWEED
+  HOMEWORK
+}
+
+enum AssignmentTargetType {
+  GROUP
+  CLASS
+  LEVEL
+}
+
+enum MaterialType {
+  AUDIO_URL
+  VIDEO_URL
+  IFRAME_EMBED
+}
+
+enum StudentAssignmentStatus {
+  ASSIGNED
+  IN_PROGRESS
+  COMPLETED
+}
+
+model Assignment {
+  id                  String               @id @default(cuid())
+  title               String
+  description         String?
+  type                AssignmentType
+  targetType          AssignmentTargetType
+  targetId            String
+  createdById         String
+  createdBy           User                 @relation("assignmentCreator", fields: [createdById], references: [id])
+  dueDate             DateTime?
+  requiredRepetitions Int                  @default(1)
+  active              Boolean              @default(true)
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+
+  quranAssignment    QuranAssignment?
+  tajweedAssignment  TajweedAssignment?
+  homeworkAssignment HomeworkAssignment?
+  materials          AssignmentMaterial[]
+  studentAssignments StudentAssignment[]
+
+  @@index([targetType, targetId])
+  @@index([createdById])
+  @@index([type])
+  @@index([dueDate])
+}
+
+model QuranAssignment {
+  id              String     @id @default(cuid())
+  assignmentId    String     @unique
+  assignment      Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  fromSurahNumber Int
+  fromAyahNumber  Int
+  toSurahNumber   Int
+  toAyahNumber    Int
+  juzNumber       Int?
+
+  fromSurah QuranSurah @relation("quranAssignmentFrom", fields: [fromSurahNumber], references: [number])
+  toSurah   QuranSurah @relation("quranAssignmentTo", fields: [toSurahNumber], references: [number])
+}
+
+model TajweedAssignment {
+  id               String     @id @default(cuid())
+  assignmentId     String     @unique
+  assignment       Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  topicTitle       String
+  topicDescription String?
+  materialUrl      String?
+}
+
+model HomeworkAssignment {
+  id           String     @id @default(cuid())
+  assignmentId String     @unique
+  assignment   Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  instructions String
+}
+
+model AssignmentMaterial {
+  id           String       @id @default(cuid())
+  assignmentId String
+  assignment   Assignment   @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  type         MaterialType
+  url          String
+  title        String?
+  sortOrder    Int          @default(0)
+
+  @@index([assignmentId])
+}
+
+model StudentAssignment {
+  id           String                  @id @default(cuid())
+  assignmentId String
+  assignment   Assignment              @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  studentId    String
+  student      StudentProfile          @relation(fields: [studentId], references: [id])
+  status       StudentAssignmentStatus @default(ASSIGNED)
+  assignedAt   DateTime                @default(now())
+  completedAt  DateTime?
+
+  confirmations ListeningConfirmation[]
+
+  @@unique([assignmentId, studentId])
+  @@index([studentId])
+  @@index([status])
+}
+
+model ListeningConfirmation {
+  id                  String            @id @default(cuid())
+  studentAssignmentId String
+  studentAssignment   StudentAssignment @relation(fields: [studentAssignmentId], references: [id], onDelete: Cascade)
+  confirmedAt         DateTime          @default(now())
+
+  @@index([studentAssignmentId])
+}
+
+// ============================================================
 // Quran Reference (read-only, seeded)
 // ============================================================
 
@@ -224,6 +350,9 @@ model QuranSurah {
   revelationType String
   ayahCount      Int
   ayahs          QuranAyah[]
+
+  quranAssignmentsFrom QuranAssignment[] @relation("quranAssignmentFrom")
+  quranAssignmentsTo   QuranAssignment[] @relation("quranAssignmentTo")
 }
 
 model QuranAyah {
