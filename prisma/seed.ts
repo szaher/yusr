@@ -219,6 +219,316 @@ async function seedQuranData() {
   console.log(`Seeded ${totalAyahs} ayahs`);
 }
 
+async function seedDemoData() {
+  const demoPassword = await hashPassword("demo123456");
+
+  const moderatorRole = await prisma.role.findUniqueOrThrow({ where: { name: "moderator" } });
+  const studentRole = await prisma.role.findUniqueOrThrow({ where: { name: "student" } });
+  const supportRole = await prisma.role.findUniqueOrThrow({ where: { name: "support" } });
+
+  // --- Moderators ---
+  const mod1 = await prisma.user.upsert({
+    where: { email: "moderator@yusr.academy" },
+    update: {},
+    create: {
+      email: "moderator@yusr.academy",
+      passwordHash: demoPassword,
+      name: "Ahmed",
+      nameAr: "أحمد المشرف",
+      roleId: moderatorRole.id,
+      accountStatus: "ACTIVE",
+      locale: "ar",
+    },
+  });
+  await prisma.moderatorProfile.upsert({
+    where: { userId: mod1.id },
+    update: {},
+    create: { userId: mod1.id },
+  });
+
+  const mod2 = await prisma.user.upsert({
+    where: { email: "moderator2@yusr.academy" },
+    update: {},
+    create: {
+      email: "moderator2@yusr.academy",
+      passwordHash: demoPassword,
+      name: "Khalid",
+      nameAr: "خالد المشرف",
+      roleId: moderatorRole.id,
+      accountStatus: "ACTIVE",
+      locale: "ar",
+    },
+  });
+  await prisma.moderatorProfile.upsert({
+    where: { userId: mod2.id },
+    update: {},
+    create: { userId: mod2.id },
+  });
+
+  // --- Students (approved, with profiles) ---
+  const student1 = await prisma.user.upsert({
+    where: { email: "student@yusr.academy" },
+    update: {},
+    create: {
+      email: "student@yusr.academy",
+      passwordHash: demoPassword,
+      name: "Youssef",
+      nameAr: "يوسف الطالب",
+      roleId: studentRole.id,
+      accountStatus: "ACTIVE",
+      locale: "ar",
+    },
+  });
+  await prisma.studentProfile.upsert({
+    where: { userId: student1.id },
+    update: {},
+    create: {
+      userId: student1.id,
+      phone: "+966500000001",
+      country: "السعودية",
+      currentQuranLevel: "مبتدئ",
+      preferredDay: "السبت",
+    },
+  });
+  await prisma.enrollmentApplication.upsert({
+    where: { userId: student1.id },
+    update: {},
+    create: {
+      userId: student1.id,
+      registrationStatus: "APPROVED",
+      submittedAt: new Date(),
+      reviewedAt: new Date(),
+    },
+  });
+
+  const student2 = await prisma.user.upsert({
+    where: { email: "student2@yusr.academy" },
+    update: {},
+    create: {
+      email: "student2@yusr.academy",
+      passwordHash: demoPassword,
+      name: "Omar",
+      nameAr: "عمر الطالب",
+      roleId: studentRole.id,
+      accountStatus: "ACTIVE",
+      locale: "ar",
+    },
+  });
+  await prisma.studentProfile.upsert({
+    where: { userId: student2.id },
+    update: {},
+    create: {
+      userId: student2.id,
+      phone: "+966500000002",
+      country: "مصر",
+      currentQuranLevel: "متوسط",
+      preferredDay: "الأحد",
+    },
+  });
+  await prisma.enrollmentApplication.upsert({
+    where: { userId: student2.id },
+    update: {},
+    create: {
+      userId: student2.id,
+      registrationStatus: "APPROVED",
+      submittedAt: new Date(),
+      reviewedAt: new Date(),
+    },
+  });
+
+  const student3 = await prisma.user.upsert({
+    where: { email: "student3@yusr.academy" },
+    update: {},
+    create: {
+      email: "student3@yusr.academy",
+      passwordHash: demoPassword,
+      name: "Saad",
+      nameAr: "سعد الطالب",
+      roleId: studentRole.id,
+      accountStatus: "ACTIVE",
+      locale: "ar",
+    },
+  });
+  await prisma.studentProfile.upsert({
+    where: { userId: student3.id },
+    update: {},
+    create: {
+      userId: student3.id,
+      phone: "+966500000003",
+      country: "الأردن",
+      currentQuranLevel: "مبتدئ",
+    },
+  });
+  await prisma.enrollmentApplication.upsert({
+    where: { userId: student3.id },
+    update: {},
+    create: {
+      userId: student3.id,
+      registrationStatus: "APPROVED",
+      submittedAt: new Date(),
+      reviewedAt: new Date(),
+    },
+  });
+
+  // --- Pending student (no profile, pending review) ---
+  const pendingStudent = await prisma.user.upsert({
+    where: { email: "pending@yusr.academy" },
+    update: {},
+    create: {
+      email: "pending@yusr.academy",
+      passwordHash: demoPassword,
+      name: "Muhammad",
+      nameAr: "محمد المتقدم",
+      roleId: studentRole.id,
+      accountStatus: null,
+      locale: "ar",
+    },
+  });
+  await prisma.enrollmentApplication.upsert({
+    where: { userId: pendingStudent.id },
+    update: {},
+    create: {
+      userId: pendingStudent.id,
+      registrationStatus: "PENDING_REVIEW",
+      submittedAt: new Date(),
+    },
+  });
+
+  // --- Support user ---
+  await prisma.user.upsert({
+    where: { email: "support@yusr.academy" },
+    update: {},
+    create: {
+      email: "support@yusr.academy",
+      passwordHash: demoPassword,
+      name: "Sara",
+      nameAr: "سارة الدعم",
+      roleId: supportRole.id,
+      accountStatus: "ACTIVE",
+      locale: "ar",
+    },
+  });
+
+  console.log("Seeded 7 demo users");
+
+  // --- Organization: Levels → Classes → Groups ---
+  const level1 = await prisma.level.upsert({
+    where: { id: "demo-level-1" },
+    update: {},
+    create: {
+      id: "demo-level-1",
+      nameAr: "المستوى التمهيدي",
+      nameEn: "Introductory Level",
+      description: "للطلاب المبتدئين في تعلم القرآن",
+      sortOrder: 1,
+    },
+  });
+
+  const level2 = await prisma.level.upsert({
+    where: { id: "demo-level-2" },
+    update: {},
+    create: {
+      id: "demo-level-2",
+      nameAr: "المستوى الأول",
+      nameEn: "Level One",
+      description: "للطلاب الذين أتموا المستوى التمهيدي",
+      sortOrder: 2,
+    },
+  });
+
+  const class1 = await prisma.class.upsert({
+    where: { id: "demo-class-1" },
+    update: {},
+    create: {
+      id: "demo-class-1",
+      name: "فصل الفاتحة",
+      levelId: level1.id,
+      defaultDay: "السبت",
+      sessionTime: "18:00",
+      capacity: 15,
+    },
+  });
+
+  const class2 = await prisma.class.upsert({
+    where: { id: "demo-class-2" },
+    update: {},
+    create: {
+      id: "demo-class-2",
+      name: "فصل البقرة",
+      levelId: level2.id,
+      defaultDay: "الأحد",
+      sessionTime: "19:00",
+      capacity: 12,
+    },
+  });
+
+  const mod1Profile = await prisma.moderatorProfile.findUniqueOrThrow({
+    where: { userId: mod1.id },
+  });
+  const mod2Profile = await prisma.moderatorProfile.findUniqueOrThrow({
+    where: { userId: mod2.id },
+  });
+
+  const group1 = await prisma.group.upsert({
+    where: { id: "demo-group-1" },
+    update: {},
+    create: {
+      id: "demo-group-1",
+      name: "مجموعة النور",
+      classId: class1.id,
+      moderatorId: mod1Profile.id,
+      weeklyDay: "السبت",
+      weeklyTime: "18:00",
+    },
+  });
+
+  const group2 = await prisma.group.upsert({
+    where: { id: "demo-group-2" },
+    update: {},
+    create: {
+      id: "demo-group-2",
+      name: "مجموعة الإحسان",
+      classId: class2.id,
+      moderatorId: mod2Profile.id,
+      weeklyDay: "الأحد",
+      weeklyTime: "19:00",
+    },
+  });
+
+  console.log("Seeded 2 levels, 2 classes, 2 groups");
+
+  // --- Assign students to groups ---
+  const sp1 = await prisma.studentProfile.findUniqueOrThrow({
+    where: { userId: student1.id },
+  });
+  const sp2 = await prisma.studentProfile.findUniqueOrThrow({
+    where: { userId: student2.id },
+  });
+
+  await prisma.groupStudent.upsert({
+    where: { groupId_studentId: { groupId: group1.id, studentId: sp1.id } },
+    update: {},
+    create: { groupId: group1.id, studentId: sp1.id },
+  });
+
+  await prisma.groupStudent.upsert({
+    where: { groupId_studentId: { groupId: group2.id, studentId: sp2.id } },
+    update: {},
+    create: { groupId: group2.id, studentId: sp2.id },
+  });
+
+  console.log("Assigned 2 students to groups");
+
+  // --- Open enrollment for demo ---
+  await prisma.systemSetting.upsert({
+    where: { key: "enrollment_state" },
+    update: { value: "open" },
+    create: { key: "enrollment_state", value: "open" },
+  });
+
+  console.log("Set enrollment state to open");
+}
+
 async function main() {
   console.log("Starting seed...\n");
 
@@ -228,6 +538,7 @@ async function main() {
   await seedSystemSettings();
   await seedAdminUser();
   await seedQuranData();
+  await seedDemoData();
 
   console.log("\nSeed complete!");
 }

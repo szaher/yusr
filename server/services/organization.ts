@@ -101,6 +101,58 @@ export async function createGroup(input: CreateGroupInput, actorId: string) {
   return group;
 }
 
+export async function getModeratorGroups(userId: string) {
+  const profile = await db.moderatorProfile.findUnique({
+    where: { userId },
+    include: {
+      groups: {
+        include: {
+          class: {
+            include: { level: { select: { nameAr: true, nameEn: true } } },
+          },
+          _count: { select: { students: true } },
+        },
+        orderBy: { createdAt: "desc" },
+      },
+    },
+  });
+
+  return profile?.groups ?? [];
+}
+
+export async function getModeratorStudents(userId: string) {
+  const profile = await db.moderatorProfile.findUnique({
+    where: { userId },
+    include: {
+      groups: {
+        include: {
+          students: {
+            include: {
+              student: {
+                include: {
+                  user: {
+                    select: { name: true, nameAr: true, email: true },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+
+  if (!profile) return [];
+
+  return profile.groups.flatMap((group) =>
+    group.students.map((gs) => ({
+      studentProfile: gs.student,
+      user: gs.student.user,
+      groupName: group.name,
+    }))
+  );
+}
+
 export async function assignStudentToGroup(
   userId: string,
   groupId: string,
