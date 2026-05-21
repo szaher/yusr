@@ -29,6 +29,10 @@ export const PERMISSIONS = {
   CLASSES_CREATE: "classes.create",
   CLASSES_UPDATE: "classes.update",
   MODERATORS_ASSIGN: "moderators.assign",
+  MEMORIZATION_VIEW: "memorization.view",
+  MEMORIZATION_MANAGE: "memorization.manage",
+  MEMORIZATION_REVIEW: "memorization.review",
+  TAJWEED_CATEGORIES_MANAGE: "tajweed_categories.manage",
 } as const;
 
 export type PermissionKey = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];
@@ -45,6 +49,9 @@ export const ROLE_PERMISSIONS: Record<string, string[]> = {
     PERMISSIONS.EXAMS_CREATE,
     PERMISSIONS.EXAMS_GRADE,
     PERMISSIONS.LEAVE_REQUESTS_REVIEW,
+    PERMISSIONS.MEMORIZATION_VIEW,
+    PERMISSIONS.MEMORIZATION_MANAGE,
+    PERMISSIONS.MEMORIZATION_REVIEW,
   ],
   student: [],
   support: [

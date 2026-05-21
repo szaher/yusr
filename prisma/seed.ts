@@ -76,6 +76,7 @@ async function seedFeatureFlags() {
     { key: "email_notifications", enabled: false, description: "Email notification delivery" },
     { key: "support_tickets", enabled: false, description: "Support ticket system" },
     { key: "audio_playback_tracking", enabled: false, description: "Track actual audio playback" },
+    { key: "memorization_plans", enabled: true, description: "Individual student memorization plan tracking" },
   ];
 
   for (const flag of flags) {
@@ -86,6 +87,33 @@ async function seedFeatureFlags() {
     });
   }
   console.log(`Seeded ${flags.length} feature flags`);
+}
+
+async function seedTajweedCategories() {
+  const categories = [
+    { nameEn: "Makharij", nameAr: "المخارج", sortOrder: 1 },
+    { nameEn: "Sifaat", nameAr: "صفات الحروف", sortOrder: 2 },
+    { nameEn: "Noon & Meem Rules", nameAr: "أحكام النون والميم", sortOrder: 3 },
+    { nameEn: "Madd", nameAr: "المدود", sortOrder: 4 },
+    { nameEn: "Waqf", nameAr: "الوقف والابتداء", sortOrder: 5 },
+    { nameEn: "General Fluency", nameAr: "الطلاقة العامة", sortOrder: 6 },
+  ];
+
+  for (const cat of categories) {
+    await prisma.tajweedCategory.upsert({
+      where: { id: `core-${cat.sortOrder}` },
+      update: { nameEn: cat.nameEn, nameAr: cat.nameAr, sortOrder: cat.sortOrder },
+      create: {
+        id: `core-${cat.sortOrder}`,
+        nameEn: cat.nameEn,
+        nameAr: cat.nameAr,
+        isCore: true,
+        sortOrder: cat.sortOrder,
+        active: true,
+      },
+    });
+  }
+  console.log("Seeded 6 core tajweed categories");
 }
 
 async function seedSystemSettings() {
@@ -535,6 +563,7 @@ async function main() {
   await seedRoles();
   await seedPermissions();
   await seedFeatureFlags();
+  await seedTajweedCategories();
   await seedSystemSettings();
   await seedAdminUser();
   await seedQuranData();
