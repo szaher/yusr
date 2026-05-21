@@ -4,6 +4,8 @@ import { logoutAction } from "@/server/actions/auth";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { getTranslations } from "next-intl/server";
+import { getUnreadCount, getUnreadNotifications } from "@/server/services/notification";
+import { NotificationBell } from "./notification-bell";
 
 export async function Header() {
   const session = await auth();
@@ -18,6 +20,20 @@ export async function Header() {
     support: "دعم",
   };
 
+  const [unreadCount, recentNotifications] = await Promise.all([
+    getUnreadCount(session.user.id),
+    getUnreadNotifications(session.user.id),
+  ]);
+
+  const serializedNotifications = recentNotifications.map((n) => ({
+    id: n.id,
+    type: n.type,
+    title: n.title,
+    body: n.body,
+    read: n.read,
+    createdAt: n.createdAt.toISOString(),
+  }));
+
   return (
     <header className="flex h-16 items-center justify-between border-b bg-card px-6">
       <div className="flex items-center gap-3">
@@ -28,6 +44,11 @@ export async function Header() {
       </div>
       <div className="flex items-center gap-3">
         <LocaleSwitcher />
+        <NotificationBell
+          unreadCount={unreadCount}
+          notifications={serializedNotifications}
+          role={session.user.role}
+        />
         <form action={logoutAction}>
           <Button variant="ghost" size="sm" type="submit">
             {t("logout")}
