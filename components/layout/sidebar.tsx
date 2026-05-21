@@ -19,6 +19,8 @@ import {
   ScrollText,
   Calendar,
   Award,
+  CalendarOff,
+  Megaphone,
 } from "lucide-react";
 
 type NavItem = {
@@ -39,6 +41,7 @@ const adminNav: NavItem[] = [
   { labelKey: "auditLogs", href: "/admin/audit-logs", icon: ScrollText },
   { labelKey: "assignments", href: "/admin/assignments", icon: BookOpen },
   { labelKey: "sessions", href: "/admin/sessions", icon: Calendar },
+  { labelKey: "announcements", href: "/admin/announcements", icon: Megaphone },
 ];
 
 const moderatorNav: NavItem[] = [
@@ -48,6 +51,7 @@ const moderatorNav: NavItem[] = [
   { labelKey: "assignments", href: "/moderator/assignments", icon: BookOpen },
   { labelKey: "sessions", href: "/moderator/sessions", icon: Calendar },
   { labelKey: "memorization", href: "/moderator/memorization", icon: BookOpenCheck },
+  { labelKey: "leaveRequests", href: "/moderator/leave-requests", icon: CalendarOff },
 ];
 
 const studentNav: NavItem[] = [
@@ -57,6 +61,7 @@ const studentNav: NavItem[] = [
   { labelKey: "sessions", href: "/student/sessions", icon: Calendar },
   { labelKey: "grades", href: "/student/grades", icon: Award },
   { labelKey: "memorization", href: "/student/memorization", icon: BookOpenCheck },
+  { labelKey: "leaveRequests", href: "/student/leave-requests", icon: CalendarOff },
 ];
 
 const supportNav: NavItem[] = [
