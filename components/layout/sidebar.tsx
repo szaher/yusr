@@ -16,6 +16,8 @@ import {
   UsersRound,
   ToggleLeft,
   ScrollText,
+  Calendar,
+  Award,
 } from "lucide-react";
 
 type NavItem = {
@@ -35,6 +37,7 @@ const adminNav: NavItem[] = [
   { labelKey: "settings", href: "/admin/settings", icon: Settings },
   { labelKey: "auditLogs", href: "/admin/audit-logs", icon: ScrollText },
   { labelKey: "assignments", href: "/admin/assignments", icon: BookOpen },
+  { labelKey: "sessions", href: "/admin/sessions", icon: Calendar },
 ];
 
 const moderatorNav: NavItem[] = [
@@ -42,12 +45,15 @@ const moderatorNav: NavItem[] = [
   { labelKey: "groups", href: "/moderator/groups", icon: UsersRound },
   { labelKey: "students", href: "/moderator/students", icon: GraduationCap },
   { labelKey: "assignments", href: "/moderator/assignments", icon: BookOpen },
+  { labelKey: "sessions", href: "/moderator/sessions", icon: Calendar },
 ];
 
 const studentNav: NavItem[] = [
   { labelKey: "dashboard", href: "/student/dashboard", icon: LayoutDashboard },
   { labelKey: "profile", href: "/student/profile", icon: Users },
   { labelKey: "assignments", href: "/student/assignments", icon: BookOpen },
+  { labelKey: "sessions", href: "/student/sessions", icon: Calendar },
+  { labelKey: "grades", href: "/student/grades", icon: Award },
 ];
 
 const supportNav: NavItem[] = [
