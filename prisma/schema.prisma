@@ -32,6 +32,7 @@ model User {
   auditLogs             AuditLog[]             @relation("actor")
   passwordResetTokens   PasswordResetToken[]
   createdAssignments    Assignment[]           @relation("assignmentCreator")
+  memorizationReviews   MemorizationReview[]   @relation("reviewModerator")
 
   @@index([email])
   @@index([roleId])
@@ -118,6 +119,7 @@ model StudentProfile {
   groupStudents      GroupStudent[]
   studentAssignments StudentAssignment[]
   sessionStudents    SessionStudent[]
+  memorizationPlans  StudentMemorizationPlan[]
 }
 
 model EnrollmentApplication {
@@ -188,9 +190,13 @@ model Group {
   weeklyDay         String?
   weeklyTime        String?
   meetingLinkPolicy String?
+  meetingCadence         MeetingCadence @default(WEEKLY)
+  customCadenceDays      Int?
+  memorizationPlansEnabled Boolean     @default(false)
   active            Boolean           @default(true)
   students          GroupStudent[]
   sessions          WeeklySession[]
+  memorizationPlans  StudentMemorizationPlan[]
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
 
@@ -270,6 +276,28 @@ enum RecitationResult {
   NEEDS_REVIEW
   INCOMPLETE
   NOT_RECITED
+}
+
+enum PaceUnit {
+  RUB
+  HIZB
+  PAGE_COUNT
+}
+
+enum MeetingCadence {
+  WEEKLY
+  BIWEEKLY
+  TWICE_WEEKLY
+  CUSTOM
+}
+
+enum MistakeCategory {
+  TAJWEED_ERROR
+  WRONG_WORD
+  HESITATION
+  SKIPPED_AYAH
+  REPEATED_AYAH
+  OTHER
 }
 
 model Assignment {
@@ -387,6 +415,7 @@ model WeeklySession {
   updatedAt   DateTime      @updatedAt
 
   students    SessionStudent[]
+  memorizationReviews MemorizationReview[]
 
   @@index([groupId])
   @@index([moderatorId])
@@ -452,6 +481,11 @@ model QuranSurah {
   quranAssignmentsTo   QuranAssignment[] @relation("quranAssignmentTo")
   reviewRangesFrom     ReviewRange[] @relation("reviewRangeFrom")
   reviewRangesTo       ReviewRange[] @relation("reviewRangeTo")
+  planCurrentSurahs    StudentMemorizationPlan[] @relation("planCurrentSurah")
+  reviewFromSurahs     MemorizationReview[] @relation("reviewFromSurah")
+  reviewToSurahs       MemorizationReview[] @relation("reviewToSurah")
+  reviewNextFromSurahs MemorizationReview[] @relation("reviewNextFromSurah")
+  reviewNextToSurahs   MemorizationReview[] @relation("reviewNextToSurah")
 }
 
 model QuranAyah {
@@ -483,6 +517,108 @@ model QuranHizb {
 model QuranQuarter {
   number     Int @id
   hizbNumber Int
+}
+
+// ============================================================
+// Memorization Plans
+// ============================================================
+
+model TajweedCategory {
+  id        String   @id @default(cuid())
+  nameEn    String
+  nameAr    String
+  isCore    Boolean  @default(false)
+  sortOrder Int      @default(0)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  reviewScores ReviewTajweedScore[]
+}
+
+model StudentMemorizationPlan {
+  id                String          @id @default(cuid())
+  studentId         String
+  student           StudentProfile  @relation(fields: [studentId], references: [id])
+  groupId           String
+  group             Group           @relation(fields: [groupId], references: [id])
+  currentSurahId    Int
+  currentSurah      QuranSurah      @relation("planCurrentSurah", fields: [currentSurahId], references: [number])
+  currentAyahNumber Int
+  paceUnit          PaceUnit        @default(RUB)
+  paceValue         Decimal         @default(1)
+  meetingCadence    MeetingCadence?
+  customCadenceDays Int?
+  nextReviewDate    DateTime?
+  active            Boolean         @default(true)
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  reviews MemorizationReview[]
+
+  @@unique([studentId, groupId])
+  @@index([studentId])
+  @@index([groupId])
+}
+
+model MemorizationReview {
+  id               String                  @id @default(cuid())
+  planId           String
+  plan             StudentMemorizationPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  moderatorId      String
+  moderator        User                    @relation("reviewModerator", fields: [moderatorId], references: [id])
+  sessionId        String?
+  session          WeeklySession?          @relation(fields: [sessionId], references: [id])
+  reviewDate       DateTime                @default(now())
+  fromSurahNumber  Int
+  fromAyah         Int
+  toSurahNumber    Int
+  toAyah           Int
+  recitationResult String
+  grade            Int
+  notes            String?
+  voiceNoteUrl     String?
+  nextFromSurahNumber Int
+  nextFromAyah     Int
+  nextToSurahNumber Int
+  nextToAyah       Int
+  createdAt        DateTime                @default(now())
+
+  fromSurah QuranSurah @relation("reviewFromSurah", fields: [fromSurahNumber], references: [number])
+  toSurah   QuranSurah @relation("reviewToSurah", fields: [toSurahNumber], references: [number])
+  nextFromSurah QuranSurah @relation("reviewNextFromSurah", fields: [nextFromSurahNumber], references: [number])
+  nextToSurah   QuranSurah @relation("reviewNextToSurah", fields: [nextToSurahNumber], references: [number])
+
+  tajweedScores ReviewTajweedScore[]
+  mistakes      ReviewMistake[]
+
+  @@index([planId])
+  @@index([moderatorId])
+  @@index([sessionId])
+  @@index([reviewDate])
+}
+
+model ReviewTajweedScore {
+  id         String              @id @default(cuid())
+  reviewId   String
+  review     MemorizationReview  @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  categoryId String
+  category   TajweedCategory     @relation(fields: [categoryId], references: [id])
+  score      Int
+  notes      String?
+
+  @@unique([reviewId, categoryId])
+  @@index([reviewId])
+}
+
+model ReviewMistake {
+  id       String              @id @default(cuid())
+  reviewId String
+  review   MemorizationReview  @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  category MistakeCategory
+  notes    String
+
+  @@index([reviewId])
 }
 
 // ============================================================
