@@ -9,6 +9,7 @@ import {
 } from "@/server/actions/session";
 import { db } from "@/server/db/client";
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import {
   Card,
   CardContent,
@@ -318,6 +319,15 @@ export default async function ModeratorSessionDetailPage({
                     <Button type="submit">{t("saveGrade")}</Button>
                   </div>
                 </form>
+                <div className="border-t pt-4 mt-4">
+                  <Link
+                    href={`/${locale}/moderator/memorization/${ss.student.userId}/review?sessionId=${sessionDetail.id}`}
+                  >
+                    <Button variant="outline" className="w-full">
+                      {t("openMemorizationReview")}
+                    </Button>
+                  </Link>
+                </div>
               </CardContent>
             </Card>
           );

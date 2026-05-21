@@ -307,7 +307,8 @@
     "openVoiceNote": "Open Voice Note",
     "students": "Students",
     "assignments": "Assignments",
-    "studentCount": "Student Count"
+    "studentCount": "Student Count",
+    "openMemorizationReview": "Open Memorization Review"
   },
   "grades": {
     "title": "Grades",
@@ -481,7 +482,9 @@
       "twiceWeekly": "Twice a Week",
       "custom": "Custom",
       "customDays": "Days between reviews",
-      "inheritGroup": "Inherit from group"
+      "inheritGroup": "Inherit from group",
+      "enablePlans": "Enable Plans",
+      "save": "Save"
     },
     "dashboard": {
       "title": "Memorization Journey",

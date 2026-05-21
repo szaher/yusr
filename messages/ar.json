@@ -307,7 +307,8 @@
     "openVoiceNote": "فتح الملاحظة الصوتية",
     "students": "الطلاب",
     "assignments": "الواجبات",
-    "studentCount": "عدد الطلاب"
+    "studentCount": "عدد الطلاب",
+    "openMemorizationReview": "فتح مراجعة الحفظ"
   },
   "grades": {
     "title": "الدرجات",
@@ -481,7 +482,9 @@
       "twiceWeekly": "مرتين أسبوعياً",
       "custom": "مخصص",
       "customDays": "عدد الأيام بين المراجعات",
-      "inheritGroup": "وراثة من المجموعة"
+      "inheritGroup": "وراثة من المجموعة",
+      "enablePlans": "تفعيل الخطط",
+      "save": "حفظ"
     },
     "dashboard": {
       "title": "رحلة الحفظ",
