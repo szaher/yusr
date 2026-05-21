@@ -7,6 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { getActiveAnnouncementsForUser } from "@/server/services/announcement";
 
 export default async function ModeratorDashboardPage({
   params,
@@ -20,11 +21,32 @@ export default async function ModeratorDashboardPage({
   const t = await getTranslations("moderator.dashboard");
 
   const groups = await getModeratorGroups(session.user.id);
+  const announcements = await getActiveAnnouncementsForUser(session.user.id);
   const totalStudents = groups.reduce((sum, g) => sum + g._count.students, 0);
 
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">{t("title")}</h1>
+
+      {announcements.length > 0 && (
+        <div className="space-y-2">
+          {announcements.map((ann) => (
+            <div
+              key={ann.id}
+              className={`rounded-lg border p-4 ${
+                ann.priority === "urgent"
+                  ? "border-red-300 bg-red-50"
+                  : ann.priority === "high"
+                    ? "border-amber-300 bg-amber-50"
+                    : "border-border bg-card"
+              }`}
+            >
+              <p className="font-semibold">{ann.title}</p>
+              <p className="text-sm text-muted-foreground mt-1">{ann.body}</p>
+            </div>
+          ))}
+        </div>
+      )}
 
       {groups.length === 0 ? (
         <Card>

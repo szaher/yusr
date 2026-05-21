@@ -7,6 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { getActiveAnnouncementsForUser } from "@/server/services/announcement";
 
 export default async function AdminDashboardPage({
   params,
@@ -15,11 +16,11 @@ export default async function AdminDashboardPage({
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  await requireApprovedUser();
+  const session = await requireApprovedUser();
 
   const t = await getTranslations("admin.dashboard");
 
-  const [pendingCount, activeStudents, activeModerators, enrollmentSetting] =
+  const [pendingCount, activeStudents, activeModerators, enrollmentSetting, announcements] =
     await Promise.all([
       db.enrollmentApplication.count({
         where: { registrationStatus: "PENDING_REVIEW" },
@@ -37,6 +38,7 @@ export default async function AdminDashboardPage({
         },
       }),
       db.systemSetting.findUnique({ where: { key: "enrollment_state" } }),
+      getActiveAnnouncementsForUser(session.user.id),
     ]);
 
   const cards = [
@@ -61,6 +63,27 @@ export default async function AdminDashboardPage({
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">{t("title")}</h1>
+
+      {announcements.length > 0 && (
+        <div className="space-y-2">
+          {announcements.map((ann) => (
+            <div
+              key={ann.id}
+              className={`rounded-lg border p-4 ${
+                ann.priority === "urgent"
+                  ? "border-red-300 bg-red-50"
+                  : ann.priority === "high"
+                    ? "border-amber-300 bg-amber-50"
+                    : "border-border bg-card"
+              }`}
+            >
+              <p className="font-semibold">{ann.title}</p>
+              <p className="text-sm text-muted-foreground mt-1">{ann.body}</p>
+            </div>
+          ))}
+        </div>
+      )}
+
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {cards.map((card) => (
           <Card key={card.title}>

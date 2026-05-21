@@ -4,6 +4,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { redirect } from "next/navigation";
 import { getStudentEligibility } from "@/server/services/assignment";
+import { getActiveAnnouncementsForUser } from "@/server/services/announcement";
 
 export default async function StudentDashboardPage({
   params,
@@ -38,6 +39,8 @@ export default async function StudentDashboardPage({
     );
   }
 
+  const announcements = await getActiveAnnouncementsForUser(session.user.id);
+
   const studentProfile = await db.studentProfile.findUnique({
     where: { userId: session.user.id },
     include: {
@@ -68,6 +71,26 @@ export default async function StudentDashboardPage({
   return (
     <div>
       <h1 className="mb-6 text-2xl font-bold">{t("title")}</h1>
+
+      {announcements.length > 0 && (
+        <div className="space-y-2 mb-6">
+          {announcements.map((ann) => (
+            <div
+              key={ann.id}
+              className={`rounded-lg border p-4 ${
+                ann.priority === "urgent"
+                  ? "border-red-300 bg-red-50"
+                  : ann.priority === "high"
+                    ? "border-amber-300 bg-amber-50"
+                    : "border-border bg-card"
+              }`}
+            >
+              <p className="font-semibold">{ann.title}</p>
+              <p className="text-sm text-muted-foreground mt-1">{ann.body}</p>
+            </div>
+          ))}
+        </div>
+      )}
 
       {!groupAssignment ? (
         <Card>
