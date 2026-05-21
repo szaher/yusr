@@ -107,21 +107,29 @@ export default async function ModeratorLeaveRequestsPage({
                   </TableCell>
                   <TableCell>
                     {req.status === "PENDING" && (
-                      <div className="flex gap-1">
-                        <form action={reviewLeaveRequest}>
-                          <input type="hidden" name="leaveRequestId" value={req.id} />
-                          <input type="hidden" name="action" value="APPROVED" />
-                          <Button type="submit" size="sm" className="bg-green-600 hover:bg-green-700">
-                            {t("approve")}
-                          </Button>
-                        </form>
-                        <form action={reviewLeaveRequest}>
-                          <input type="hidden" name="leaveRequestId" value={req.id} />
-                          <input type="hidden" name="action" value="REJECTED" />
-                          <Button type="submit" size="sm" variant="destructive">
-                            {t("reject")}
-                          </Button>
-                        </form>
+                      <div className="space-y-2">
+                        <Input
+                          name="reviewNote"
+                          form={`review-${req.id}`}
+                          placeholder={t("reviewNotePlaceholder")}
+                          className="h-8 text-xs"
+                        />
+                        <div className="flex gap-1">
+                          <form id={`review-${req.id}`} action={reviewLeaveRequest}>
+                            <input type="hidden" name="leaveRequestId" value={req.id} />
+                            <input type="hidden" name="action" value="APPROVED" />
+                            <Button type="submit" size="sm" className="bg-green-600 hover:bg-green-700">
+                              {t("approve")}
+                            </Button>
+                          </form>
+                          <form action={reviewLeaveRequest}>
+                            <input type="hidden" name="leaveRequestId" value={req.id} />
+                            <input type="hidden" name="action" value="REJECTED" />
+                            <Button type="submit" size="sm" variant="destructive">
+                              {t("reject")}
+                            </Button>
+                          </form>
+                        </div>
                       </div>
                     )}
                   </TableCell>
