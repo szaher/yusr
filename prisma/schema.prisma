@@ -117,6 +117,7 @@ model StudentProfile {
 
   groupStudents      GroupStudent[]
   studentAssignments StudentAssignment[]
+  sessionStudents    SessionStudent[]
 }
 
 model EnrollmentApplication {
@@ -189,6 +190,7 @@ model Group {
   meetingLinkPolicy String?
   active            Boolean           @default(true)
   students          GroupStudent[]
+  sessions          WeeklySession[]
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
 
@@ -211,6 +213,7 @@ model ModeratorProfile {
   userId    String   @unique
   user      User     @relation(fields: [userId], references: [id])
   groups    Group[]
+  sessions  WeeklySession[] @relation("sessionModerator")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -242,6 +245,31 @@ enum StudentAssignmentStatus {
   ASSIGNED
   IN_PROGRESS
   COMPLETED
+}
+
+enum SessionStatus {
+  SCHEDULED
+  OPEN
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum AttendanceStatus {
+  PENDING
+  PRESENT
+  ABSENT
+  EXCUSED_ABSENCE
+  LATE
+}
+
+enum RecitationResult {
+  NOT_GRADED
+  EXCELLENT
+  GOOD
+  NEEDS_REVIEW
+  INCOMPLETE
+  NOT_RECITED
 }
 
 model Assignment {
@@ -340,6 +368,75 @@ model ListeningConfirmation {
 }
 
 // ============================================================
+// Weekly Sessions
+// ============================================================
+
+model WeeklySession {
+  id          String        @id @default(cuid())
+  groupId     String
+  group       Group         @relation(fields: [groupId], references: [id])
+  moderatorId String
+  moderator   ModeratorProfile @relation("sessionModerator", fields: [moderatorId], references: [id])
+  date        DateTime
+  startTime   String?
+  endTime     String?
+  status      SessionStatus @default(SCHEDULED)
+  meetingLink String?
+  notes       String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  students    SessionStudent[]
+
+  @@index([groupId])
+  @@index([moderatorId])
+  @@index([date])
+  @@index([status])
+}
+
+model SessionStudent {
+  id                String           @id @default(cuid())
+  sessionId         String
+  session           WeeklySession    @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  studentId         String
+  student           StudentProfile   @relation(fields: [studentId], references: [id])
+  attendance        AttendanceStatus @default(PENDING)
+  recitationResult  RecitationResult @default(NOT_GRADED)
+  numericGrade      Float?
+  mistakeCount      Int?
+  tajweedNotes      String?
+  memorizationNotes String?
+  fluencyNotes      String?
+  comment           String?
+  voiceNoteUrl      String?
+  gradedAt          DateTime?
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+
+  reviewRanges      ReviewRange[]
+
+  @@unique([sessionId, studentId])
+  @@index([studentId])
+  @@index([sessionId])
+}
+
+model ReviewRange {
+  id               String         @id @default(cuid())
+  sessionStudentId String
+  sessionStudent   SessionStudent @relation(fields: [sessionStudentId], references: [id], onDelete: Cascade)
+  fromSurahNumber  Int
+  fromAyahNumber   Int
+  toSurahNumber    Int
+  toAyahNumber     Int
+  note             String?
+
+  fromSurah        QuranSurah     @relation("reviewRangeFrom", fields: [fromSurahNumber], references: [number])
+  toSurah          QuranSurah     @relation("reviewRangeTo", fields: [toSurahNumber], references: [number])
+
+  @@index([sessionStudentId])
+}
+
+// ============================================================
 // Quran Reference (read-only, seeded)
 // ============================================================
 
@@ -353,6 +450,8 @@ model QuranSurah {
 
   quranAssignmentsFrom QuranAssignment[] @relation("quranAssignmentFrom")
   quranAssignmentsTo   QuranAssignment[] @relation("quranAssignmentTo")
+  reviewRangesFrom     ReviewRange[] @relation("reviewRangeFrom")
+  reviewRangesTo       ReviewRange[] @relation("reviewRangeTo")
 }
 
 model QuranAyah {
