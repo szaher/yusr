@@ -1,6 +1,7 @@
 import { db } from "@/server/db/client";
 import { createAuditLog } from "./audit-log";
 import type { CreateSessionInput, GradeStudentInput, ReviewRangeInput } from "@/lib/validations/session";
+import type { SessionStatus, AttendanceStatus, RecitationResult } from "@/prisma/generated/prisma/enums";
 
 const VALID_TRANSITIONS: Record<string, string[]> = {
   SCHEDULED: ["OPEN", "CANCELLED"],
@@ -19,12 +20,15 @@ export async function createSession(input: CreateSessionInput, actorId: string) 
   });
 
   if (!group) throw new Error("Group not found");
+  if (!group.moderatorId) throw new Error("Group has no assigned moderator");
+
+  const moderatorId = group.moderatorId;
 
   return db.$transaction(async (tx) => {
     const session = await tx.weeklySession.create({
       data: {
         groupId: input.groupId,
-        moderatorId: group.moderatorId!,
+        moderatorId,
         date: new Date(input.date),
         startTime: input.startTime || null,
         endTime: input.endTime || null,
@@ -162,7 +166,7 @@ export async function updateSessionStatus(
 
   const updated = await db.weeklySession.update({
     where: { id: sessionId },
-    data: { status: newStatus as any },
+    data: { status: newStatus as SessionStatus },
   });
 
   await createAuditLog({
@@ -193,10 +197,14 @@ export async function gradeStudent(
 ) {
   const sessionStudent = await db.sessionStudent.findUnique({
     where: { id: input.sessionStudentId },
-    select: { id: true, sessionId: true },
+    select: { id: true, sessionId: true, session: { select: { status: true } } },
   });
 
   if (!sessionStudent) throw new Error("Session student record not found");
+
+  if (sessionStudent.session.status !== "IN_PROGRESS" && sessionStudent.session.status !== "COMPLETED") {
+    throw new Error("Cannot grade students in a session that is not in progress or completed");
+  }
 
   return db.$transaction(async (tx) => {
     await tx.reviewRange.deleteMany({
@@ -206,8 +214,8 @@ export async function gradeStudent(
     const updated = await tx.sessionStudent.update({
       where: { id: input.sessionStudentId },
       data: {
-        attendance: input.attendance as any,
-        recitationResult: input.recitationResult as any,
+        attendance: input.attendance as AttendanceStatus,
+        recitationResult: input.recitationResult as RecitationResult,
         numericGrade: input.numericGrade ?? null,
         mistakeCount: input.mistakeCount ?? null,
         tajweedNotes: input.tajweedNotes || null,

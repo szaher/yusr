@@ -7,9 +7,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
 const ATTENDANCE_KEYS: Record<string, string> = {
+  PENDING: "attendancePending",
   PRESENT: "attendancePresent",
   ABSENT: "attendanceAbsent",
-  EXCUSED: "attendanceExcused",
+  EXCUSED_ABSENCE: "attendanceExcused",
   LATE: "attendanceLate",
 };
 

@@ -12,6 +12,7 @@ import {
 import {
   createSessionSchema,
   updateSessionStatusSchema,
+  updateMeetingLinkSchema,
   gradeStudentSchema,
 } from "@/lib/validations/session";
 import { revalidatePath } from "next/cache";
@@ -98,12 +99,27 @@ export async function updateMeetingLinkAction(formData: FormData) {
   const session = await auth();
   if (!session?.user) throw new Error("Not authenticated");
 
-  const sessionId = formData.get("sessionId") as string;
-  const meetingLink = formData.get("meetingLink") as string;
+  const raw = Object.fromEntries(formData.entries());
+  const parsed = updateMeetingLinkSchema.safeParse(raw);
+  if (!parsed.success) {
+    return { error: "validationError" };
+  }
 
-  if (!sessionId) return { error: "validationError" };
+  if (session.user.role === "moderator") {
+    const weeklySession = await db.weeklySession.findUnique({
+      where: { id: parsed.data.sessionId },
+      select: { group: { select: { moderatorId: true } } },
+    });
+    const profile = await db.moderatorProfile.findUnique({
+      where: { userId: session.user.id },
+      select: { id: true },
+    });
+    if (weeklySession?.group.moderatorId !== profile?.id) {
+      return { error: "notAuthorized" };
+    }
+  }
 
-  await updateMeetingLink(sessionId, meetingLink || "", session.user.id);
+  await updateMeetingLink(parsed.data.sessionId, parsed.data.meetingLink, session.user.id);
 
   revalidatePath("/ar/moderator/sessions");
   revalidatePath("/en/moderator/sessions");

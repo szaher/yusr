@@ -42,6 +42,14 @@ export default async function ModeratorSessionDetailPage({
     notFound();
   }
 
+  const profile = await db.moderatorProfile.findUnique({
+    where: { userId: session.user.id },
+    select: { id: true },
+  });
+  if (sessionDetail.moderatorId !== profile?.id) {
+    notFound();
+  }
+
   const t = await getTranslations("sessions");
 
   // Fetch eligibility for each student
@@ -206,7 +214,7 @@ export default async function ModeratorSessionDetailPage({
                         <option value="PENDING">{t("attendancePending")}</option>
                         <option value="PRESENT">{t("attendancePresent")}</option>
                         <option value="ABSENT">{t("attendanceAbsent")}</option>
-                        <option value="EXCUSED_ABSENCE">{t("attendanceExcusedAbsence")}</option>
+                        <option value="EXCUSED_ABSENCE">{t("attendanceExcused")}</option>
                         <option value="LATE">{t("attendanceLate")}</option>
                       </select>
                     </div>
@@ -221,12 +229,12 @@ export default async function ModeratorSessionDetailPage({
                         defaultValue={ss.recitationResult || "NOT_GRADED"}
                         className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                       >
-                        <option value="NOT_GRADED">{t("recitationNotGraded")}</option>
-                        <option value="EXCELLENT">{t("recitationExcellent")}</option>
-                        <option value="GOOD">{t("recitationGood")}</option>
-                        <option value="NEEDS_REVIEW">{t("recitationNeedsReview")}</option>
-                        <option value="INCOMPLETE">{t("recitationIncomplete")}</option>
-                        <option value="NOT_RECITED">{t("recitationNotRecited")}</option>
+                        <option value="NOT_GRADED">{t("resultNotGraded")}</option>
+                        <option value="EXCELLENT">{t("resultExcellent")}</option>
+                        <option value="GOOD">{t("resultGood")}</option>
+                        <option value="NEEDS_REVIEW">{t("resultNeedsReview")}</option>
+                        <option value="INCOMPLETE">{t("resultIncomplete")}</option>
+                        <option value="NOT_RECITED">{t("resultNotRecited")}</option>
                       </select>
                     </div>
 
@@ -238,7 +246,7 @@ export default async function ModeratorSessionDetailPage({
                         type="number"
                         min="0"
                         max="100"
-                        defaultValue={ss.numericGrade || ""}
+                        defaultValue={ss.numericGrade ?? ""}
                       />
                     </div>
 
@@ -249,7 +257,7 @@ export default async function ModeratorSessionDetailPage({
                         name="mistakeCount"
                         type="number"
                         min="0"
-                        defaultValue={ss.mistakeCount || ""}
+                        defaultValue={ss.mistakeCount ?? ""}
                       />
                     </div>
                   </div>
