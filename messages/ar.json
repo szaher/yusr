@@ -88,7 +88,8 @@
     "featureFlags": "إعدادات الميزات",
     "settings": "الإعدادات",
     "auditLogs": "سجل المراجعة",
-    "tickets": "تذاكر الدعم"
+    "tickets": "تذاكر الدعم",
+    "memorization": "الحفظ"
   },
   "admin": {
     "dashboard": {
@@ -387,6 +388,119 @@
       "rights": "جميع الحقوق محفوظة",
       "login": "تسجيل الدخول",
       "register": "التسجيل"
+    }
+  },
+  "memorization": {
+    "title": "خطط الحفظ",
+    "plan": {
+      "title": "خطة الحفظ",
+      "currentPosition": "الموقع الحالي",
+      "surah": "السورة",
+      "ayah": "الآية",
+      "juz": "الجزء",
+      "hizb": "الحزب",
+      "rub": "الربع",
+      "page": "الصفحة",
+      "paceUnit": "وحدة السرعة",
+      "paceValue": "المقدار لكل مراجعة",
+      "paceRub": "ربع (ربع حزب)",
+      "paceHizb": "حزب (نصف جزء)",
+      "pacePageCount": "عدد الصفحات",
+      "noPlan": "لم يتم إعداد خطة حفظ لهذا الطالب بعد.",
+      "createPlan": "إنشاء خطة حفظ",
+      "editPlan": "تعديل إعدادات الخطة",
+      "savePlan": "حفظ الخطة",
+      "initialPosition": "موقع البداية",
+      "overallProgress": "التقدم العام",
+      "nextHomework": "الواجب القادم",
+      "nextReview": "المراجعة القادمة",
+      "active": "نشط",
+      "inactive": "غير نشط"
+    },
+    "review": {
+      "title": "مراجعة الحفظ",
+      "newReview": "مراجعة جديدة",
+      "reviewHistory": "سجل المراجعات",
+      "rangeReviewed": "النطاق المُراجع",
+      "from": "من",
+      "to": "إلى",
+      "recitationResult": "نتيجة التسميع",
+      "resultExcellent": "ممتاز",
+      "resultGood": "جيد",
+      "resultAcceptable": "مقبول",
+      "resultNeedsImprovement": "يحتاج تحسين",
+      "resultFailed": "راسب",
+      "grade": "الدرجة",
+      "notes": "الملاحظات",
+      "voiceNote": "مذكرة صوتية",
+      "nextHomework": "الواجب القادم (مقترح تلقائياً)",
+      "saveReview": "حفظ المراجعة وتحديث الموقع",
+      "noReviews": "لا توجد مراجعات بعد.",
+      "date": "التاريخ",
+      "range": "النطاق",
+      "result": "النتيجة",
+      "mistakes": "الأخطاء",
+      "mistakeCount": "الأخطاء",
+      "openReview": "فتح مراجعة الحفظ",
+      "reviewDetail": "تفاصيل المراجعة"
+    },
+    "tajweed": {
+      "title": "فئات التجويد",
+      "scores": "درجات التجويد",
+      "category": "الفئة",
+      "score": "الدرجة",
+      "addCategory": "إضافة فئة",
+      "editCategory": "تعديل الفئة",
+      "nameEn": "الاسم (إنجليزي)",
+      "nameAr": "الاسم (عربي)",
+      "sortOrder": "ترتيب العرض",
+      "core": "أساسي",
+      "custom": "مخصص",
+      "save": "حفظ",
+      "noCategories": "لم يتم تكوين فئات تجويد.",
+      "currentFocus": "التركيز الحالي للتجويد"
+    },
+    "mistake": {
+      "title": "الأخطاء",
+      "addMistake": "إضافة خطأ",
+      "category": "الفئة",
+      "tajweedError": "خطأ تجويد",
+      "wrongWord": "كلمة خاطئة",
+      "hesitation": "تردد",
+      "skippedAyah": "آية محذوفة",
+      "repeatedAyah": "آية مكررة",
+      "other": "أخرى",
+      "note": "ملاحظة"
+    },
+    "cadence": {
+      "title": "وتيرة اللقاءات",
+      "groupDefault": "الافتراضي للمجموعة",
+      "studentOverride": "تخصيص الطالب",
+      "weekly": "أسبوعياً",
+      "biweekly": "كل أسبوعين",
+      "twiceWeekly": "مرتين أسبوعياً",
+      "custom": "مخصص",
+      "customDays": "عدد الأيام بين المراجعات",
+      "inheritGroup": "وراثة من المجموعة"
+    },
+    "dashboard": {
+      "title": "رحلة الحفظ",
+      "currentlyMemorizing": "يحفظ حالياً",
+      "juzGrid": "تقدم الأجزاء",
+      "surahProgress": "تقدم السورة الحالية",
+      "recentReviews": "المراجعات الأخيرة",
+      "completed": "مكتمل",
+      "inProgress": "قيد التنفيذ",
+      "notStarted": "لم يبدأ",
+      "youAreHere": "أنت هنا",
+      "ofQuran": "من القرآن الكريم",
+      "lastReview": "آخر مراجعة",
+      "juzDetail": "تفاصيل الجزء",
+      "ayahs": "آيات"
+    },
+    "search": {
+      "placeholder": "ابحث عن طالب...",
+      "noResults": "لم يتم العثور على طلاب."
     }
   }
 }

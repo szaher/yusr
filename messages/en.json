@@ -88,7 +88,8 @@
     "featureFlags": "Feature Flags",
     "settings": "Settings",
     "auditLogs": "Audit Logs",
-    "tickets": "Support Tickets"
+    "tickets": "Support Tickets",
+    "memorization": "Memorization"
   },
   "admin": {
     "dashboard": {
@@ -387,6 +388,119 @@
       "rights": "All rights reserved",
       "login": "Log In",
       "register": "Register"
+    }
+  },
+  "memorization": {
+    "title": "Memorization Plans",
+    "plan": {
+      "title": "Memorization Plan",
+      "currentPosition": "Current Position",
+      "surah": "Surah",
+      "ayah": "Ayah",
+      "juz": "Juz",
+      "hizb": "Hizb",
+      "rub": "Rub'",
+      "page": "Page",
+      "paceUnit": "Pace Unit",
+      "paceValue": "Amount per Review",
+      "paceRub": "Rub' (Quarter Hizb)",
+      "paceHizb": "Hizb (Half Juz)",
+      "pacePageCount": "Page Count",
+      "noPlan": "No memorization plan set up for this student yet.",
+      "createPlan": "Create Memorization Plan",
+      "editPlan": "Edit Plan Settings",
+      "savePlan": "Save Plan",
+      "initialPosition": "Starting Position",
+      "overallProgress": "Overall Progress",
+      "nextHomework": "Next Homework",
+      "nextReview": "Next Review",
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "review": {
+      "title": "Memorization Review",
+      "newReview": "New Review",
+      "reviewHistory": "Review History",
+      "rangeReviewed": "Range Reviewed",
+      "from": "From",
+      "to": "To",
+      "recitationResult": "Recitation Result",
+      "resultExcellent": "Excellent",
+      "resultGood": "Good",
+      "resultAcceptable": "Acceptable",
+      "resultNeedsImprovement": "Needs Improvement",
+      "resultFailed": "Failed",
+      "grade": "Grade",
+      "notes": "Notes",
+      "voiceNote": "Voice Note",
+      "nextHomework": "Next Homework (Auto-suggested)",
+      "saveReview": "Save Review & Update Position",
+      "noReviews": "No reviews yet.",
+      "date": "Date",
+      "range": "Range",
+      "result": "Result",
+      "mistakes": "Mistakes",
+      "mistakeCount": "Mistakes",
+      "openReview": "Open Memorization Review",
+      "reviewDetail": "Review Detail"
+    },
+    "tajweed": {
+      "title": "Tajweed Categories",
+      "scores": "Tajweed Scores",
+      "category": "Category",
+      "score": "Score",
+      "addCategory": "Add Category",
+      "editCategory": "Edit Category",
+      "nameEn": "Name (English)",
+      "nameAr": "Name (Arabic)",
+      "sortOrder": "Sort Order",
+      "core": "Core",
+      "custom": "Custom",
+      "save": "Save",
+      "noCategories": "No tajweed categories configured.",
+      "currentFocus": "Current Tajweed Focus"
+    },
+    "mistake": {
+      "title": "Mistakes",
+      "addMistake": "Add Mistake",
+      "category": "Category",
+      "tajweedError": "Tajweed Error",
+      "wrongWord": "Wrong Word",
+      "hesitation": "Hesitation",
+      "skippedAyah": "Skipped Ayah",
+      "repeatedAyah": "Repeated Ayah",
+      "other": "Other",
+      "note": "Note"
+    },
+    "cadence": {
+      "title": "Meeting Cadence",
+      "groupDefault": "Group Default",
+      "studentOverride": "Student Override",
+      "weekly": "Weekly",
+      "biweekly": "Biweekly",
+      "twiceWeekly": "Twice a Week",
+      "custom": "Custom",
+      "customDays": "Days between reviews",
+      "inheritGroup": "Inherit from group"
+    },
+    "dashboard": {
+      "title": "Memorization Journey",
+      "currentlyMemorizing": "Currently Memorizing",
+      "juzGrid": "Juz Progress",
+      "surahProgress": "Current Surah Progress",
+      "recentReviews": "Recent Reviews",
+      "completed": "Completed",
+      "inProgress": "In Progress",
+      "notStarted": "Not Started",
+      "youAreHere": "you are here",
+      "ofQuran": "of the Holy Quran",
+      "lastReview": "Last Review",
+      "juzDetail": "Juz Detail",
+      "ayahs": "ayahs"
+    },
+    "search": {
+      "placeholder": "Search student...",
+      "noResults": "No students found."
     }
   }
 }
