@@ -9,6 +9,7 @@ import {
   Users,
   GraduationCap,
   BookOpen,
+  BookOpenCheck,
   Settings,
   FileText,
   ClipboardList,
@@ -46,6 +47,7 @@ const moderatorNav: NavItem[] = [
   { labelKey: "students", href: "/moderator/students", icon: GraduationCap },
   { labelKey: "assignments", href: "/moderator/assignments", icon: BookOpen },
   { labelKey: "sessions", href: "/moderator/sessions", icon: Calendar },
+  { labelKey: "memorization", href: "/moderator/memorization", icon: BookOpenCheck },
 ];
 
 const studentNav: NavItem[] = [
@@ -54,6 +56,7 @@ const studentNav: NavItem[] = [
   { labelKey: "assignments", href: "/student/assignments", icon: BookOpen },
   { labelKey: "sessions", href: "/student/sessions", icon: Calendar },
   { labelKey: "grades", href: "/student/grades", icon: Award },
+  { labelKey: "memorization", href: "/student/memorization", icon: BookOpenCheck },
 ];
 
 const supportNav: NavItem[] = [
