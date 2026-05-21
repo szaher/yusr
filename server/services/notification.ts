@@ -29,3 +29,36 @@ export async function getUnreadCount(userId: string): Promise<number> {
     where: { recipientId: userId, read: false },
   });
 }
+
+export async function getNotifications(userId: string, limit: number = 50) {
+  return db.notification.findMany({
+    where: { recipientId: userId },
+    orderBy: { createdAt: "desc" },
+    take: limit,
+  });
+}
+
+export async function markAllNotificationsRead(userId: string) {
+  return db.notification.updateMany({
+    where: { recipientId: userId, read: false },
+    data: { read: true },
+  });
+}
+
+export async function createBulkNotifications(
+  recipientIds: string[],
+  type: string,
+  title: string,
+  body?: string
+) {
+  if (recipientIds.length === 0) return;
+
+  return db.notification.createMany({
+    data: recipientIds.map((recipientId) => ({
+      recipientId,
+      type,
+      title,
+      body: body || null,
+    })),
+  });
+}
