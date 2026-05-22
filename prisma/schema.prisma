@@ -37,6 +37,8 @@ model User {
   createdAnnouncements  Announcement[]         @relation("announcementCreator")
   assignedTickets       SupportTicket[]        @relation("ticketAssignee")
   ticketReplies         TicketReply[]          @relation("ticketReplyAuthor")
+  createdExamTemplates ExamTemplate[] @relation("examTemplateCreator")
+  createdExamInstances ExamInstance[] @relation("examInstanceCreator")
 
   @@index([email])
   @@index([roleId])
@@ -126,6 +128,7 @@ model StudentProfile {
   memorizationPlans  StudentMemorizationPlan[]
   leaveRequests      LeaveRequest[]
   supportTickets     SupportTicket[]
+  examSubmissions ExamSubmission[]
 }
 
 model EnrollmentApplication {
@@ -203,6 +206,7 @@ model Group {
   students          GroupStudent[]
   sessions          WeeklySession[]
   memorizationPlans  StudentMemorizationPlan[]
+  examInstances ExamInstance[]
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
 
@@ -286,6 +290,27 @@ enum TicketStatus {
   IN_PROGRESS
   RESOLVED
   CLOSED
+}
+
+enum QuestionType {
+  MULTIPLE_CHOICE
+  TRUE_FALSE
+  SHORT_ANSWER
+  RECITATION
+}
+
+enum ExamInstanceStatus {
+  DRAFT
+  PUBLISHED
+  IN_PROGRESS
+  COMPLETED
+}
+
+enum ExamSubmissionStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  SUBMITTED
+  GRADED
 }
 
 enum RecitationResult {
@@ -436,6 +461,7 @@ model WeeklySession {
   students            SessionStudent[]
   memorizationReviews MemorizationReview[]
   leaveRequests       LeaveRequest[]
+  examInstances ExamInstance[]
 
   @@index([groupId])
   @@index([moderatorId])
@@ -526,6 +552,8 @@ model QuranSurah {
   reviewToSurahs       MemorizationReview[] @relation("reviewToSurah")
   reviewNextFromSurahs MemorizationReview[] @relation("reviewNextFromSurah")
   reviewNextToSurahs   MemorizationReview[] @relation("reviewNextToSurah")
+  examQuestionsFrom ExamQuestion[] @relation("examQuestionFromSurah")
+  examQuestionsTo   ExamQuestion[] @relation("examQuestionToSurah")
 }
 
 model QuranAyah {
@@ -755,4 +783,117 @@ model TicketReply {
   createdAt DateTime      @default(now())
 
   @@index([ticketId])
+}
+
+// ============================================================
+// Exams
+// ============================================================
+
+model ExamTemplate {
+  id           String   @id @default(cuid())
+  title        String
+  description  String?
+  passingScore Int
+  totalPoints  Int      @default(0)
+  createdById  String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  createdBy User           @relation("examTemplateCreator", fields: [createdById], references: [id])
+  questions ExamQuestion[]
+  instances ExamInstance[]
+
+  @@index([createdById])
+}
+
+model ExamQuestion {
+  id              String       @id @default(cuid())
+  templateId      String
+  type            QuestionType
+  text            String
+  points          Int
+  order           Int
+  options         Json?
+  correctAnswer   String?
+  fromSurahNumber Int?
+  fromAyah        Int?
+  toSurahNumber   Int?
+  toAyah          Int?
+  createdAt       DateTime     @default(now())
+
+  template  ExamTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  fromSurah QuranSurah?  @relation("examQuestionFromSurah", fields: [fromSurahNumber], references: [number])
+  toSurah   QuranSurah?  @relation("examQuestionToSurah", fields: [toSurahNumber], references: [number])
+  answers   ExamAnswer[]
+
+  @@unique([templateId, order])
+  @@index([templateId])
+}
+
+model ExamInstance {
+  id             String             @id @default(cuid())
+  templateId     String
+  groupId        String
+  sessionId      String?
+  status         ExamInstanceStatus @default(DRAFT)
+  startDate      DateTime
+  endDate        DateTime
+  customizations Json?
+  createdById    String
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+
+  template    ExamTemplate   @relation(fields: [templateId], references: [id])
+  group       Group          @relation(fields: [groupId], references: [id])
+  session     WeeklySession? @relation(fields: [sessionId], references: [id])
+  createdBy   User           @relation("examInstanceCreator", fields: [createdById], references: [id])
+  submissions ExamSubmission[]
+
+  @@index([templateId])
+  @@index([groupId])
+  @@index([status])
+}
+
+model ExamSubmission {
+  id          String               @id @default(cuid())
+  instanceId  String
+  studentId   String
+  status      ExamSubmissionStatus @default(NOT_STARTED)
+  startedAt   DateTime?
+  submittedAt DateTime?
+  gradedAt    DateTime?
+  totalScore  Float?
+  passed      Boolean?
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+
+  instance ExamInstance  @relation(fields: [instanceId], references: [id], onDelete: Cascade)
+  student  StudentProfile @relation(fields: [studentId], references: [id])
+  answers  ExamAnswer[]
+
+  @@unique([instanceId, studentId])
+  @@index([instanceId])
+  @@index([studentId])
+}
+
+model ExamAnswer {
+  id               String   @id @default(cuid())
+  submissionId     String
+  questionId       String
+  answer           String?
+  isCorrect        Boolean?
+  score            Float?
+  moderatorNotes   String?
+  recitationResult String?
+  tajweedNotes     String?
+  fluencyNotes     String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  submission ExamSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  question   ExamQuestion   @relation(fields: [questionId], references: [id])
+
+  @@unique([submissionId, questionId])
+  @@index([submissionId])
+  @@index([questionId])
 }
