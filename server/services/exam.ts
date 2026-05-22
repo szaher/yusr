@@ -92,9 +92,10 @@ export async function addQuestion(input: AddQuestionInput, actorId: string) {
 
   let parsedOptions: { label: string; isCorrect: boolean }[] | undefined;
   if (input.type === "TRUE_FALSE") {
+    const correctIsTrue = input.correctAnswer === "true";
     parsedOptions = [
-      { label: "True", isCorrect: true },
-      { label: "False", isCorrect: false },
+      { label: "True", isCorrect: correctIsTrue },
+      { label: "False", isCorrect: !correctIsTrue },
     ];
   } else if (input.type === "MULTIPLE_CHOICE" && input.options) {
     parsedOptions = JSON.parse(input.options);
@@ -108,7 +109,7 @@ export async function addQuestion(input: AddQuestionInput, actorId: string) {
       points: input.points,
       order: nextOrder,
       options: parsedOptions || undefined,
-      correctAnswer: input.type === "SHORT_ANSWER" ? input.correctAnswer : undefined,
+      correctAnswer: (input.type === "SHORT_ANSWER" || input.type === "TRUE_FALSE") ? input.correctAnswer : undefined,
       fromSurahNumber: input.type === "RECITATION" ? input.fromSurahNumber : undefined,
       fromAyah: input.type === "RECITATION" ? input.fromAyah : undefined,
       toSurahNumber: input.type === "RECITATION" ? input.toSurahNumber : undefined,

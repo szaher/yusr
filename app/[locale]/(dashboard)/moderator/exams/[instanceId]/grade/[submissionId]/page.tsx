@@ -52,6 +52,7 @@ export default async function ModeratorGradingPage({
   const questions = submission.instance.template.questions;
   const answerMap = new Map(submission.answers.map((a) => [a.questionId, a]));
   const isGraded = submission.status === "GRADED";
+  const customizations = (submission.instance.customizations ?? {}) as Record<string, { fromSurahNumber?: number; fromAyah?: number; toSurahNumber?: number; toAyah?: number }>;
 
   return (
     <div className="space-y-6">
@@ -121,15 +122,25 @@ export default async function ModeratorGradingPage({
                     </div>
                   )}
 
-                  {q.type === "RECITATION" && (
-                    <div className="text-sm text-muted-foreground">
-                      {q.fromSurah && q.toSurah && (
-                        <p>
-                          {locale === "ar" ? q.fromSurah.nameAr : q.fromSurah.nameEn} ({q.fromAyah}) → {locale === "ar" ? q.toSurah.nameAr : q.toSurah.nameEn} ({q.toAyah})
-                        </p>
-                      )}
-                    </div>
-                  )}
+                  {q.type === "RECITATION" && (() => {
+                    const custom = customizations[q.id];
+                    const fromName = custom?.fromSurahNumber
+                      ? `Surah ${custom.fromSurahNumber}`
+                      : q.fromSurah ? (locale === "ar" ? q.fromSurah.nameAr : q.fromSurah.nameEn) : null;
+                    const toName = custom?.toSurahNumber
+                      ? `Surah ${custom.toSurahNumber}`
+                      : q.toSurah ? (locale === "ar" ? q.toSurah.nameAr : q.toSurah.nameEn) : null;
+                    const fromAyah = custom?.fromAyah ?? q.fromAyah;
+                    const toAyah = custom?.toAyah ?? q.toAyah;
+
+                    return (
+                      <div className="text-sm text-muted-foreground">
+                        {fromName && toName && (
+                          <p>{fromName} ({fromAyah}) → {toName} ({toAyah})</p>
+                        )}
+                      </div>
+                    );
+                  })()}
 
                   {/* Grading fields */}
                   {!isGraded ? (

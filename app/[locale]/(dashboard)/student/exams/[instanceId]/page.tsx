@@ -49,6 +49,7 @@ export default async function StudentExamPage({
   const submission = await getOrCreateSubmission(instanceId, studentProfile.id);
   const questions = submission.instance.template.questions;
   const answerMap = new Map(submission.answers.map((a) => [a.questionId, a]));
+  const customizations = (instance.customizations ?? {}) as Record<string, { fromSurahNumber?: number; fromAyah?: number; toSurahNumber?: number; toAyah?: number }>;
 
   const now = new Date();
   const withinWindow = now >= instance.startDate && now <= instance.endDate;
@@ -140,16 +141,28 @@ export default async function StudentExamPage({
                     />
                   )}
 
-                  {q.type === "RECITATION" && (
-                    <div className="rounded-lg bg-muted p-4 text-sm">
-                      <p className="font-medium">{t("prepareRecitation")}:</p>
-                      {q.fromSurah && q.toSurah && (
-                        <p className="mt-1">
-                          {locale === "ar" ? q.fromSurah.nameAr : q.fromSurah.nameEn} ({q.fromAyah}) → {locale === "ar" ? q.toSurah.nameAr : q.toSurah.nameEn} ({q.toAyah})
-                        </p>
-                      )}
-                    </div>
-                  )}
+                  {q.type === "RECITATION" && (() => {
+                    const custom = customizations[q.id];
+                    const fromName = custom?.fromSurahNumber
+                      ? `Surah ${custom.fromSurahNumber}`
+                      : q.fromSurah ? (locale === "ar" ? q.fromSurah.nameAr : q.fromSurah.nameEn) : null;
+                    const toName = custom?.toSurahNumber
+                      ? `Surah ${custom.toSurahNumber}`
+                      : q.toSurah ? (locale === "ar" ? q.toSurah.nameAr : q.toSurah.nameEn) : null;
+                    const fromAyah = custom?.fromAyah ?? q.fromAyah;
+                    const toAyah = custom?.toAyah ?? q.toAyah;
+
+                    return (
+                      <div className="rounded-lg bg-muted p-4 text-sm">
+                        <p className="font-medium">{t("prepareRecitation")}:</p>
+                        {fromName && toName && (
+                          <p className="mt-1">
+                            {fromName} ({fromAyah}) → {toName} ({toAyah})
+                          </p>
+                        )}
+                      </div>
+                    );
+                  })()}
 
                   {isGraded && answer?.moderatorNotes && (
                     <p className="mt-2 text-sm text-muted-foreground">{t("moderatorNotes")}: {answer.moderatorNotes}</p>

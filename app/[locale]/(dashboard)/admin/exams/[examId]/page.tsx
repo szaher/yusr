@@ -187,7 +187,7 @@ export default async function AdminExamDetailPage({
             </div>
 
             <div className="space-y-2">
-              <Label>{t("correctAnswer")} (for Short Answer)</Label>
+              <Label>{t("correctAnswer")} (SA: expected text, T/F: &quot;true&quot; or &quot;false&quot;)</Label>
               <Input name="correctAnswer" />
             </div>
 
