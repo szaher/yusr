@@ -238,7 +238,7 @@ export async function saveAnswersAction(formData: FormData) {
     where: { id: parsed.data.instanceId },
     include: {
       group: {
-        include: { students: { where: { studentId: studentProfile.id }, select: { id: true } } },
+        include: { students: { where: { studentId: studentProfile.id } } },
       },
     },
   });
