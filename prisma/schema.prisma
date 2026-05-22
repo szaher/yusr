@@ -35,6 +35,8 @@ model User {
   memorizationReviews   MemorizationReview[]   @relation("reviewModerator")
   reviewedLeaveRequests LeaveRequest[]         @relation("leaveReviewer")
   createdAnnouncements  Announcement[]         @relation("announcementCreator")
+  assignedTickets       SupportTicket[]        @relation("ticketAssignee")
+  ticketReplies         TicketReply[]          @relation("ticketReplyAuthor")
 
   @@index([email])
   @@index([roleId])
@@ -123,6 +125,7 @@ model StudentProfile {
   sessionStudents    SessionStudent[]
   memorizationPlans  StudentMemorizationPlan[]
   leaveRequests      LeaveRequest[]
+  supportTickets     SupportTicket[]
 }
 
 model EnrollmentApplication {
@@ -276,6 +279,13 @@ enum LeaveRequestStatus {
   PENDING
   APPROVED
   REJECTED
+}
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
 }
 
 enum RecitationResult {
@@ -709,4 +719,40 @@ model Announcement {
   createdById String
   createdBy   User      @relation("announcementCreator", fields: [createdById], references: [id])
   createdAt   DateTime  @default(now())
+}
+
+// ============================================================
+// Support Tickets
+// ============================================================
+
+model SupportTicket {
+  id           String       @id @default(cuid())
+  subject      String
+  body         String
+  status       TicketStatus @default(OPEN)
+  escalated    Boolean      @default(false)
+  studentId    String
+  student      StudentProfile @relation(fields: [studentId], references: [id])
+  assignedToId String?
+  assignedTo   User?        @relation("ticketAssignee", fields: [assignedToId], references: [id])
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  replies TicketReply[]
+
+  @@index([studentId])
+  @@index([assignedToId])
+  @@index([status])
+}
+
+model TicketReply {
+  id        String        @id @default(cuid())
+  ticketId  String
+  ticket    SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  authorId  String
+  author    User          @relation("ticketReplyAuthor", fields: [authorId], references: [id])
+  body      String
+  createdAt DateTime      @default(now())
+
+  @@index([ticketId])
 }
