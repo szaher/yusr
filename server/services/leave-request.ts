@@ -153,6 +153,21 @@ export async function getModeratorLeaveRequests(userId: string, statusFilter?: s
   });
 }
 
+export async function getAllLeaveRequests() {
+  return db.leaveRequest.findMany({
+    include: {
+      student: {
+        include: { user: { select: { name: true, nameAr: true } } },
+      },
+      session: {
+        select: { date: true, group: { select: { name: true } } },
+      },
+      reviewedBy: { select: { name: true, nameAr: true } },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+}
+
 export async function getUpcomingSessionsForStudent(studentProfileId: string) {
   const groupStudents = await db.groupStudent.findMany({
     where: { studentId: studentProfileId },
