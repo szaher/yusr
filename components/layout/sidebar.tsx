@@ -22,6 +22,7 @@ import {
   CalendarOff,
   Megaphone,
   Headset,
+  ClipboardCheck,
 } from "lucide-react";
 
 type NavItem = {
@@ -44,6 +45,7 @@ const adminNav: NavItem[] = [
   { labelKey: "sessions", href: "/admin/sessions", icon: Calendar },
   { labelKey: "announcements", href: "/admin/announcements", icon: Megaphone },
   { labelKey: "tickets", href: "/admin/tickets", icon: FileText },
+  { labelKey: "exams", href: "/admin/exams", icon: ClipboardCheck },
 ];
 
 const moderatorNav: NavItem[] = [
@@ -54,6 +56,7 @@ const moderatorNav: NavItem[] = [
   { labelKey: "sessions", href: "/moderator/sessions", icon: Calendar },
   { labelKey: "memorization", href: "/moderator/memorization", icon: BookOpenCheck },
   { labelKey: "leaveRequests", href: "/moderator/leave-requests", icon: CalendarOff },
+  { labelKey: "exams", href: "/moderator/exams", icon: ClipboardCheck },
 ];
 
 const studentNav: NavItem[] = [
@@ -65,6 +68,7 @@ const studentNav: NavItem[] = [
   { labelKey: "memorization", href: "/student/memorization", icon: BookOpenCheck },
   { labelKey: "leaveRequests", href: "/student/leave-requests", icon: CalendarOff },
   { labelKey: "support", href: "/student/tickets", icon: Headset },
+  { labelKey: "exams", href: "/student/exams", icon: ClipboardCheck },
 ];
 
 const supportNav: NavItem[] = [
