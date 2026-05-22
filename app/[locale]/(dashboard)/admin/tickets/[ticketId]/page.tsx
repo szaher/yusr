@@ -90,9 +90,10 @@ export default async function AdminTicketDetailPage({
           <select
             name="assignedToId"
             required
+            defaultValue=""
             className="flex h-9 w-40 rounded-md border border-input bg-background px-2 py-1 text-sm"
           >
-            <option value="" disabled selected>{t("selectStaff")}</option>
+            <option value="" disabled>{t("selectStaff")}</option>
             {supportUsers.map((u) => (
               <option key={u.id} value={u.id}>
                 {u.nameAr || u.name}

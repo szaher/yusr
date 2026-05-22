@@ -1,12 +1,21 @@
 import { db } from "@/server/db/client";
 import { createAuditLog } from "./audit-log";
 import { createNotification, createBulkNotifications } from "./notification";
+import { hasPermission } from "@/server/permissions";
+import { PERMISSIONS } from "@/lib/constants/permissions";
 import type {
   CreateTicketInput,
   AddReplyInput,
   AssignTicketInput,
   ChangeTicketStatusInput,
 } from "@/lib/validations/support-ticket";
+
+const VALID_TRANSITIONS: Record<string, string[]> = {
+  OPEN: ["IN_PROGRESS", "CLOSED"],
+  IN_PROGRESS: ["RESOLVED", "CLOSED"],
+  RESOLVED: ["CLOSED", "OPEN"],
+  CLOSED: ["OPEN"],
+};
 
 async function getAdminUserIds(): Promise<string[]> {
   const admins = await db.user.findMany({
@@ -59,6 +68,23 @@ export async function addReply(
       student: { include: { user: { select: { id: true } } } },
     },
   });
+
+  const isStudentOwner = ticket.student.user.id === actorId;
+  const isAssignedSupport = ticket.assignedToId === actorId;
+
+  if (!isStudentOwner && !isAssignedSupport) {
+    const hasAdminAccess = await hasPermission(actorId, PERMISSIONS.SUPPORT_TICKETS_VIEW_ALL);
+    if (!hasAdminAccess) {
+      throw new Error("Not authorized to reply to this ticket");
+    }
+  }
+
+  if (ticket.status === "CLOSED") {
+    throw new Error("Cannot reply to a closed ticket");
+  }
+  if (isStudentOwner && ticket.status === "RESOLVED") {
+    throw new Error("Cannot reply to a resolved ticket");
+  }
 
   const reply = await db.ticketReply.create({
     data: {
@@ -125,6 +151,28 @@ export async function changeTicketStatus(
   input: ChangeTicketStatusInput,
   actorId: string
 ) {
+  const current = await db.supportTicket.findUniqueOrThrow({
+    where: { id: input.ticketId },
+  });
+
+  const allowed = VALID_TRANSITIONS[current.status];
+  if (!allowed || !allowed.includes(input.status)) {
+    throw new Error(`Invalid transition from ${current.status} to ${input.status}`);
+  }
+
+  const isAdmin = await hasPermission(actorId, PERMISSIONS.SUPPORT_TICKETS_VIEW_ALL);
+
+  if (input.status === "IN_PROGRESS" || input.status === "RESOLVED") {
+    if (current.assignedToId !== actorId && !isAdmin) {
+      throw new Error("Only the assigned support user can change this status");
+    }
+  }
+  if (input.status === "CLOSED" || (input.status === "OPEN" && current.status !== "OPEN")) {
+    if (!isAdmin) {
+      throw new Error("Only admin can close or re-open tickets");
+    }
+  }
+
   const ticket = await db.supportTicket.update({
     where: { id: input.ticketId },
     data: { status: input.status },

@@ -1,7 +1,7 @@
 "use server";
 
 import { requireApprovedUser } from "@/server/auth/session";
-import { requirePermission } from "@/server/permissions";
+import { requirePermission, hasPermission } from "@/server/permissions";
 import { PERMISSIONS } from "@/lib/constants/permissions";
 import {
   createTicket,
@@ -66,6 +66,19 @@ export async function addReplyAction(formData: FormData) {
     return { error: "validationError", details: parsed.error.flatten() };
   }
 
+  const ticket = await db.supportTicket.findUnique({
+    where: { id: parsed.data.ticketId },
+    include: { student: { select: { userId: true } } },
+  });
+  if (!ticket) return { error: "ticketNotFound" };
+
+  const isOwner = ticket.student.userId === session.user.id;
+  const isAssigned = ticket.assignedToId === session.user.id;
+  const isAdmin = await hasPermission(session.user.id, PERMISSIONS.SUPPORT_TICKETS_VIEW_ALL);
+  if (!isOwner && !isAssigned && !isAdmin) {
+    return { error: "notAuthorized" };
+  }
+
   try {
     await addReply(parsed.data, session.user.id);
   } catch (e) {
@@ -103,6 +116,22 @@ export async function changeTicketStatusAction(formData: FormData) {
   const parsed = changeTicketStatusSchema.safeParse(raw);
   if (!parsed.success) {
     return { error: "validationError", details: parsed.error.flatten() };
+  }
+
+  const ticket = await db.supportTicket.findUnique({
+    where: { id: parsed.data.ticketId },
+    select: { assignedToId: true, status: true },
+  });
+  if (!ticket) return { error: "ticketNotFound" };
+
+  const isAdmin = await hasPermission(session.user.id, PERMISSIONS.SUPPORT_TICKETS_VIEW_ALL);
+  const isAssigned = ticket.assignedToId === session.user.id;
+
+  if (parsed.data.status === "IN_PROGRESS" || parsed.data.status === "RESOLVED") {
+    if (!isAssigned && !isAdmin) return { error: "notAuthorized" };
+  }
+  if (parsed.data.status === "CLOSED" || parsed.data.status === "OPEN") {
+    if (!isAdmin) return { error: "notAuthorized" };
   }
 
   try {
