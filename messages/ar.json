@@ -89,7 +89,8 @@
     "settings": "الإعدادات",
     "auditLogs": "سجل المراجعة",
     "tickets": "تذاكر الدعم",
-    "memorization": "الحفظ"
+    "memorization": "الحفظ",
+    "support": "الدعم"
   },
   "admin": {
     "dashboard": {
@@ -450,6 +451,43 @@
     "minutesAgo": "منذ {count} دقيقة",
     "hoursAgo": "منذ {count} ساعة",
     "daysAgo": "منذ {count} يوم"
+  },
+  "supportTickets": {
+    "title": "تذاكر الدعم",
+    "createTicket": "إنشاء تذكرة",
+    "subject": "الموضوع",
+    "subjectPlaceholder": "ملخص قصير لمشكلتك...",
+    "body": "الوصف",
+    "bodyPlaceholder": "صف مشكلتك بالتفصيل...",
+    "reply": "رد",
+    "replyPlaceholder": "اكتب ردك...",
+    "submit": "إرسال",
+    "send": "إرسال الرد",
+    "status": "الحالة",
+    "createdAt": "تاريخ الإنشاء",
+    "updatedAt": "آخر تحديث",
+    "studentName": "الطالب",
+    "assignedTo": "مسند إلى",
+    "unassigned": "غير مسند",
+    "escalated": "مصعّد",
+    "noTickets": "لا توجد تذاكر دعم",
+    "backToList": "العودة للتذاكر",
+    "open": "مفتوح",
+    "inProgress": "قيد المعالجة",
+    "resolved": "تم الحل",
+    "closed": "مغلق",
+    "start": "بدء",
+    "resolve": "حل",
+    "escalate": "تصعيد للإدارة",
+    "close": "إغلاق التذكرة",
+    "reopen": "إعادة فتح",
+    "assign": "تعيين",
+    "selectStaff": "اختر موظف الدعم...",
+    "showAll": "عرض الكل",
+    "showActive": "عرض النشطة فقط",
+    "threadTitle": "المحادثة",
+    "you": "أنت",
+    "readOnly": "هذه التذكرة مغلقة وللقراءة فقط."
   },
   "memorization": {
     "title": "خطط الحفظ",

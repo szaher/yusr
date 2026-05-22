@@ -89,7 +89,8 @@
     "settings": "Settings",
     "auditLogs": "Audit Logs",
     "tickets": "Support Tickets",
-    "memorization": "Memorization"
+    "memorization": "Memorization",
+    "support": "Support"
   },
   "admin": {
     "dashboard": {
@@ -450,6 +451,43 @@
     "minutesAgo": "{count}m ago",
     "hoursAgo": "{count}h ago",
     "daysAgo": "{count}d ago"
+  },
+  "supportTickets": {
+    "title": "Support Tickets",
+    "createTicket": "Create Ticket",
+    "subject": "Subject",
+    "subjectPlaceholder": "Brief summary of your issue...",
+    "body": "Description",
+    "bodyPlaceholder": "Describe your issue in detail...",
+    "reply": "Reply",
+    "replyPlaceholder": "Type your reply...",
+    "submit": "Submit",
+    "send": "Send Reply",
+    "status": "Status",
+    "createdAt": "Created",
+    "updatedAt": "Last Updated",
+    "studentName": "Student",
+    "assignedTo": "Assigned To",
+    "unassigned": "Unassigned",
+    "escalated": "Escalated",
+    "noTickets": "No support tickets",
+    "backToList": "Back to tickets",
+    "open": "Open",
+    "inProgress": "In Progress",
+    "resolved": "Resolved",
+    "closed": "Closed",
+    "start": "Start",
+    "resolve": "Resolve",
+    "escalate": "Escalate to Admin",
+    "close": "Close Ticket",
+    "reopen": "Re-open",
+    "assign": "Assign",
+    "selectStaff": "Select support staff...",
+    "showAll": "Show All",
+    "showActive": "Show Active Only",
+    "threadTitle": "Conversation",
+    "you": "You",
+    "readOnly": "This ticket is closed and read-only."
   },
   "memorization": {
     "title": "Memorization Plans",
