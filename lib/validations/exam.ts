@@ -24,6 +24,7 @@ export const addQuestionSchema = z.object({
   points: z.coerce.number().int().min(1).max(100),
   options: z.string().optional(),
   correctAnswer: z.string().optional(),
+  tags: z.string().optional(),
   fromSurahNumber: z.coerce.number().int().optional(),
   fromAyah: z.coerce.number().int().optional(),
   toSurahNumber: z.coerce.number().int().optional(),
@@ -45,6 +46,11 @@ export const assignToGroupsSchema = z.object({
   startDate: z.string().min(1),
   endDate: z.string().min(1),
   sessionId: z.string().optional(),
+  timeLimitMinutes: z.coerce.number().int().min(1).max(300).optional(),
+  shuffleQuestions: z.string().optional(),
+  maxAttempts: z.coerce.number().int().min(1).max(10).optional(),
+  poolPick: z.coerce.number().int().min(1).optional(),
+  poolTags: z.string().optional(),
 });
 
 export type AssignToGroupsInput = z.infer<typeof assignToGroupsSchema>;
@@ -77,3 +83,15 @@ export const gradeSubmissionSchema = z.object({
 });
 
 export type GradeSubmissionInput = z.infer<typeof gradeSubmissionSchema>;
+
+export const duplicateTemplateSchema = z.object({
+  templateId: z.string().min(1),
+});
+
+export type DuplicateTemplateInput = z.infer<typeof duplicateTemplateSchema>;
+
+export const createRetakeSchema = z.object({
+  instanceId: z.string().min(1),
+});
+
+export type CreateRetakeInput = z.infer<typeof createRetakeSchema>;
