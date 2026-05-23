@@ -383,32 +383,60 @@ export async function getAllInstances(filter?: "active" | "all") {
 
 // ── Submissions ──
 
+async function buildQuestionOrder(
+  templateId: string,
+  poolConfig: unknown,
+  shuffle: boolean
+): Promise<string[] | undefined> {
+  if (!poolConfig && !shuffle) return undefined;
+
+  const questions = await db.examQuestion.findMany({
+    where: { templateId },
+    orderBy: { order: "asc" },
+    select: { id: true, tags: true },
+  });
+
+  let selectedIds = questions.map((q) => q.id);
+
+  const pool = poolConfig as { pick: number; tags?: string[] } | null;
+  if (pool) {
+    let candidates = questions;
+    if (pool.tags && pool.tags.length > 0) {
+      candidates = questions.filter((q) =>
+        q.tags.some((t) => pool.tags!.includes(t))
+      );
+    }
+    selectedIds = shuffleArray(candidates.map((q) => q.id)).slice(0, pool.pick);
+  }
+
+  if (shuffle) {
+    selectedIds = shuffleArray(selectedIds);
+  }
+
+  return selectedIds;
+}
+
 export async function getOrCreateSubmission(instanceId: string, studentProfileId: string) {
-  let submission = await db.examSubmission.findUnique({
-    where: { instanceId_studentId: { instanceId, studentId: studentProfileId } },
-    include: {
-      answers: { include: { question: true } },
-      instance: {
-        include: {
-          template: {
-            include: {
-              questions: {
-                orderBy: { order: "asc" },
-                include: {
-                  fromSurah: { select: { number: true, nameAr: true, nameEn: true } },
-                  toSurah: { select: { number: true, nameAr: true, nameEn: true } },
-                },
-              },
-            },
-          },
-        },
-      },
+  const instance = await db.examInstance.findUniqueOrThrow({
+    where: { id: instanceId },
+    select: {
+      shuffleQuestions: true,
+      poolConfig: true,
+      maxAttempts: true,
+      templateId: true,
     },
   });
 
-  if (!submission) {
-    submission = await db.examSubmission.create({
-      data: { instanceId, studentId: studentProfileId },
+  const existingSubmissions = await db.examSubmission.findMany({
+    where: { instanceId, studentId: studentProfileId },
+    orderBy: { attemptNumber: "desc" },
+  });
+
+  const latestAttempt = existingSubmissions[0];
+
+  if (latestAttempt) {
+    return db.examSubmission.findUniqueOrThrow({
+      where: { id: latestAttempt.id },
       include: {
         answers: { include: { question: true } },
         instance: {
@@ -429,6 +457,35 @@ export async function getOrCreateSubmission(instanceId: string, studentProfileId
       },
     });
   }
+
+  const questionOrder = await buildQuestionOrder(instance.templateId, instance.poolConfig, instance.shuffleQuestions);
+
+  const submission = await db.examSubmission.create({
+    data: {
+      instanceId,
+      studentId: studentProfileId,
+      attemptNumber: 1,
+      questionOrder,
+    },
+    include: {
+      answers: { include: { question: true } },
+      instance: {
+        include: {
+          template: {
+            include: {
+              questions: {
+                orderBy: { order: "asc" },
+                include: {
+                  fromSurah: { select: { number: true, nameAr: true, nameEn: true } },
+                  toSurah: { select: { number: true, nameAr: true, nameEn: true } },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  });
 
   return submission;
 }
@@ -459,8 +516,22 @@ export async function saveAnswers(
     throw new Error("Exam is not accepting submissions");
   }
 
-  let submission = await db.examSubmission.findUnique({
-    where: { instanceId_studentId: { instanceId, studentId: studentProfileId } },
+  if (instance.timeLimitMinutes) {
+    const existingSub = await db.examSubmission.findFirst({
+      where: { instanceId, studentId: studentProfileId, status: { in: ["IN_PROGRESS"] } },
+      select: { startedAt: true },
+    });
+    if (existingSub?.startedAt) {
+      const deadline = new Date(existingSub.startedAt.getTime() + instance.timeLimitMinutes * 60_000 + 30_000);
+      if (now > deadline) {
+        throw new Error("Time limit exceeded");
+      }
+    }
+  }
+
+  let submission = await db.examSubmission.findFirst({
+    where: { instanceId, studentId: studentProfileId, status: { in: ["NOT_STARTED", "IN_PROGRESS"] } },
+    orderBy: { attemptNumber: "desc" },
   });
 
   if (!submission) {
@@ -470,6 +541,7 @@ export async function saveAnswers(
         studentId: studentProfileId,
         status: "IN_PROGRESS",
         startedAt: now,
+        attemptNumber: 1,
       },
     });
   } else if (submission.status === "NOT_STARTED") {
