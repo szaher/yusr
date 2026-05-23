@@ -13,6 +13,8 @@ import {
   customizeInstance,
   saveAnswers,
   gradeSubmission,
+  duplicateTemplate,
+  createRetakeSubmission,
 } from "@/server/services/exam";
 import {
   createTemplateSchema,
@@ -24,6 +26,8 @@ import {
   customizeInstanceSchema,
   saveAnswersSchema,
   gradeSubmissionSchema,
+  duplicateTemplateSchema,
+  createRetakeSchema,
 } from "@/lib/validations/exam";
 import { db } from "@/server/db/client";
 import { revalidatePath } from "next/cache";
@@ -306,6 +310,50 @@ export async function gradeSubmissionAction(formData: FormData) {
 
   try {
     await gradeSubmission(parsed.data, session.user.id);
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "unknownError" };
+  }
+
+  revalidateExamPaths();
+  return { success: true };
+}
+
+export async function duplicateTemplateAction(formData: FormData) {
+  await requirePermission(PERMISSIONS.EXAMS_CREATE);
+  const session = await requireApprovedUser();
+
+  const raw = Object.fromEntries(formData.entries());
+  const parsed = duplicateTemplateSchema.safeParse(raw);
+  if (!parsed.success) {
+    return { error: "validationError", details: parsed.error.flatten() };
+  }
+
+  try {
+    const newTemplate = await duplicateTemplate(parsed.data.templateId, session.user.id);
+    revalidateExamPaths();
+    return { success: true, templateId: newTemplate.id };
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "unknownError" };
+  }
+}
+
+export async function createRetakeAction(formData: FormData) {
+  const session = await requireApprovedUser();
+
+  const raw = Object.fromEntries(formData.entries());
+  const parsed = createRetakeSchema.safeParse(raw);
+  if (!parsed.success) {
+    return { error: "validationError", details: parsed.error.flatten() };
+  }
+
+  const studentProfile = await db.studentProfile.findUnique({
+    where: { userId: session.user.id },
+    select: { id: true },
+  });
+  if (!studentProfile) return { error: "noStudentProfile" };
+
+  try {
+    await createRetakeSubmission(parsed.data.instanceId, studentProfile.id);
   } catch (e) {
     return { error: e instanceof Error ? e.message : "unknownError" };
   }
