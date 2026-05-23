@@ -4,12 +4,12 @@ import { useEffect, useState, useCallback } from "react";
 
 export function CountdownTimer({
   endTime,
-  onExpire,
+  autoSubmit,
   timeRemainingLabel,
   timeExpiredLabel,
 }: {
   endTime: Date;
-  onExpire: () => void;
+  autoSubmit?: boolean;
   timeRemainingLabel: string;
   timeExpiredLabel: string;
 }) {
@@ -27,12 +27,22 @@ export function CountdownTimer({
       if (secs <= 0) {
         clearInterval(interval);
         setExpired(true);
-        onExpire();
+        if (autoSubmit) {
+          const form = document.querySelector("form") as HTMLFormElement | null;
+          if (form) {
+            const input = document.createElement("input");
+            input.type = "hidden";
+            input.name = "submit";
+            input.value = "true";
+            form.appendChild(input);
+            form.requestSubmit();
+          }
+        }
       }
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [calcRemaining, onExpire]);
+  }, [calcRemaining, autoSubmit]);
 
   if (expired) {
     return (

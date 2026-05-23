@@ -2,7 +2,8 @@ import { setRequestLocale, getTranslations } from "next-intl/server";
 import { requireApprovedUser } from "@/server/auth/session";
 import { getOrCreateSubmission } from "@/server/services/exam";
 import { isFeatureEnabled } from "@/server/services/feature-flag";
-import { saveAnswersAction } from "@/server/actions/exam";
+import { saveAnswersAction, createRetakeAction } from "@/server/actions/exam";
+import { CountdownTimer } from "@/components/exam/countdown-timer";
 import { db } from "@/server/db/client";
 import { notFound } from "next/navigation";
 import Link from "next/link";
@@ -16,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
 const saveAnswersFn = saveAnswersAction as unknown as (formData: FormData) => void;
+const createRetakeFn = createRetakeAction as unknown as (formData: FormData) => void;
 
 export default async function StudentExamPage({
   params,
@@ -47,15 +49,47 @@ export default async function StudentExamPage({
   if (!["PUBLISHED", "IN_PROGRESS", "COMPLETED"].includes(instance.status)) notFound();
 
   const submission = await getOrCreateSubmission(instanceId, studentProfile.id);
-  const questions = submission.instance.template.questions;
+  const allQuestions = submission.instance.template.questions;
+  const questionOrder = submission.questionOrder as string[] | null;
+  const questions = questionOrder
+    ? questionOrder
+        .map((id) => allQuestions.find((q) => q.id === id))
+        .filter((q): q is NonNullable<typeof q> => q !== undefined)
+    : allQuestions;
   const answerMap = new Map(submission.answers.map((a) => [a.questionId, a]));
   const customizations = (instance.customizations ?? {}) as Record<string, { fromSurahNumber?: number; fromAyah?: number; toSurahNumber?: number; toAyah?: number }>;
+
+  const allSubmissions = await db.examSubmission.findMany({
+    where: { instanceId, studentId: studentProfile.id },
+    orderBy: { attemptNumber: "desc" },
+    select: {
+      id: true,
+      attemptNumber: true,
+      status: true,
+      totalScore: true,
+      passed: true,
+      startedAt: true,
+      submittedAt: true,
+    },
+  });
 
   const now = new Date();
   const withinWindow = now >= instance.startDate && now <= instance.endDate;
   const canEdit = (submission.status === "NOT_STARTED" || submission.status === "IN_PROGRESS") && withinWindow && instance.status !== "COMPLETED";
   const isGraded = submission.status === "GRADED";
   const isSubmitted = submission.status === "SUBMITTED";
+
+  const maxAttempts = instance.maxAttempts ?? 1;
+  const canRetake =
+    isGraded &&
+    allSubmissions[0]?.attemptNumber < maxAttempts &&
+    withinWindow &&
+    instance.status !== "COMPLETED";
+
+  const timerEndTime =
+    instance.timeLimitMinutes && submission.startedAt
+      ? new Date(submission.startedAt.getTime() + instance.timeLimitMinutes * 60_000)
+      : null;
 
   return (
     <div className="space-y-6">
@@ -67,6 +101,21 @@ export default async function StudentExamPage({
 
       {submission.instance.template.description && (
         <p className="text-muted-foreground">{submission.instance.template.description}</p>
+      )}
+
+      {timerEndTime && canEdit && (
+        <CountdownTimer
+          endTime={timerEndTime}
+          autoSubmit
+          timeRemainingLabel={t("timeRemaining")}
+          timeExpiredLabel={t("timeExpired")}
+        />
+      )}
+
+      {instance.timeLimitMinutes && submission.status === "NOT_STARTED" && (
+        <div className="rounded-lg bg-amber-50 border border-amber-200 p-4 text-sm">
+          ⏱ {t("timeLimitMinutes")}: {instance.timeLimitMinutes}
+        </div>
       )}
 
       {isGraded && submission.totalScore !== null && (
@@ -189,6 +238,46 @@ export default async function StudentExamPage({
           </div>
         )}
       </form>
+
+      {canRetake && (
+        <form action={createRetakeFn} className="mt-6">
+          <input type="hidden" name="instanceId" value={instanceId} />
+          <Button type="submit">{t("retake")}</Button>
+          <span className="ms-3 text-sm text-muted-foreground">
+            {t("attempt")} {allSubmissions[0].attemptNumber}/{maxAttempts}
+          </span>
+        </form>
+      )}
+
+      {allSubmissions.length > 1 && (
+        <Card className="mt-6">
+          <CardHeader>
+            <CardTitle className="text-base">{t("attempt")} History</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              {allSubmissions.map((s) => (
+                <div key={s.id} className="flex items-center gap-3 text-sm">
+                  <span className="font-medium">{t("attempt")} {s.attemptNumber}</span>
+                  <Badge className={s.status === "GRADED" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-600"}>
+                    {s.status === "GRADED" ? `${Math.round(s.totalScore ?? 0)}%` : t(s.status === "IN_PROGRESS" ? "inProgress" : s.status === "NOT_STARTED" ? "notStarted" : s.status.toLowerCase())}
+                  </Badge>
+                  {s.passed !== null && (
+                    <Badge className={s.passed ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}>
+                      {s.passed ? t("passed") : t("failed")}
+                    </Badge>
+                  )}
+                  {s.status === "GRADED" && s.id === allSubmissions
+                    .filter((a) => a.status === "GRADED")
+                    .reduce((best, curr) => (curr.totalScore ?? 0) > (best.totalScore ?? 0) ? curr : best, allSubmissions.filter((a) => a.status === "GRADED")[0])?.id && (
+                    <Badge className="bg-blue-100 text-blue-800 text-xs">{t("bestScore")}</Badge>
+                  )}
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
