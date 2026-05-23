@@ -413,7 +413,9 @@
       "myGroup": "Group",
       "myModerator": "Moderator",
       "nextSession": "Next Session",
-      "noGroupAssigned": "You have not been assigned to a group yet"
+      "noGroupAssigned": "You have not been assigned to a group yet",
+      "assignments": "Assignments",
+      "assignmentsCompleted": "Assignments Completed"
     },
     "profile": {
       "title": "Profile",

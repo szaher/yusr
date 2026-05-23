@@ -112,24 +112,25 @@ export default async function StudentDashboardPage({
           studentProfileId={studentProfile!.id}
           groupAssignment={groupAssignment}
           eligibility={eligibility}
-          locale={locale}
           t={{
             myLevel: t("myLevel"),
             myClass: t("myClass"),
             myGroup: t("myGroup"),
             myModerator: t("myModerator"),
+            assignments: t("assignments"),
+            assignmentsCompleted: t("assignmentsCompleted"),
           }}
         />
       ) : (
         <StudentFallbackCards
           groupAssignment={groupAssignment}
           eligibility={eligibility}
-          locale={locale}
           t={{
             myLevel: t("myLevel"),
             myClass: t("myClass"),
             myGroup: t("myGroup"),
             myModerator: t("myModerator"),
+            assignmentsCompleted: t("assignmentsCompleted"),
           }}
         />
       )}
@@ -141,7 +142,6 @@ async function StudentAnalytics({
   studentProfileId,
   groupAssignment,
   eligibility,
-  locale,
   t,
 }: {
   studentProfileId: string;
@@ -153,8 +153,7 @@ async function StudentAnalytics({
     };
   };
   eligibility: { completed: number; total: number; eligible: boolean };
-  locale: string;
-  t: { myLevel: string; myClass: string; myGroup: string; myModerator: string };
+  t: { myLevel: string; myClass: string; myGroup: string; myModerator: string; assignments: string; assignmentsCompleted: string };
 }) {
   const at = await getTranslations("analytics");
 
@@ -181,7 +180,7 @@ async function StudentAnalytics({
           {groupAssignment.group.moderator?.user?.name ?? "—"}
         </span>
         <span>
-          <strong>{locale === "ar" ? "الواجبات" : "Assignments"}:</strong>{" "}
+          <strong>{t.assignments}:</strong>{" "}
           <span className={eligibility.eligible ? "text-green-600" : "text-yellow-600"}>
             {eligibility.completed}/{eligibility.total}
           </span>
@@ -230,7 +229,6 @@ async function StudentAnalytics({
 function StudentFallbackCards({
   groupAssignment,
   eligibility,
-  locale,
   t,
 }: {
   groupAssignment: {
@@ -241,8 +239,7 @@ function StudentFallbackCards({
     };
   };
   eligibility: { completed: number; total: number; eligible: boolean };
-  locale: string;
-  t: { myLevel: string; myClass: string; myGroup: string; myModerator: string };
+  t: { myLevel: string; myClass: string; myGroup: string; myModerator: string; assignmentsCompleted: string };
 }) {
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -297,7 +294,7 @@ function StudentFallbackCards({
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-sm text-muted-foreground">
-            {locale === "ar" ? "الواجبات المكتملة" : "Assignments Completed"}
+            {t.assignmentsCompleted}
           </CardTitle>
         </CardHeader>
         <CardContent>

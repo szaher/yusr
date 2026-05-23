@@ -413,7 +413,9 @@
       "myGroup": "المجموعة",
       "myModerator": "المشرف",
       "nextSession": "الحلقة القادمة",
-      "noGroupAssigned": "لم يتم تعيينك في مجموعة بعد"
+      "noGroupAssigned": "لم يتم تعيينك في مجموعة بعد",
+      "assignments": "الواجبات",
+      "assignmentsCompleted": "الواجبات المكتملة"
     },
     "profile": {
       "title": "الملف الشخصي",
