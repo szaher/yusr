@@ -358,6 +358,7 @@ export async function getInstanceDetail(instanceId: string) {
             include: { user: { select: { id: true, name: true, nameAr: true } } },
           },
         },
+        orderBy: { attemptNumber: "asc" },
       },
     },
   });
@@ -488,6 +489,70 @@ export async function getOrCreateSubmission(instanceId: string, studentProfileId
   });
 
   return submission;
+}
+
+export async function createRetakeSubmission(instanceId: string, studentProfileId: string) {
+  const instance = await db.examInstance.findUniqueOrThrow({
+    where: { id: instanceId },
+    select: {
+      maxAttempts: true,
+      shuffleQuestions: true,
+      poolConfig: true,
+      templateId: true,
+      status: true,
+      startDate: true,
+      endDate: true,
+    },
+  });
+
+  if (!["PUBLISHED", "IN_PROGRESS"].includes(instance.status)) {
+    throw new Error("Exam is not accepting submissions");
+  }
+
+  const now = new Date();
+  if (now < instance.startDate || now > instance.endDate) {
+    throw new Error("Exam is not within the submission window");
+  }
+
+  const latestSubmission = await db.examSubmission.findFirst({
+    where: { instanceId, studentId: studentProfileId },
+    orderBy: { attemptNumber: "desc" },
+    select: { attemptNumber: true, status: true },
+  });
+
+  if (!latestSubmission || latestSubmission.status !== "GRADED") {
+    throw new Error("Current attempt must be graded before retaking");
+  }
+
+  const maxAttempts = instance.maxAttempts ?? 1;
+  if (latestSubmission.attemptNumber >= maxAttempts) {
+    throw new Error("Maximum attempts reached");
+  }
+
+  const questionOrder = await buildQuestionOrder(
+    instance.templateId,
+    instance.poolConfig,
+    instance.shuffleQuestions
+  );
+
+  return db.examSubmission.create({
+    data: {
+      instanceId,
+      studentId: studentProfileId,
+      attemptNumber: latestSubmission.attemptNumber + 1,
+      questionOrder,
+    },
+  });
+}
+
+export async function getBestSubmission(instanceId: string, studentId: string) {
+  const submissions = await db.examSubmission.findMany({
+    where: { instanceId, studentId, status: "GRADED" },
+    orderBy: { totalScore: "desc" },
+    take: 1,
+    select: { totalScore: true, passed: true, attemptNumber: true },
+  });
+  return submissions[0] ?? null;
 }
 
 export async function saveAnswers(
@@ -749,7 +814,7 @@ export async function getStudentInstances(studentProfileId: string) {
   });
   const groupIds = groups.map((g) => g.groupId);
 
-  return db.examInstance.findMany({
+  const instances = await db.examInstance.findMany({
     where: {
       groupId: { in: groupIds },
       status: { in: ["PUBLISHED", "IN_PROGRESS", "COMPLETED"] },
@@ -759,9 +824,82 @@ export async function getStudentInstances(studentProfileId: string) {
       group: { select: { name: true } },
       submissions: {
         where: { studentId: studentProfileId },
-        select: { status: true, totalScore: true, passed: true },
+        select: {
+          status: true,
+          totalScore: true,
+          passed: true,
+          attemptNumber: true,
+        },
+        orderBy: { attemptNumber: "desc" },
       },
     },
     orderBy: { startDate: "desc" },
   });
+
+  return instances.map((inst) => {
+    const allAttempts = inst.submissions;
+    const gradedAttempts = allAttempts.filter((s) => s.status === "GRADED");
+    const bestGraded = gradedAttempts.length > 0
+      ? gradedAttempts.reduce((best, s) =>
+          (s.totalScore ?? 0) > (best.totalScore ?? 0) ? s : best
+        )
+      : null;
+    const latestAttempt = allAttempts[0];
+
+    return {
+      ...inst,
+      bestScore: bestGraded?.totalScore ?? null,
+      bestPassed: bestGraded?.passed ?? null,
+      totalAttempts: allAttempts.length,
+      maxAttempts: inst.maxAttempts,
+      latestStatus: latestAttempt?.status ?? "NOT_STARTED",
+      timeLimitMinutes: inst.timeLimitMinutes,
+    };
+  });
+}
+
+export async function duplicateTemplate(templateId: string, actorId: string) {
+  const original = await db.examTemplate.findUniqueOrThrow({
+    where: { id: templateId },
+    include: { questions: { orderBy: { order: "asc" } } },
+  });
+
+  const newTemplate = await db.examTemplate.create({
+    data: {
+      title: `${original.title} (copy)`,
+      description: original.description,
+      passingScore: original.passingScore,
+      totalPoints: original.totalPoints,
+      createdById: actorId,
+    },
+  });
+
+  for (const q of original.questions) {
+    await db.examQuestion.create({
+      data: {
+        templateId: newTemplate.id,
+        type: q.type,
+        text: q.text,
+        points: q.points,
+        order: q.order,
+        options: q.options || undefined,
+        correctAnswer: q.correctAnswer,
+        tags: q.tags,
+        fromSurahNumber: q.fromSurahNumber,
+        fromAyah: q.fromAyah,
+        toSurahNumber: q.toSurahNumber,
+        toAyah: q.toAyah,
+      },
+    });
+  }
+
+  await createAuditLog({
+    actorId,
+    action: "exam_template.duplicate",
+    entityType: "ExamTemplate",
+    entityId: newTemplate.id,
+    metadata: { originalId: templateId, title: newTemplate.title },
+  });
+
+  return newTemplate;
 }
