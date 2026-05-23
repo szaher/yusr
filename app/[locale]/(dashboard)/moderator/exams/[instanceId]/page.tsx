@@ -89,6 +89,17 @@ export default async function ModeratorExamDetailPage({
         <p>{t("passingScore")}: {instance.template.passingScore}%</p>
       </div>
 
+      {(instance.timeLimitMinutes || instance.shuffleQuestions || instance.maxAttempts || instance.poolConfig) && (
+        <div className="text-sm text-muted-foreground space-y-1">
+          {instance.timeLimitMinutes && <p>{t("timeLimitMinutes")}: {instance.timeLimitMinutes}</p>}
+          {instance.shuffleQuestions && <p>{t("shuffleQuestions")}: ✓</p>}
+          {instance.maxAttempts && <p>{t("maxAttempts")}: {instance.maxAttempts}</p>}
+          {instance.poolConfig && (
+            <p>{t("pickQuestions")}: {(instance.poolConfig as { pick: number }).pick} {t("questionsFromPool")}</p>
+          )}
+        </div>
+      )}
+
       {/* Status Actions */}
       <div className="flex gap-2">
         {instance.status === "DRAFT" && (
@@ -145,6 +156,7 @@ export default async function ModeratorExamDetailPage({
             <TableHeader>
               <TableRow>
                 <TableHead>{t("studentName")}</TableHead>
+                {instance.maxAttempts && <TableHead>{t("attempt")}</TableHead>}
                 <TableHead>{t("submissionStatus")}</TableHead>
                 <TableHead>{t("score")}</TableHead>
                 <TableHead />
@@ -152,46 +164,81 @@ export default async function ModeratorExamDetailPage({
             </TableHeader>
             <TableBody>
               {instance.group.students.map((gs) => {
-                const sub = instance.submissions.find(
-                  (s) => s.student.user.id === gs.student.user.id
-                );
-                const subStatus = sub?.status ?? "NOT_STARTED";
-                const subStatusKey = subStatus === "IN_PROGRESS" ? "inProgress" : subStatus === "NOT_STARTED" ? "notStarted" : subStatus.toLowerCase();
+                const studentSubs = instance.submissions
+                  .filter((s) => s.student.user.id === gs.student.user.id)
+                  .sort((a, b) => a.attemptNumber - b.attemptNumber);
+                const bestSub = studentSubs
+                  .filter((s) => s.status === "GRADED")
+                  .reduce<typeof studentSubs[0] | null>(
+                    (best, s) => (!best || (s.totalScore ?? 0) > (best.totalScore ?? 0) ? s : best),
+                    null
+                  );
 
-                return (
-                  <TableRow key={gs.student.user.id}>
-                    <TableCell className="font-medium">
-                      {gs.student.user.nameAr || gs.student.user.name}
-                    </TableCell>
-                    <TableCell>
-                      <Badge className={SUBMISSION_COLORS[subStatus] || ""}>
-                        {t(subStatusKey as "notStarted" | "inProgress" | "submitted" | "graded")}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      {sub?.totalScore !== null && sub?.totalScore !== undefined ? (
-                        <>
-                          {Math.round(sub.totalScore)}%{" "}
-                          <Badge className={sub.passed ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}>
-                            {sub.passed ? t("passed") : t("failed")}
-                          </Badge>
-                        </>
-                      ) : "—"}
-                    </TableCell>
-                    <TableCell>
-                      {sub && sub.status === "SUBMITTED" && (
-                        <Link href={`/${locale}/moderator/exams/${instance.id}/grade/${sub.id}`}>
-                          <Button variant="outline" size="sm">{t("grade")}</Button>
-                        </Link>
+                if (studentSubs.length === 0) {
+                  return (
+                    <TableRow key={gs.student.user.id}>
+                      <TableCell className="font-medium">
+                        {gs.student.user.nameAr || gs.student.user.name}
+                      </TableCell>
+                      {instance.maxAttempts && <TableCell>—</TableCell>}
+                      <TableCell>
+                        <Badge className={SUBMISSION_COLORS["NOT_STARTED"]}>
+                          {t("notStarted")}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>—</TableCell>
+                      <TableCell />
+                    </TableRow>
+                  );
+                }
+
+                return studentSubs.map((sub) => {
+                  const subStatusKey = sub.status === "IN_PROGRESS" ? "inProgress" : sub.status === "NOT_STARTED" ? "notStarted" : sub.status.toLowerCase();
+                  const isBest = bestSub?.id === sub.id;
+
+                  return (
+                    <TableRow key={sub.id} className={isBest ? "bg-green-50" : ""}>
+                      <TableCell className="font-medium">
+                        {sub.attemptNumber === 1
+                          ? (gs.student.user.nameAr || gs.student.user.name)
+                          : ""}
+                      </TableCell>
+                      {instance.maxAttempts && (
+                        <TableCell>
+                          {sub.attemptNumber}/{instance.maxAttempts}
+                          {isBest && <Badge className="ms-1 bg-green-100 text-green-800 text-xs">{t("bestScore")}</Badge>}
+                        </TableCell>
                       )}
-                      {sub && sub.status === "GRADED" && (
-                        <Link href={`/${locale}/moderator/exams/${instance.id}/grade/${sub.id}`}>
-                          <Button variant="ghost" size="sm">{t("viewDetails")}</Button>
-                        </Link>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                );
+                      <TableCell>
+                        <Badge className={SUBMISSION_COLORS[sub.status] || ""}>
+                          {t(subStatusKey as "notStarted" | "inProgress" | "submitted" | "graded")}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        {sub.totalScore !== null && sub.totalScore !== undefined ? (
+                          <>
+                            {Math.round(sub.totalScore)}%{" "}
+                            <Badge className={sub.passed ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}>
+                              {sub.passed ? t("passed") : t("failed")}
+                            </Badge>
+                          </>
+                        ) : "—"}
+                      </TableCell>
+                      <TableCell>
+                        {sub.status === "SUBMITTED" && (
+                          <Link href={`/${locale}/moderator/exams/${instance.id}/grade/${sub.id}`}>
+                            <Button variant="outline" size="sm">{t("grade")}</Button>
+                          </Link>
+                        )}
+                        {sub.status === "GRADED" && (
+                          <Link href={`/${locale}/moderator/exams/${instance.id}/grade/${sub.id}`}>
+                            <Button variant="ghost" size="sm">{t("viewDetails")}</Button>
+                          </Link>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  );
+                });
               })}
             </TableBody>
           </Table>
