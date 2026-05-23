@@ -18,6 +18,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import Link from "next/link";
+import { BookOpenText } from "lucide-react";
 import { Label } from "@/components/ui/label";
 
 const RESULT_COLORS: Record<string, string> = {
@@ -38,6 +40,7 @@ export default async function StudentMemorizationPage({
   const session = await requireApprovedUser();
 
   const t = await getTranslations("memorization");
+  const tExplorer = await getTranslations("quranExplorer");
 
   const studentProfile = await db.studentProfile.findUnique({
     where: { userId: session.user.id },
@@ -184,6 +187,13 @@ export default async function StudentMemorizationPage({
             </strong>
           </span>
         </div>
+        <Link
+          href={`/${locale}/quran?surah=${plan.currentSurah.number}&ayah=${plan.currentAyahNumber}`}
+          className="mt-3 inline-flex items-center gap-1 text-sm text-white/90 hover:text-white hover:underline"
+        >
+          <BookOpenText className="h-4 w-4" />
+          {tExplorer("openInExplorer")}
+        </Link>
       </div>
 
       {/* Quick info cards */}

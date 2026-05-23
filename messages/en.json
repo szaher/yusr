@@ -90,7 +90,8 @@
     "auditLogs": "Audit Logs",
     "tickets": "Support Tickets",
     "memorization": "Memorization",
-    "support": "Support"
+    "support": "Support",
+    "quranExplorer": "Quran Explorer"
   },
   "exams": {
     "title": "Exams",
@@ -746,5 +747,15 @@
     "rate": "Rate",
     "count": "Count",
     "percentage": "%"
+  },
+  "quranExplorer": {
+    "title": "Quran Explorer",
+    "surah": "Surah",
+    "ayah": "Ayah",
+    "reciter": "Reciter",
+    "mushaf": "Mushaf Type",
+    "translation": "Translation",
+    "go": "Go",
+    "openInExplorer": "Open in Quran Explorer"
   }
 }

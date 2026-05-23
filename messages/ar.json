@@ -90,7 +90,8 @@
     "auditLogs": "سجل المراجعة",
     "tickets": "تذاكر الدعم",
     "memorization": "الحفظ",
-    "support": "الدعم"
+    "support": "الدعم",
+    "quranExplorer": "مستكشف القرآن"
   },
   "exams": {
     "title": "الاختبارات",
@@ -746,5 +747,15 @@
     "rate": "المعدل",
     "count": "العدد",
     "percentage": "٪"
+  },
+  "quranExplorer": {
+    "title": "مستكشف القرآن",
+    "surah": "السورة",
+    "ayah": "الآية",
+    "reciter": "القارئ",
+    "mushaf": "نوع المصحف",
+    "translation": "الترجمة",
+    "go": "انتقال",
+    "openInExplorer": "فتح في مستكشف القرآن"
   }
 }

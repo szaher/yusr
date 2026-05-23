@@ -23,6 +23,7 @@ import {
   Megaphone,
   Headset,
   ClipboardCheck,
+  BookOpenText,
 } from "lucide-react";
 
 type NavItem = {
@@ -46,6 +47,7 @@ const adminNav: NavItem[] = [
   { labelKey: "announcements", href: "/admin/announcements", icon: Megaphone },
   { labelKey: "tickets", href: "/admin/tickets", icon: FileText },
   { labelKey: "exams", href: "/admin/exams", icon: ClipboardCheck },
+  { labelKey: "quranExplorer", href: "/quran", icon: BookOpenText },
 ];
 
 const moderatorNav: NavItem[] = [
@@ -57,6 +59,7 @@ const moderatorNav: NavItem[] = [
   { labelKey: "memorization", href: "/moderator/memorization", icon: BookOpenCheck },
   { labelKey: "leaveRequests", href: "/moderator/leave-requests", icon: CalendarOff },
   { labelKey: "exams", href: "/moderator/exams", icon: ClipboardCheck },
+  { labelKey: "quranExplorer", href: "/quran", icon: BookOpenText },
 ];
 
 const studentNav: NavItem[] = [
@@ -69,11 +72,13 @@ const studentNav: NavItem[] = [
   { labelKey: "leaveRequests", href: "/student/leave-requests", icon: CalendarOff },
   { labelKey: "support", href: "/student/tickets", icon: Headset },
   { labelKey: "exams", href: "/student/exams", icon: ClipboardCheck },
+  { labelKey: "quranExplorer", href: "/quran", icon: BookOpenText },
 ];
 
 const supportNav: NavItem[] = [
   { labelKey: "dashboard", href: "/support/dashboard", icon: LayoutDashboard },
   { labelKey: "tickets", href: "/support/tickets", icon: FileText },
+  { labelKey: "quranExplorer", href: "/quran", icon: BookOpenText },
 ];
 
 const navByRole: Record<string, NavItem[]> = {

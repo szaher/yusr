@@ -7,6 +7,8 @@ import {
 } from "@/components/ui/card";
 import { ConfirmListeningButton } from "./confirm-button";
 import { MaterialEmbed } from "@/components/assignments/material-embed";
+import Link from "next/link";
+import { BookOpenText } from "lucide-react";
 
 export default async function StudentAssignmentDetailPage({
   params,
@@ -20,6 +22,7 @@ export default async function StudentAssignmentDetailPage({
   if (!session?.user) redirect(`/${locale}/login`);
 
   const t = await getTranslations("assignments");
+  const tExplorer = await getTranslations("quranExplorer");
   const sa = await getStudentAssignmentDetail(id);
   if (!sa) notFound();
 
@@ -36,12 +39,21 @@ export default async function StudentAssignmentDetailPage({
           {a.description && <p>{a.description}</p>}
 
           {a.quranAssignment && (
-            <p>
-              <strong>{t("quranRange")}:</strong>{" "}
-              {a.quranAssignment.fromSurah.nameAr} ({a.quranAssignment.fromAyahNumber})
-              {" → "}
-              {a.quranAssignment.toSurah.nameAr} ({a.quranAssignment.toAyahNumber})
-            </p>
+            <div className="space-y-1">
+              <p>
+                <strong>{t("quranRange")}:</strong>{" "}
+                {a.quranAssignment.fromSurah.nameAr} ({a.quranAssignment.fromAyahNumber})
+                {" → "}
+                {a.quranAssignment.toSurah.nameAr} ({a.quranAssignment.toAyahNumber})
+              </p>
+              <Link
+                href={`/${locale}/quran?surah=${a.quranAssignment.fromSurahNumber}&ayah=${a.quranAssignment.fromAyahNumber}`}
+                className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
+              >
+                <BookOpenText className="h-4 w-4" />
+                {tExplorer("openInExplorer")}
+              </Link>
+            </div>
           )}
 
           {a.tajweedAssignment && (
