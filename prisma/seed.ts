@@ -77,6 +77,7 @@ async function seedFeatureFlags() {
     { key: "support_tickets", enabled: false, description: "Support ticket system" },
     { key: "audio_playback_tracking", enabled: false, description: "Track actual audio playback" },
     { key: "memorization_plans", enabled: true, description: "Individual student memorization plan tracking" },
+    { key: "analytics", enabled: false, description: "Dashboard analytics and charts" },
   ];
 
   for (const flag of flags) {
