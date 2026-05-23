@@ -74,12 +74,21 @@ export default async function AdminExamResultsPage({
           <TableBody>
             {instances.map((inst) => {
               const statusKey = inst.status === "IN_PROGRESS" ? "inProgress" : inst.status.toLowerCase();
-              const graded = inst.submissions.filter((s) => s.status === "GRADED");
-              const avgScore = graded.length > 0
-                ? Math.round(graded.reduce((sum, s) => sum + (s.totalScore ?? 0), 0) / graded.length)
+              const graded = inst.submissions.filter((s: { status: string }) => s.status === "GRADED");
+              const studentBestScores = new Map<string, { totalScore: number; passed: boolean }>();
+              for (const s of graded) {
+                const key = s.studentId;
+                const existing = studentBestScores.get(key);
+                if (!existing || (s.totalScore ?? 0) > existing.totalScore) {
+                  studentBestScores.set(key, { totalScore: s.totalScore ?? 0, passed: s.passed ?? false });
+                }
+              }
+              const bestScores = Array.from(studentBestScores.values());
+              const avgScore = bestScores.length > 0
+                ? Math.round(bestScores.reduce((sum, s) => sum + s.totalScore, 0) / bestScores.length)
                 : null;
-              const passCount = graded.filter((s) => s.passed).length;
-              const passRate = graded.length > 0 ? Math.round((passCount / graded.length) * 100) : null;
+              const passCount = bestScores.filter((s) => s.passed).length;
+              const passRate = bestScores.length > 0 ? Math.round((passCount / bestScores.length) * 100) : null;
 
               return (
                 <TableRow key={inst.id}>

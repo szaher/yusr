@@ -375,7 +375,7 @@ export async function getAllInstances(filter?: "active" | "all") {
       group: { select: { name: true } },
       _count: { select: { submissions: true } },
       submissions: {
-        select: { totalScore: true, passed: true, status: true },
+        select: { totalScore: true, passed: true, status: true, studentId: true },
       },
     },
     orderBy: { updatedAt: "desc" },
