@@ -195,7 +195,8 @@
     "bestScore": "Best Score",
     "retake": "Retake Exam",
     "poolValidationError": "Not enough questions matching the selected tags",
-    "questionsFromPool": "questions from pool"
+    "questionsFromPool": "questions from pool",
+    "attemptHistory": "Attempt History"
   },
   "admin": {
     "dashboard": {

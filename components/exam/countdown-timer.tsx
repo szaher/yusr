@@ -28,7 +28,7 @@ export function CountdownTimer({
         clearInterval(interval);
         setExpired(true);
         if (autoSubmit) {
-          const form = document.querySelector("form") as HTMLFormElement | null;
+          const form = document.querySelector("form[data-exam-form]") as HTMLFormElement | null;
           if (form) {
             const input = document.createElement("input");
             input.type = "hidden";

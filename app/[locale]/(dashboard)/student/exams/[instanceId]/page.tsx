@@ -135,7 +135,7 @@ export default async function StudentExamPage({
         </Card>
       )}
 
-      <form action={canEdit ? saveAnswersFn : undefined}>
+      <form action={canEdit ? saveAnswersFn : undefined} data-exam-form>
         {canEdit && <input type="hidden" name="instanceId" value={instanceId} />}
 
         <div className="space-y-4">
@@ -252,7 +252,7 @@ export default async function StudentExamPage({
       {allSubmissions.length > 1 && (
         <Card className="mt-6">
           <CardHeader>
-            <CardTitle className="text-base">{t("attempt")} History</CardTitle>
+            <CardTitle className="text-base">{t("attemptHistory")}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">

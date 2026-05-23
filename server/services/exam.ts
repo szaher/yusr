@@ -600,13 +600,18 @@ export async function saveAnswers(
   });
 
   if (!submission) {
+    const latestAttempt = await db.examSubmission.findFirst({
+      where: { instanceId, studentId: studentProfileId },
+      orderBy: { attemptNumber: "desc" },
+      select: { attemptNumber: true },
+    });
     submission = await db.examSubmission.create({
       data: {
         instanceId,
         studentId: studentProfileId,
         status: "IN_PROGRESS",
         startedAt: now,
-        attemptNumber: 1,
+        attemptNumber: (latestAttempt?.attemptNumber ?? 0) + 1,
       },
     });
   } else if (submission.status === "NOT_STARTED") {
@@ -864,42 +869,44 @@ export async function duplicateTemplate(templateId: string, actorId: string) {
     include: { questions: { orderBy: { order: "asc" } } },
   });
 
-  const newTemplate = await db.examTemplate.create({
-    data: {
-      title: `${original.title} (copy)`,
-      description: original.description,
-      passingScore: original.passingScore,
-      totalPoints: original.totalPoints,
-      createdById: actorId,
-    },
-  });
-
-  for (const q of original.questions) {
-    await db.examQuestion.create({
+  return db.$transaction(async (tx) => {
+    const newTemplate = await tx.examTemplate.create({
       data: {
-        templateId: newTemplate.id,
-        type: q.type,
-        text: q.text,
-        points: q.points,
-        order: q.order,
-        options: q.options || undefined,
-        correctAnswer: q.correctAnswer,
-        tags: q.tags,
-        fromSurahNumber: q.fromSurahNumber,
-        fromAyah: q.fromAyah,
-        toSurahNumber: q.toSurahNumber,
-        toAyah: q.toAyah,
+        title: `${original.title} (copy)`,
+        description: original.description,
+        passingScore: original.passingScore,
+        totalPoints: original.totalPoints,
+        createdById: actorId,
       },
     });
-  }
 
-  await createAuditLog({
-    actorId,
-    action: "exam_template.duplicate",
-    entityType: "ExamTemplate",
-    entityId: newTemplate.id,
-    metadata: { originalId: templateId, title: newTemplate.title },
+    for (const q of original.questions) {
+      await tx.examQuestion.create({
+        data: {
+          templateId: newTemplate.id,
+          type: q.type,
+          text: q.text,
+          points: q.points,
+          order: q.order,
+          options: q.options || undefined,
+          correctAnswer: q.correctAnswer,
+          tags: q.tags,
+          fromSurahNumber: q.fromSurahNumber,
+          fromAyah: q.fromAyah,
+          toSurahNumber: q.toSurahNumber,
+          toAyah: q.toAyah,
+        },
+      });
+    }
+
+    await createAuditLog({
+      actorId,
+      action: "exam_template.duplicate",
+      entityType: "ExamTemplate",
+      entityId: newTemplate.id,
+      metadata: { originalId: templateId, title: newTemplate.title },
+    });
+
+    return newTemplate;
   });
-
-  return newTemplate;
 }

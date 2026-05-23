@@ -195,7 +195,8 @@
     "bestScore": "أفضل درجة",
     "retake": "إعادة الاختبار",
     "poolValidationError": "لا توجد أسئلة كافية تطابق الوسوم المحددة",
-    "questionsFromPool": "أسئلة من المجموعة"
+    "questionsFromPool": "أسئلة من المجموعة",
+    "attemptHistory": "سجل المحاولات"
   },
   "admin": {
     "dashboard": {
