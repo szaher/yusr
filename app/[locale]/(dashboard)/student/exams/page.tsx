@@ -83,9 +83,7 @@ export default async function StudentExamsPage({
           </TableHeader>
           <TableBody>
             {instances.map((inst) => {
-              const sub = inst.submissions[0];
-              const subStatus = sub?.status ?? "NOT_STARTED";
-              const subStatusKey = subStatus === "IN_PROGRESS" ? "inProgress" : subStatus === "NOT_STARTED" ? "notStarted" : subStatus.toLowerCase();
+              const subStatusKey = inst.latestStatus === "IN_PROGRESS" ? "inProgress" : inst.latestStatus === "NOT_STARTED" ? "notStarted" : inst.latestStatus.toLowerCase();
 
               return (
                 <TableRow key={inst.id}>
@@ -93,23 +91,31 @@ export default async function StudentExamsPage({
                     <Link href={`/${locale}/student/exams/${inst.id}`} className="font-medium hover:underline">
                       {inst.template.title}
                     </Link>
+                    {inst.timeLimitMinutes && (
+                      <span className="ms-2 text-xs text-muted-foreground">⏱ {inst.timeLimitMinutes}min</span>
+                    )}
                   </TableCell>
                   <TableCell>{inst.group.name}</TableCell>
                   <TableCell>
                     {new Date(inst.startDate).toLocaleDateString(locale)} — {new Date(inst.endDate).toLocaleDateString(locale)}
                   </TableCell>
                   <TableCell>
-                    <Badge className={SUBMISSION_COLORS[subStatus] || ""}>
+                    <Badge className={SUBMISSION_COLORS[inst.latestStatus] || ""}>
                       {t(subStatusKey as "notStarted" | "inProgress" | "submitted" | "graded")}
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    {sub?.totalScore !== null && sub?.totalScore !== undefined ? (
+                    {inst.bestScore !== null ? (
                       <>
-                        {Math.round(sub.totalScore)}%{" "}
-                        <Badge className={sub.passed ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}>
-                          {sub.passed ? t("passed") : t("failed")}
+                        {Math.round(inst.bestScore)}%{" "}
+                        <Badge className={inst.bestPassed ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}>
+                          {inst.bestPassed ? t("passed") : t("failed")}
                         </Badge>
+                        {inst.maxAttempts && inst.totalAttempts > 0 && (
+                          <span className="ms-2 text-xs text-muted-foreground">
+                            ({inst.totalAttempts}/{inst.maxAttempts})
+                          </span>
+                        )}
                       </>
                     ) : "—"}
                   </TableCell>
