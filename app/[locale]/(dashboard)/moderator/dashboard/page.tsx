@@ -8,6 +8,15 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { getActiveAnnouncementsForUser } from "@/server/services/announcement";
+import { isFeatureEnabled } from "@/server/services/feature-flag";
+import {
+  getModeratorKPIs,
+  getStudentAttendanceGrid,
+  getSessionGradeTrend,
+} from "@/server/services/analytics";
+import { StatsCard } from "@/components/charts/stats-card";
+import { AttendanceGrid } from "@/components/charts/attendance-grid";
+import { LineChartCard } from "@/components/charts/line-chart-card";
 
 export default async function ModeratorDashboardPage({
   params,
@@ -19,6 +28,7 @@ export default async function ModeratorDashboardPage({
   const session = await requireApprovedUser();
 
   const t = await getTranslations("moderator.dashboard");
+  const analyticsEnabled = await isFeatureEnabled("analytics");
 
   const groups = await getModeratorGroups(session.user.id);
   const announcements = await getActiveAnnouncementsForUser(session.user.id);
@@ -56,6 +66,10 @@ export default async function ModeratorDashboardPage({
         </Card>
       ) : (
         <>
+          {analyticsEnabled && (
+            <ModeratorAnalytics userId={session.user.id} />
+          )}
+
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <Card>
               <CardHeader className="pb-2">
@@ -102,5 +116,56 @@ export default async function ModeratorDashboardPage({
         </>
       )}
     </div>
+  );
+}
+
+async function ModeratorAnalytics({ userId }: { userId: string }) {
+  const at = await getTranslations("analytics");
+
+  const [kpis, attendanceGrid, gradeTrend] = await Promise.all([
+    getModeratorKPIs(userId),
+    getStudentAttendanceGrid(userId),
+    getSessionGradeTrend(userId),
+  ]);
+
+  return (
+    <>
+      <div className="grid gap-4 sm:grid-cols-3">
+        <StatsCard
+          title={at("attendanceRate")}
+          value={`${kpis.attendanceRate}%`}
+          colorClass="text-green-600"
+        />
+        <StatsCard
+          title={at("avgSessionGrade")}
+          value={`${kpis.avgGrade}%`}
+          colorClass="text-amber-600"
+        />
+        <StatsCard
+          title={at("pendingGradings")}
+          value={kpis.pendingGradings}
+          colorClass="text-blue-600"
+        />
+      </div>
+
+      <AttendanceGrid
+        title={at("studentAttendance")}
+        rows={attendanceGrid}
+        statusLabels={{
+          present: at("present"),
+          absent: at("absent"),
+          late: at("late"),
+          excused: at("excused"),
+          none: "—",
+        }}
+      />
+
+      <LineChartCard
+        title={at("sessionGradeTrend")}
+        data={gradeTrend}
+        color="#f59e0b"
+        yAxisLabel={at("grade")}
+      />
+    </>
   );
 }
