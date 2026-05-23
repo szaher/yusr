@@ -10,6 +10,15 @@ import type {
   GradeSubmissionInput,
 } from "@/lib/validations/exam";
 
+function shuffleArray<T>(array: T[]): T[] {
+  const result = [...array];
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
+}
+
 // ── Template CRUD ──
 
 export async function createTemplate(input: CreateTemplateInput, actorId: string) {
@@ -101,6 +110,10 @@ export async function addQuestion(input: AddQuestionInput, actorId: string) {
     parsedOptions = JSON.parse(input.options);
   }
 
+  const tags = input.tags
+    ? input.tags.split(",").map((t) => t.trim().toLowerCase()).filter(Boolean)
+    : [];
+
   const question = await db.examQuestion.create({
     data: {
       templateId: input.templateId,
@@ -114,6 +127,7 @@ export async function addQuestion(input: AddQuestionInput, actorId: string) {
       fromAyah: input.type === "RECITATION" ? input.fromAyah : undefined,
       toSurahNumber: input.type === "RECITATION" ? input.toSurahNumber : undefined,
       toAyah: input.type === "RECITATION" ? input.toAyah : undefined,
+      tags,
     },
   });
 
@@ -124,7 +138,7 @@ export async function addQuestion(input: AddQuestionInput, actorId: string) {
     action: "exam_question.add",
     entityType: "ExamTemplate",
     entityId: input.templateId,
-    metadata: { questionId: question.id, type: input.type },
+    metadata: { questionId: question.id, type: input.type, tags },
   });
 
   return question;
@@ -158,8 +172,32 @@ async function recalculateTotalPoints(templateId: string) {
 
 export async function assignToGroups(input: AssignToGroupsInput, actorId: string) {
   const groupIds: string[] = JSON.parse(input.groupIds);
-  const instances = [];
 
+  let poolConfig: { pick: number; tags?: string[] } | null = null;
+  if (input.poolPick) {
+    const poolTags = input.poolTags
+      ? input.poolTags.split(",").map((t) => t.trim().toLowerCase()).filter(Boolean)
+      : undefined;
+
+    const questions = await db.examQuestion.findMany({
+      where: { templateId: input.templateId },
+      select: { tags: true },
+    });
+
+    const matchingCount = poolTags
+      ? questions.filter((q) => q.tags.some((t) => poolTags.includes(t))).length
+      : questions.length;
+
+    if (input.poolPick > matchingCount) {
+      throw new Error(
+        `Not enough questions matching the selected tags. Found ${matchingCount}, need ${input.poolPick}.`
+      );
+    }
+
+    poolConfig = { pick: input.poolPick, ...(poolTags ? { tags: poolTags } : {}) };
+  }
+
+  const instances = [];
   for (const groupId of groupIds) {
     const instance = await db.examInstance.create({
       data: {
@@ -170,6 +208,10 @@ export async function assignToGroups(input: AssignToGroupsInput, actorId: string
         endDate: new Date(input.endDate),
         status: "DRAFT",
         createdById: actorId,
+        timeLimitMinutes: input.timeLimitMinutes || null,
+        shuffleQuestions: input.shuffleQuestions === "true",
+        maxAttempts: input.maxAttempts || null,
+        poolConfig: poolConfig || undefined,
       },
     });
     instances.push(instance);
