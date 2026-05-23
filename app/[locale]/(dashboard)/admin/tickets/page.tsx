@@ -8,10 +8,8 @@ import { assignTicketAction } from "@/server/actions/support-ticket";
 import { db } from "@/server/db/client";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import {
-  Card,
-  CardContent,
-} from "@/components/ui/card";
+import { EmptyState } from "@/components/shared/empty-state";
+import { HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -22,15 +20,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { STATUS_COLORS } from "@/lib/constants/status-colors";
 
 const assignTicket = assignTicketAction as unknown as (formData: FormData) => void;
-
-const STATUS_COLORS: Record<string, string> = {
-  OPEN: "bg-blue-100 text-blue-800",
-  IN_PROGRESS: "bg-yellow-100 text-yellow-800",
-  RESOLVED: "bg-green-100 text-green-800",
-  CLOSED: "bg-gray-100 text-gray-600",
-};
 
 export default async function AdminTicketsPage({
   params,
@@ -74,11 +66,11 @@ export default async function AdminTicketsPage({
       </div>
 
       {tickets.length === 0 ? (
-        <Card>
-          <CardContent className="py-8 text-center text-muted-foreground">
-            {t("noTickets")}
-          </CardContent>
-        </Card>
+        <EmptyState
+          icon={HelpCircle}
+          title={t("noTickets")}
+          description={t("noTicketsDesc")}
+        />
       ) : (
         <Table>
           <TableHeader>
@@ -118,7 +110,7 @@ export default async function AdminTicketsPage({
                   </TableCell>
                   <TableCell>
                     {ticket.escalated && (
-                      <Badge className="bg-red-100 text-red-800">{t("escalated")}</Badge>
+                      <Badge className={STATUS_COLORS.ESCALATED}>{t("escalated")}</Badge>
                     )}
                   </TableCell>
                   <TableCell>

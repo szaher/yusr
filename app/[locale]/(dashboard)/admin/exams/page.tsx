@@ -13,6 +13,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { EmptyState } from "@/components/shared/empty-state";
+import { FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -102,11 +104,11 @@ export default async function AdminExamsPage({
           </TableBody>
         </Table>
       ) : (
-        <Card>
-          <CardContent className="py-8 text-center text-muted-foreground">
-            {t("noExams")}
-          </CardContent>
-        </Card>
+        <EmptyState
+          icon={FileText}
+          title={t("noExams")}
+          description={t("noExamsDesc")}
+        />
       )}
     </div>
   );

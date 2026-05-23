@@ -11,14 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-
-const STATUS_COLORS: Record<string, string> = {
-  SCHEDULED: "bg-blue-100 text-blue-800",
-  OPEN: "bg-green-100 text-green-800",
-  IN_PROGRESS: "bg-yellow-100 text-yellow-800",
-  COMPLETED: "bg-gray-100 text-gray-800",
-  CANCELLED: "bg-red-100 text-red-800",
-};
+import { STATUS_COLORS } from "@/lib/constants/status-colors";
 
 const STATUS_KEYS: Record<string, string> = {
   SCHEDULED: "statusScheduled",

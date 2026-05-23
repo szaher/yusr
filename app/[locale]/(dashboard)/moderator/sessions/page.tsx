@@ -21,18 +21,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { EmptyState } from "@/components/shared/empty-state";
+import { Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-
-const STATUS_COLORS: Record<string, string> = {
-  SCHEDULED: "bg-blue-100 text-blue-800",
-  OPEN: "bg-green-100 text-green-800",
-  IN_PROGRESS: "bg-yellow-100 text-yellow-800",
-  COMPLETED: "bg-gray-100 text-gray-800",
-  CANCELLED: "bg-red-100 text-red-800",
-};
+import { STATUS_COLORS } from "@/lib/constants/status-colors";
 
 export default async function ModeratorSessionsPage({
   params,
@@ -214,11 +209,11 @@ export default async function ModeratorSessionsPage({
       )}
 
       {sessions.length === 0 && (
-        <Card>
-          <CardContent className="py-8 text-center text-muted-foreground">
-            {t("noSessions")}
-          </CardContent>
-        </Card>
+        <EmptyState
+          icon={Calendar}
+          title={t("noSessions")}
+          description={t("noSessionsDesc")}
+        />
       )}
     </div>
   );

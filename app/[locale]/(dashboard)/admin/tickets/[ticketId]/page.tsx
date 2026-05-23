@@ -19,16 +19,10 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { STATUS_COLORS } from "@/lib/constants/status-colors";
 
 const assignTicketFn = assignTicketAction as unknown as (formData: FormData) => void;
 const changeStatus = changeTicketStatusAction as unknown as (formData: FormData) => void;
-
-const STATUS_COLORS: Record<string, string> = {
-  OPEN: "bg-blue-100 text-blue-800",
-  IN_PROGRESS: "bg-yellow-100 text-yellow-800",
-  RESOLVED: "bg-green-100 text-green-800",
-  CLOSED: "bg-gray-100 text-gray-600",
-};
 
 export default async function AdminTicketDetailPage({
   params,
@@ -74,7 +68,7 @@ export default async function AdminTicketDetailPage({
           {t(statusKey as "open" | "inProgress" | "resolved" | "closed")}
         </Badge>
         {ticket.escalated && (
-          <Badge className="bg-red-100 text-red-800">{t("escalated")}</Badge>
+          <Badge className={STATUS_COLORS.ESCALATED}>{t("escalated")}</Badge>
         )}
       </div>
 

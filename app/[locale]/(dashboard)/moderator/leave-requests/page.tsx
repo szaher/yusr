@@ -10,6 +10,8 @@ import {
   Card,
   CardContent,
 } from "@/components/ui/card";
+import { EmptyState } from "@/components/shared/empty-state";
+import { CalendarOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -22,13 +24,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-const reviewLeaveRequest = reviewLeaveRequestAction as unknown as (formData: FormData) => void;
+import { STATUS_COLORS } from "@/lib/constants/status-colors";
 
-const STATUS_COLORS: Record<string, string> = {
-  PENDING: "bg-yellow-100 text-yellow-800",
-  APPROVED: "bg-green-100 text-green-800",
-  REJECTED: "bg-red-100 text-red-800",
-};
+const reviewLeaveRequest = reviewLeaveRequestAction as unknown as (formData: FormData) => void;
 
 export default async function ModeratorLeaveRequestsPage({
   params,
@@ -68,11 +66,11 @@ export default async function ModeratorLeaveRequestsPage({
       </div>
 
       {requests.length === 0 ? (
-        <Card>
-          <CardContent className="py-8 text-center text-muted-foreground">
-            {t("noRequests")}
-          </CardContent>
-        </Card>
+        <EmptyState
+          icon={CalendarOff}
+          title={t("noRequests")}
+          description={t("noRequestsDesc")}
+        />
       ) : (
         <Table>
           <TableHeader>

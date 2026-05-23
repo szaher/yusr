@@ -6,6 +6,8 @@ import {
   Card,
   CardContent,
 } from "@/components/ui/card";
+import { EmptyState } from "@/components/shared/empty-state";
+import { BellOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
@@ -34,11 +36,11 @@ export default async function ModeratorNotificationsPage({
       </div>
 
       {notifications.length === 0 ? (
-        <Card>
-          <CardContent className="py-8 text-center text-muted-foreground">
-            {t("noNotifications")}
-          </CardContent>
-        </Card>
+        <EmptyState
+          icon={BellOff}
+          title={t("noNotifications")}
+          description={t("noNotificationsDesc")}
+        />
       ) : (
         <div className="space-y-2">
           {notifications.map((n) => (
@@ -56,7 +58,7 @@ export default async function ModeratorNotificationsPage({
                   <form action={markRead}>
                     <input type="hidden" name="notificationId" value={n.id} />
                     <Button type="submit" variant="ghost" size="sm">
-                      <Badge className="bg-blue-100 text-blue-800">
+                      <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300">
                         {locale === "ar" ? "جديد" : "New"}
                       </Badge>
                     </Button>

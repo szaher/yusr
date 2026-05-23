@@ -26,6 +26,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { EmptyState } from "@/components/shared/empty-state";
+import { BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -265,11 +267,11 @@ export default async function AdminAssignmentsPage({
       </Card>
 
       {assignments.length === 0 ? (
-        <Card>
-          <CardContent className="py-8 text-center text-muted-foreground">
-            {t("noAssignments")}
-          </CardContent>
-        </Card>
+        <EmptyState
+          icon={BookOpen}
+          title={t("noAssignments")}
+          description={t("noAssignmentsDesc")}
+        />
       ) : (
         <Table>
           <TableHeader>
@@ -294,7 +296,7 @@ export default async function AdminAssignmentsPage({
                   </Link>
                 </TableCell>
                 <TableCell>
-                  <span className="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800">
+                  <span className="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-900/40 dark:text-blue-300">
                     {t(`types.${a.type}`)}
                   </span>
                 </TableCell>

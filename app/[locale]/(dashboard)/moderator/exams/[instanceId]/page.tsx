@@ -24,22 +24,10 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
+import { STATUS_COLORS, SUBMISSION_COLORS } from "@/lib/constants/status-colors";
+
 const changeStatusFn = changeInstanceStatusAction as unknown as (formData: FormData) => void;
 const customizeFn = customizeInstanceAction as unknown as (formData: FormData) => void;
-
-const STATUS_COLORS: Record<string, string> = {
-  DRAFT: "bg-gray-100 text-gray-600",
-  PUBLISHED: "bg-blue-100 text-blue-800",
-  IN_PROGRESS: "bg-yellow-100 text-yellow-800",
-  COMPLETED: "bg-green-100 text-green-800",
-};
-
-const SUBMISSION_COLORS: Record<string, string> = {
-  NOT_STARTED: "bg-gray-100 text-gray-600",
-  IN_PROGRESS: "bg-yellow-100 text-yellow-800",
-  SUBMITTED: "bg-blue-100 text-blue-800",
-  GRADED: "bg-green-100 text-green-800",
-};
 
 export default async function ModeratorExamDetailPage({
   params,
@@ -197,7 +185,7 @@ export default async function ModeratorExamDetailPage({
                   const isBest = bestSub?.id === sub.id;
 
                   return (
-                    <TableRow key={sub.id} className={isBest ? "bg-green-50" : ""}>
+                    <TableRow key={sub.id} className={isBest ? "bg-green-50 dark:bg-green-950/20" : ""}>
                       <TableCell className="font-medium">
                         {sub.attemptNumber === 1
                           ? (gs.student.user.nameAr || gs.student.user.name)
@@ -206,7 +194,7 @@ export default async function ModeratorExamDetailPage({
                       {instance.maxAttempts && (
                         <TableCell>
                           {sub.attemptNumber}/{instance.maxAttempts}
-                          {isBest && <Badge className="ms-1 bg-green-100 text-green-800 text-xs">{t("bestScore")}</Badge>}
+                          {isBest && <Badge className="ms-1 bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300 text-xs">{t("bestScore")}</Badge>}
                         </TableCell>
                       )}
                       <TableCell>
@@ -218,7 +206,7 @@ export default async function ModeratorExamDetailPage({
                         {sub.totalScore !== null && sub.totalScore !== undefined ? (
                           <>
                             {Math.round(sub.totalScore)}%{" "}
-                            <Badge className={sub.passed ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}>
+                            <Badge className={sub.passed ? "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300" : "bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300"}>
                               {sub.passed ? t("passed") : t("failed")}
                             </Badge>
                           </>

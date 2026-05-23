@@ -6,10 +6,8 @@ import { getModeratorInstances } from "@/server/services/exam";
 import { isFeatureEnabled } from "@/server/services/feature-flag";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import {
-  Card,
-  CardContent,
-} from "@/components/ui/card";
+import { EmptyState } from "@/components/shared/empty-state";
+import { FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -21,12 +19,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-const STATUS_COLORS: Record<string, string> = {
-  DRAFT: "bg-gray-100 text-gray-600",
-  PUBLISHED: "bg-blue-100 text-blue-800",
-  IN_PROGRESS: "bg-yellow-100 text-yellow-800",
-  COMPLETED: "bg-green-100 text-green-800",
-};
+import { STATUS_COLORS } from "@/lib/constants/status-colors";
 
 export default async function ModeratorExamsPage({
   params,
@@ -98,11 +91,11 @@ export default async function ModeratorExamsPage({
           </TableBody>
         </Table>
       ) : (
-        <Card>
-          <CardContent className="py-8 text-center text-muted-foreground">
-            {t("noInstances")}
-          </CardContent>
-        </Card>
+        <EmptyState
+          icon={FileText}
+          title={t("noInstances")}
+          description={t("noInstancesDesc")}
+        />
       )}
     </div>
   );

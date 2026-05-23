@@ -69,21 +69,21 @@ async function seedFeatureFlags() {
     { key: "ai_recitation_review", enabled: false, description: "AI-powered recitation review" },
     { key: "student_audio_upload", enabled: false, description: "Student audio upload for recitation" },
     { key: "moderator_voice_notes", enabled: true, description: "Moderator voice note attachments" },
-    { key: "exams", enabled: false, description: "Exam system" },
+    { key: "exams", enabled: true, description: "Exam system" },
     { key: "leave_requests", enabled: true, description: "Student leave request system" },
     { key: "announcements", enabled: true, description: "Announcement system" },
     { key: "english_locale", enabled: true, description: "English language support" },
     { key: "email_notifications", enabled: false, description: "Email notification delivery" },
-    { key: "support_tickets", enabled: false, description: "Support ticket system" },
+    { key: "support_tickets", enabled: true, description: "Support ticket system" },
     { key: "audio_playback_tracking", enabled: false, description: "Track actual audio playback" },
     { key: "memorization_plans", enabled: true, description: "Individual student memorization plan tracking" },
-    { key: "analytics", enabled: false, description: "Dashboard analytics and charts" },
+    { key: "analytics", enabled: true, description: "Dashboard analytics and charts" },
   ];
 
   for (const flag of flags) {
     await prisma.featureFlag.upsert({
       where: { key: flag.key },
-      update: {},
+      update: { enabled: flag.enabled },
       create: flag,
     });
   }

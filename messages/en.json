@@ -176,7 +176,9 @@
     "backToList": "Back to Exams",
     "backToInstance": "Back to Exam",
     "noInstances": "No exam instances yet.",
+    "noInstancesDesc": "Exam instances will appear here once templates are assigned to groups.",
     "noSubmissions": "No submissions yet.",
+    "noResultsDesc": "Exam results will appear here once students complete and get graded.",
     "filter": "Filter",
     "showActive": "Active",
     "showAll": "All",
@@ -297,7 +299,8 @@
       "country": "Country",
       "quranLevel": "Quran Level",
       "group": "Group",
-      "noStudents": "No students in your groups"
+      "noStudents": "No students in your groups",
+      "noStudentsDesc": "Students will appear here once they are assigned to your groups."
     }
   },
   "assignments": {
@@ -413,6 +416,7 @@
     "meetingLinkPlaceholder": "Enter meeting link...",
     "save": "Save",
     "noStudents": "No students in this session",
+    "noStudentsDesc": "Students will appear once they are enrolled in the group.",
     "upcomingSessions": "Upcoming Sessions",
     "pastSessions": "Past Sessions",
     "noUpcomingSessions": "No upcoming sessions",
@@ -659,6 +663,7 @@
       "nextHomework": "Next Homework (Auto-suggested)",
       "saveReview": "Save Review & Update Position",
       "noReviews": "No reviews yet.",
+      "noReviewsDesc": "Review history will appear here after the first recitation review.",
       "date": "Date",
       "range": "Range",
       "result": "Result",
@@ -681,6 +686,7 @@
       "custom": "Custom",
       "save": "Save",
       "noCategories": "No tajweed categories configured.",
+      "noCategoriesDesc": "Add tajweed categories to enable detailed scoring during reviews.",
       "currentFocus": "Current Tajweed Focus"
     },
     "mistake": {

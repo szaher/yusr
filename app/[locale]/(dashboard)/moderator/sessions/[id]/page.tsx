@@ -16,10 +16,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { EmptyState } from "@/components/shared/empty-state";
+import { Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { BADGE_COLORS } from "@/lib/constants/status-colors";
 
 const updateSessionStatus = updateSessionStatusAction as unknown as (formData: FormData) => void;
 const updateMeetingLink = updateMeetingLinkAction as unknown as (formData: FormData) => void;
@@ -191,8 +194,8 @@ export default async function ModeratorSessionDetailPage({
                   <Badge
                     className={
                       eligibility.eligible
-                        ? "bg-green-100 text-green-800"
-                        : "bg-red-100 text-red-800"
+                        ? BADGE_COLORS.green
+                        : "bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300"
                     }
                   >
                     {eligibility.completed}/{eligibility.total} {t("assignments")}
@@ -335,11 +338,11 @@ export default async function ModeratorSessionDetailPage({
       </div>
 
       {sessionDetail.students.length === 0 && (
-        <Card>
-          <CardContent className="py-8 text-center text-muted-foreground">
-            {t("noStudents")}
-          </CardContent>
-        </Card>
+        <EmptyState
+          icon={Users}
+          title={t("noStudents")}
+          description={t("noStudentsDesc")}
+        />
       )}
     </div>
   );

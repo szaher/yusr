@@ -24,17 +24,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { RESULT_COLORS } from "@/lib/constants/status-colors";
+import { EmptyState } from "@/components/shared/empty-state";
+import { BookOpenCheck, History } from "lucide-react";
 
 const createPlan = createPlanAction as unknown as (formData: FormData) => void;
 const updatePlan = updatePlanAction as unknown as (formData: FormData) => void;
-
-const RESULT_COLORS: Record<string, string> = {
-  EXCELLENT: "bg-green-100 text-green-800",
-  GOOD: "bg-blue-100 text-blue-800",
-  ACCEPTABLE: "bg-yellow-100 text-yellow-800",
-  NEEDS_IMPROVEMENT: "bg-orange-100 text-orange-800",
-  FAILED: "bg-red-100 text-red-800",
-};
 
 export default async function ModeratorStudentPlanPage({
   params,
@@ -74,11 +69,10 @@ export default async function ModeratorStudentPlanPage({
     return (
       <div className="space-y-6">
         <h1 className="text-2xl font-bold">{studentName}</h1>
-        <Card>
-          <CardContent className="py-8 text-center text-muted-foreground">
-            {t("plan.noPlan")}
-          </CardContent>
-        </Card>
+        <EmptyState
+          icon={BookOpenCheck}
+          title={t("plan.noPlan")}
+        />
       </div>
     );
   }
@@ -285,11 +279,11 @@ export default async function ModeratorStudentPlanPage({
             </TableBody>
           </Table>
         ) : (
-          <Card>
-            <CardContent className="py-8 text-center text-muted-foreground">
-              {t("review.noReviews")}
-            </CardContent>
-          </Card>
+          <EmptyState
+            icon={History}
+            title={t("review.noReviews")}
+            description={t("review.noReviewsDesc")}
+          />
         )}
       </div>
     </div>

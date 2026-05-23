@@ -24,6 +24,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { QUESTION_TYPE_COLORS as TYPE_BADGES } from "@/lib/constants/status-colors";
 import {
   Table,
   TableBody,
@@ -38,13 +39,6 @@ const addQuestionFn = addQuestionAction as unknown as (formData: FormData) => vo
 const deleteQuestionFn = deleteQuestionAction as unknown as (formData: FormData) => void;
 const assignToGroupsFn = assignToGroupsAction as unknown as (formData: FormData) => void;
 const duplicateTemplateFn = duplicateTemplateAction as unknown as (formData: FormData) => void;
-
-const TYPE_BADGES: Record<string, string> = {
-  MULTIPLE_CHOICE: "bg-blue-100 text-blue-800",
-  TRUE_FALSE: "bg-purple-100 text-purple-800",
-  SHORT_ANSWER: "bg-amber-100 text-amber-800",
-  RECITATION: "bg-green-100 text-green-800",
-};
 
 export default async function AdminExamDetailPage({
   params,

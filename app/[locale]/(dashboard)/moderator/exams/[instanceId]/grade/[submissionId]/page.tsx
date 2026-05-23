@@ -17,15 +17,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { QUESTION_TYPE_COLORS as TYPE_BADGES } from "@/lib/constants/status-colors";
 
 const gradeSubmissionFn = gradeSubmissionAction as unknown as (formData: FormData) => void;
-
-const TYPE_BADGES: Record<string, string> = {
-  MULTIPLE_CHOICE: "bg-blue-100 text-blue-800",
-  TRUE_FALSE: "bg-purple-100 text-purple-800",
-  SHORT_ANSWER: "bg-amber-100 text-amber-800",
-  RECITATION: "bg-green-100 text-green-800",
-};
 
 export default async function ModeratorGradingPage({
   params,
@@ -84,7 +78,7 @@ export default async function ModeratorGradingPage({
         {isGraded && submission.totalScore !== null && (
           <p>
             {t("score")}: {Math.round(submission.totalScore)}%{" "}
-            <Badge className={submission.passed ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}>
+            <Badge className={submission.passed ? "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300" : "bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300"}>
               {submission.passed ? t("passed") : t("failed")}
             </Badge>
           </p>
@@ -118,7 +112,7 @@ export default async function ModeratorGradingPage({
                           : "—"}
                       </p>
                       {answer?.isCorrect !== null && answer?.isCorrect !== undefined && (
-                        <Badge className={answer.isCorrect ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}>
+                        <Badge className={answer.isCorrect ? "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300" : "bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300"}>
                           {answer.isCorrect ? t("correct") : t("incorrect")}
                         </Badge>
                       )}

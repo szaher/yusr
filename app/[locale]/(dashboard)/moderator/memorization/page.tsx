@@ -11,7 +11,10 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Card, CardContent } from "@/components/ui/card";
+import { EmptyState } from "@/components/shared/empty-state";
+import { BookOpenCheck } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { BADGE_COLORS } from "@/lib/constants/status-colors";
 
 export default async function ModeratorMemorizationPage({
   params,
@@ -70,7 +73,7 @@ export default async function ModeratorMemorizationPage({
                       : "—"}
                   </TableCell>
                   <TableCell>
-                    <Badge className="bg-gray-100 text-gray-800">
+                    <Badge className={BADGE_COLORS.gray}>
                       {plan._count.reviews}
                     </Badge>
                   </TableCell>
@@ -81,11 +84,10 @@ export default async function ModeratorMemorizationPage({
           </TableBody>
         </Table>
       ) : (
-        <Card>
-          <CardContent className="py-8 text-center text-muted-foreground">
-            {t("plan.noPlan")}
-          </CardContent>
-        </Card>
+        <EmptyState
+          icon={BookOpenCheck}
+          title={t("plan.noPlan")}
+        />
       )}
     </div>
   );

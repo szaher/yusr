@@ -10,14 +10,7 @@ import {
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-
-const RESULT_COLORS: Record<string, string> = {
-  EXCELLENT: "bg-green-100 text-green-800",
-  GOOD: "bg-blue-100 text-blue-800",
-  ACCEPTABLE: "bg-yellow-100 text-yellow-800",
-  NEEDS_IMPROVEMENT: "bg-orange-100 text-orange-800",
-  FAILED: "bg-red-100 text-red-800",
-};
+import { RESULT_COLORS } from "@/lib/constants/status-colors";
 
 const MISTAKE_LABELS: Record<string, string> = {
   TAJWEED_ERROR: "mistake.tajweedError",

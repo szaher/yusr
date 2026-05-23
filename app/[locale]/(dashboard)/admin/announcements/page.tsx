@@ -16,6 +16,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { EmptyState } from "@/components/shared/empty-state";
+import { Megaphone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -28,15 +30,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { PRIORITY_COLORS, BOOLEAN_COLORS } from "@/lib/constants/status-colors";
 
 const createAnnouncement = createAnnouncementAction as unknown as (formData: FormData) => void;
 const deleteAnnouncementFn = deleteAnnouncementAction as unknown as (formData: FormData) => void;
-
-const PRIORITY_COLORS: Record<string, string> = {
-  normal: "bg-gray-100 text-gray-800",
-  high: "bg-amber-100 text-amber-800",
-  urgent: "bg-red-100 text-red-800",
-};
 
 export default async function AdminAnnouncementsPage({
   params,
@@ -179,7 +176,7 @@ export default async function AdminAnnouncementsPage({
                       : "—"}
                   </TableCell>
                   <TableCell>
-                    <Badge className={isExpired ? "bg-gray-100 text-gray-600" : "bg-green-100 text-green-800"}>
+                    <Badge className={isExpired ? BOOLEAN_COLORS.false : BOOLEAN_COLORS.true}>
                       {isExpired ? t("expired") : t("active")}
                     </Badge>
                   </TableCell>
@@ -197,11 +194,11 @@ export default async function AdminAnnouncementsPage({
           </TableBody>
         </Table>
       ) : (
-        <Card>
-          <CardContent className="py-8 text-center text-muted-foreground">
-            {t("noAnnouncements")}
-          </CardContent>
-        </Card>
+        <EmptyState
+          icon={Megaphone}
+          title={t("noAnnouncements")}
+          description={t("noAnnouncementsDesc")}
+        />
       )}
     </div>
   );

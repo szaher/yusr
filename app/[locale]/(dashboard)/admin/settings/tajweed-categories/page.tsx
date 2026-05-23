@@ -20,6 +20,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { EmptyState } from "@/components/shared/empty-state";
+import { BookMarked } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -93,7 +95,7 @@ export default async function TajweedCategoriesPage({
               <TableCell dir="rtl">{cat.nameAr}</TableCell>
               <TableCell>{cat.sortOrder}</TableCell>
               <TableCell>
-                <Badge className={cat.isCore ? "bg-blue-100 text-blue-800" : "bg-gray-100 text-gray-800"}>
+                <Badge className={cat.isCore ? "bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300" : "bg-gray-100 text-gray-800 dark:bg-gray-800/40 dark:text-gray-300"}>
                   {cat.isCore ? t("core") : t("custom")}
                 </Badge>
               </TableCell>
@@ -111,11 +113,11 @@ export default async function TajweedCategoriesPage({
       </Table>
 
       {categories.length === 0 && (
-        <Card>
-          <CardContent className="py-8 text-center text-muted-foreground">
-            {t("noCategories")}
-          </CardContent>
-        </Card>
+        <EmptyState
+          icon={BookMarked}
+          title={t("noCategories")}
+          description={t("noCategoriesDesc")}
+        />
       )}
     </div>
   );

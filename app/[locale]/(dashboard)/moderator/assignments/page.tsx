@@ -22,9 +22,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { EmptyState } from "@/components/shared/empty-state";
+import { BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { BADGE_COLORS } from "@/lib/constants/status-colors";
 
 export default async function ModeratorAssignmentsPage({
   params,
@@ -230,11 +233,11 @@ export default async function ModeratorAssignmentsPage({
       </Card>
 
       {assignments.length === 0 ? (
-        <Card>
-          <CardContent className="py-8 text-center text-muted-foreground">
-            {t("noAssignments")}
-          </CardContent>
-        </Card>
+        <EmptyState
+          icon={BookOpen}
+          title={t("noAssignments")}
+          description={t("noAssignmentsDesc")}
+        />
       ) : (
         <Table>
           <TableHeader>
@@ -257,7 +260,7 @@ export default async function ModeratorAssignmentsPage({
                   </Link>
                 </TableCell>
                 <TableCell>
-                  <span className="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800">
+                  <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${BADGE_COLORS.blue}`}>
                     {t(`types.${a.type}`)}
                   </span>
                 </TableCell>
