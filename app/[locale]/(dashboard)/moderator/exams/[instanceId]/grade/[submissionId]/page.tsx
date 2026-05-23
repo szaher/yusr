@@ -49,7 +49,13 @@ export default async function ModeratorGradingPage({
     notFound();
   }
 
-  const questions = submission.instance.template.questions;
+  const allQuestions = submission.instance.template.questions;
+  const questionOrder = submission.questionOrder as string[] | null;
+  const questions = questionOrder
+    ? questionOrder
+        .map((id) => allQuestions.find((q) => q.id === id))
+        .filter((q): q is NonNullable<typeof q> => q !== undefined)
+    : allQuestions;
   const answerMap = new Map(submission.answers.map((a) => [a.questionId, a]));
   const isGraded = submission.status === "GRADED";
   const customizations = (submission.instance.customizations ?? {}) as Record<string, { fromSurahNumber?: number; fromAyah?: number; toSurahNumber?: number; toAyah?: number }>;
@@ -63,6 +69,12 @@ export default async function ModeratorGradingPage({
       <h1 className="text-2xl font-bold">
         {t("grade")}: {submission.student.user.nameAr || submission.student.user.name}
       </h1>
+
+      {submission.attemptNumber > 1 && (
+        <p className="text-sm text-muted-foreground">
+          {t("attempt")} {submission.attemptNumber}
+        </p>
+      )}
 
       <div className="text-sm text-muted-foreground">
         <p>{t("examTitle")}: {submission.instance.template.title}</p>
