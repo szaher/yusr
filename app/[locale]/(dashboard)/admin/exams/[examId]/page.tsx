@@ -9,6 +9,7 @@ import {
   addQuestionAction,
   deleteQuestionAction,
   assignToGroupsAction,
+  duplicateTemplateAction,
 } from "@/server/actions/exam";
 import { db } from "@/server/db/client";
 import { notFound } from "next/navigation";
@@ -36,6 +37,7 @@ const updateTemplateFn = updateTemplateAction as unknown as (formData: FormData)
 const addQuestionFn = addQuestionAction as unknown as (formData: FormData) => void;
 const deleteQuestionFn = deleteQuestionAction as unknown as (formData: FormData) => void;
 const assignToGroupsFn = assignToGroupsAction as unknown as (formData: FormData) => void;
+const duplicateTemplateFn = duplicateTemplateAction as unknown as (formData: FormData) => void;
 
 const TYPE_BADGES: Record<string, string> = {
   MULTIPLE_CHOICE: "bg-blue-100 text-blue-800",
@@ -80,7 +82,13 @@ export default async function AdminExamDetailPage({
       {/* Template Header */}
       <Card>
         <CardHeader>
-          <CardTitle>{t("updateTemplate")}</CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle>{t("updateTemplate")}</CardTitle>
+            <form action={duplicateTemplateFn}>
+              <input type="hidden" name="templateId" value={template.id} />
+              <Button type="submit" variant="outline" size="sm">{t("duplicate")}</Button>
+            </form>
+          </div>
         </CardHeader>
         <CardContent>
           <form action={updateTemplateFn} className="grid gap-4 sm:grid-cols-3">
@@ -118,6 +126,7 @@ export default async function AdminExamDetailPage({
                   <TableHead>{t("questionType")}</TableHead>
                   <TableHead>{t("questionText")}</TableHead>
                   <TableHead>{t("points")}</TableHead>
+                  <TableHead>{t("tags")}</TableHead>
                   <TableHead />
                 </TableRow>
               </TableHeader>
@@ -132,6 +141,11 @@ export default async function AdminExamDetailPage({
                     </TableCell>
                     <TableCell className="max-w-xs truncate">{q.text}</TableCell>
                     <TableCell>{q.points}</TableCell>
+                    <TableCell>
+                      {q.tags.length > 0 ? q.tags.map((tag: string) => (
+                        <Badge key={tag} variant="secondary" className="mr-1 text-xs">{tag}</Badge>
+                      )) : "—"}
+                    </TableCell>
                     <TableCell>
                       <form action={deleteQuestionFn}>
                         <input type="hidden" name="questionId" value={q.id} />
@@ -189,6 +203,11 @@ export default async function AdminExamDetailPage({
             <div className="space-y-2">
               <Label>{t("correctAnswer")} (SA: expected text, T/F: &quot;true&quot; or &quot;false&quot;)</Label>
               <Input name="correctAnswer" />
+            </div>
+
+            <div className="space-y-2">
+              <Label>{t("tags")} (comma-separated)</Label>
+              <Input name="tags" placeholder={t("addTag")} />
             </div>
 
             <div className="grid gap-4 sm:grid-cols-4">
@@ -251,7 +270,7 @@ export default async function AdminExamDetailPage({
                   <option key={g.id} value={g.id}>{g.name}</option>
                 ))}
               </select>
-              <p className="text-xs text-muted-foreground">Hold Ctrl/Cmd to select multiple. The selected values are sent as JSON array.</p>
+              <p className="text-xs text-muted-foreground">Hold Ctrl/Cmd to select multiple.</p>
             </div>
             <div className="space-y-4">
               <div className="space-y-2">
@@ -263,6 +282,34 @@ export default async function AdminExamDetailPage({
                 <Input name="endDate" type="date" required />
               </div>
             </div>
+
+            {/* Enhancement fields */}
+            <div className="space-y-2">
+              <Label>{t("timeLimitMinutes")}</Label>
+              <Input name="timeLimitMinutes" type="number" min="1" max="300" placeholder={t("timeLimitPlaceholder")} />
+              <p className="text-xs text-muted-foreground">{t("noTimeLimit")}</p>
+            </div>
+            <div className="space-y-2">
+              <Label>{t("maxAttempts")}</Label>
+              <Input name="maxAttempts" type="number" min="1" max="10" placeholder={t("maxAttemptsPlaceholder")} />
+              <p className="text-xs text-muted-foreground">{t("singleAttempt")}</p>
+            </div>
+            <div className="space-y-2">
+              <label className="flex items-center gap-2">
+                <input type="checkbox" name="shuffleQuestions" value="true" className="h-4 w-4" />
+                <span className="text-sm font-medium">{t("shuffleQuestions")}</span>
+              </label>
+              <p className="text-xs text-muted-foreground">{t("shuffleQuestionsHelp")}</p>
+            </div>
+            <div className="space-y-2">
+              <Label>{t("pickQuestions")}</Label>
+              <Input name="poolPick" type="number" min="1" placeholder={`${template.questions.length} ${t("questionsFromPool")}`} />
+              <div className="space-y-1">
+                <Label className="text-xs">{t("filterByTags")}</Label>
+                <Input name="poolTags" placeholder="tajweed, juz-1" />
+              </div>
+            </div>
+
             <div className="sm:col-span-2">
               <Button type="submit">{t("assign")}</Button>
             </div>
