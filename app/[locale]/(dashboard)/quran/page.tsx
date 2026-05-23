@@ -1,7 +1,10 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
 import { requireApprovedUser } from "@/server/auth/session";
 import { db } from "@/server/db/client";
+import { isFeatureEnabled } from "@/server/services/feature-flag";
 import { QuranExplorer } from "@/components/quran/quran-explorer";
+import Link from "next/link";
+import { Badge } from "@/components/ui/badge";
 
 async function getStudentMemorizationPosition(userId: string) {
   const profile = await db.studentProfile.findUnique({
@@ -72,6 +75,7 @@ export default async function QuranExplorerPage({
 
   const t = await getTranslations("quranExplorer");
   const sp = await searchParams;
+  const explorerEnabled = await isFeatureEnabled("quran_explorer");
 
   const hasExplicitPosition = !!sp.surah;
   let defaultSurah: number | undefined;
@@ -87,7 +91,18 @@ export default async function QuranExplorerPage({
 
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-bold">{t("title")}</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold">{t("title")}</h1>
+        {explorerEnabled && (
+          <Link
+            href={`/${locale}/quran/explorer`}
+            className="flex items-center gap-2 text-sm text-primary hover:underline"
+          >
+            {t("openTextExplorer")}
+            <Badge variant="outline" className="text-xs">{t("experimentalBadge")}</Badge>
+          </Link>
+        )}
+      </div>
       <QuranExplorer
         initialSurah={sp.surah ? parseInt(sp.surah, 10) : defaultSurah}
         initialAyah={sp.ayah ? parseInt(sp.ayah, 10) : defaultAyah}

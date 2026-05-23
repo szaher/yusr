@@ -564,6 +564,8 @@ model QuranAyah {
   hizbNumber    Int
   quarterNumber Int
   pageNumber    Int?
+  textAr        String?
+  textEn        String?
   surah         QuranSurah @relation(fields: [surahNumber], references: [number])
 
   @@unique([surahNumber, ayahNumber])

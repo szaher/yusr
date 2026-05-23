@@ -24,6 +24,7 @@ import {
   Headset,
   ClipboardCheck,
   BookOpenText,
+  BookType,
 } from "lucide-react";
 
 type NavItem = {
@@ -49,6 +50,7 @@ const adminNav: NavItem[] = [
   { labelKey: "tickets", href: "/admin/tickets", icon: FileText, featureFlag: "support_tickets" },
   { labelKey: "exams", href: "/admin/exams", icon: ClipboardCheck, featureFlag: "exams" },
   { labelKey: "quran", href: "/quran", icon: BookOpenText },
+  { labelKey: "quranReader", href: "/quran/explorer", icon: BookType, featureFlag: "quran_explorer" },
 ];
 
 const moderatorNav: NavItem[] = [
@@ -61,6 +63,7 @@ const moderatorNav: NavItem[] = [
   { labelKey: "leaveRequests", href: "/moderator/leave-requests", icon: CalendarOff, featureFlag: "leave_requests" },
   { labelKey: "exams", href: "/moderator/exams", icon: ClipboardCheck, featureFlag: "exams" },
   { labelKey: "quran", href: "/quran", icon: BookOpenText },
+  { labelKey: "quranReader", href: "/quran/explorer", icon: BookType, featureFlag: "quran_explorer" },
 ];
 
 const studentNav: NavItem[] = [
@@ -74,12 +77,14 @@ const studentNav: NavItem[] = [
   { labelKey: "support", href: "/student/tickets", icon: Headset, featureFlag: "support_tickets" },
   { labelKey: "exams", href: "/student/exams", icon: ClipboardCheck, featureFlag: "exams" },
   { labelKey: "quran", href: "/quran", icon: BookOpenText },
+  { labelKey: "quranReader", href: "/quran/explorer", icon: BookType, featureFlag: "quran_explorer" },
 ];
 
 const supportNav: NavItem[] = [
   { labelKey: "dashboard", href: "/support/dashboard", icon: LayoutDashboard },
   { labelKey: "tickets", href: "/support/tickets", icon: FileText, featureFlag: "support_tickets" },
   { labelKey: "quran", href: "/quran", icon: BookOpenText },
+  { labelKey: "quranReader", href: "/quran/explorer", icon: BookType, featureFlag: "quran_explorer" },
 ];
 
 const navByRole: Record<string, NavItem[]> = {

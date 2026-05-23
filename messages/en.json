@@ -98,7 +98,8 @@
     "memorization": "Memorization",
     "support": "Support",
     "quranExplorer": "Quran Explorer",
-    "quran": "Quran"
+    "quran": "Quran",
+    "quranReader": "Quran Text"
   },
   "exams": {
     "title": "Exams",
@@ -777,6 +778,29 @@
     "mushaf": "Mushaf Type",
     "translation": "Translation",
     "go": "Go",
-    "openInExplorer": "Open in Quran Explorer"
+    "openInExplorer": "Open in Quran Explorer",
+    "openTextExplorer": "Open Text Explorer",
+    "experimentalBadge": "Experimental"
+  },
+  "quranReader": {
+    "title": "Quran Text Explorer",
+    "experimental": "Experimental",
+    "backToExplorer": "Back to Quran Explorer",
+    "ayahCount": "{count} Ayahs",
+    "meccan": "Meccan",
+    "medinan": "Medinan",
+    "juz": "Juz",
+    "showTranslation": "Show Translation",
+    "hideTranslation": "Hide Translation",
+    "noText": "Text not available",
+    "surahTab": "Surah",
+    "juzTab": "Juz",
+    "hizbTab": "Hizb",
+    "juzNumber": "Juz {number}",
+    "hizbNumber": "Hizb {number}",
+    "pageTab": "Page",
+    "pageNumber": "Page {number}",
+    "pageOf": "Page {current} of {total}",
+    "goToPage": "Go"
   }
 }

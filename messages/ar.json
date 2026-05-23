@@ -98,7 +98,8 @@
     "memorization": "الحفظ",
     "support": "الدعم",
     "quranExplorer": "مستكشف القرآن",
-    "quran": "القرآن"
+    "quran": "القرآن",
+    "quranReader": "نص القرآن"
   },
   "exams": {
     "title": "الاختبارات",
@@ -777,6 +778,29 @@
     "mushaf": "نوع المصحف",
     "translation": "الترجمة",
     "go": "انتقال",
-    "openInExplorer": "فتح في مستكشف القرآن"
+    "openInExplorer": "فتح في مستكشف القرآن",
+    "openTextExplorer": "فتح مستعرض النص",
+    "experimentalBadge": "تجريبي"
+  },
+  "quranReader": {
+    "title": "مستعرض نص القرآن",
+    "experimental": "تجريبي",
+    "backToExplorer": "العودة لمستكشف القرآن",
+    "ayahCount": "{count} آية",
+    "meccan": "مكية",
+    "medinan": "مدنية",
+    "juz": "الجزء",
+    "showTranslation": "إظهار الترجمة",
+    "hideTranslation": "إخفاء الترجمة",
+    "noText": "النص غير متوفر",
+    "surahTab": "السورة",
+    "juzTab": "الجزء",
+    "hizbTab": "الحزب",
+    "juzNumber": "الجزء {number}",
+    "hizbNumber": "الحزب {number}",
+    "pageTab": "الصفحة",
+    "pageNumber": "صفحة {number}",
+    "pageOf": "صفحة {current} من {total}",
+    "goToPage": "انتقال"
   }
 }

@@ -3,6 +3,7 @@ import { PrismaClient } from "./generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { QURAN_SURAHS } from "./data/quran-surahs";
 import { JUZ_BOUNDARIES } from "./data/quran-juz-boundaries";
+import quranAyahText from "./data/quran-ayah-text.json";
 import { PERMISSIONS, ROLE_PERMISSIONS } from "../lib/constants/permissions";
 import { hashPassword } from "../server/auth/password";
 
@@ -78,6 +79,7 @@ async function seedFeatureFlags() {
     { key: "audio_playback_tracking", enabled: false, description: "Track actual audio playback" },
     { key: "memorization_plans", enabled: true, description: "Individual student memorization plan tracking" },
     { key: "analytics", enabled: true, description: "Dashboard analytics and charts" },
+    { key: "quran_explorer", enabled: true, description: "Native Quran text explorer (experimental)" },
   ];
 
   for (const flag of flags) {
@@ -219,6 +221,13 @@ async function seedQuranData() {
     return juz;
   }
 
+  const textMap = new Map(
+    quranAyahText.map((a: { surahNumber: number; ayahNumber: number; textAr: string; textEn: string; page: number }) => [
+      `${a.surahNumber}:${a.ayahNumber}`,
+      { textAr: a.textAr, textEn: a.textEn, page: a.page },
+    ])
+  );
+
   let totalAyahs = 0;
 
   for (const surah of QURAN_SURAHS) {
@@ -227,6 +236,7 @@ async function seedQuranData() {
       const juzNum = getJuzForAyah(surah.number, a);
       const hizbNum = juzNum * 2 - 1;
       const quarterNum = hizbNum * 4 - 3;
+      const text = textMap.get(`${surah.number}:${a}`);
 
       ayahData.push({
         surahNumber: surah.number,
@@ -234,6 +244,9 @@ async function seedQuranData() {
         juzNumber: juzNum,
         hizbNumber: hizbNum,
         quarterNumber: quarterNum,
+        pageNumber: text?.page ?? null,
+        textAr: text?.textAr ?? null,
+        textEn: text?.textEn ?? null,
       });
     }
 
@@ -246,6 +259,20 @@ async function seedQuranData() {
   }
 
   console.log(`Seeded ${totalAyahs} ayahs`);
+
+  const BATCH_SIZE = 500;
+  for (let i = 0; i < quranAyahText.length; i += BATCH_SIZE) {
+    const batch = quranAyahText.slice(i, i + BATCH_SIZE);
+    await prisma.$transaction(
+      batch.map((entry: { surahNumber: number; ayahNumber: number; textAr: string; textEn: string; page: number }) =>
+        prisma.quranAyah.update({
+          where: { surahNumber_ayahNumber: { surahNumber: entry.surahNumber, ayahNumber: entry.ayahNumber } },
+          data: { textAr: entry.textAr, textEn: entry.textEn, pageNumber: entry.page },
+        })
+      )
+    );
+  }
+  console.log(`Updated ${quranAyahText.length} ayahs with Arabic + English text`);
 }
 
 async function seedDemoData() {
