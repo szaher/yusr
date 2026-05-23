@@ -19,7 +19,13 @@
     "next": "Next",
     "submit": "Submit",
     "close": "Close",
-    "noResults": "No results found"
+    "noResults": "No results found",
+    "errorTitle": "Something went wrong",
+    "errorDescription": "An unexpected error occurred. Please try again.",
+    "tryAgain": "Try Again",
+    "notFound": "Page not found",
+    "notFoundDescription": "The page you're looking for doesn't exist.",
+    "goHome": "Go Home"
   },
   "auth": {
     "login": "Log In",
@@ -91,7 +97,8 @@
     "tickets": "Support Tickets",
     "memorization": "Memorization",
     "support": "Support",
-    "quranExplorer": "Quran Explorer"
+    "quranExplorer": "Quran Explorer",
+    "quran": "Quran"
   },
   "exams": {
     "title": "Exams",
@@ -104,6 +111,7 @@
     "createdAt": "Created",
     "viewDetails": "View Details",
     "noExams": "No exams yet.",
+    "noExamsDesc": "Your exams will appear here once your teacher assigns them.",
     "addQuestion": "Add Question",
     "questionType": "Question Type",
     "multipleChoice": "Multiple Choice",
@@ -327,6 +335,7 @@
     "confirmListening": "I have listened",
     "confirmDisclaimer": "Listening confirmation is a trust",
     "noAssignments": "No assignments",
+    "noAssignmentsDesc": "Your teacher hasn't assigned any tasks yet. Check back soon!",
     "studentProgress": "Student Progress",
     "eligible": "Eligible",
     "notEligible": "Not Eligible",
@@ -359,6 +368,7 @@
     "completeSession": "Complete Session",
     "cancelSession": "Cancel Session",
     "noSessions": "No sessions yet",
+    "noSessionsDesc": "Sessions will appear here once they are scheduled by your teacher.",
     "upcoming": "Upcoming",
     "past": "Past Sessions",
     "studentProgress": "Student Progress",
@@ -421,6 +431,7 @@
   "grades": {
     "title": "Grades",
     "noGrades": "No grades yet",
+    "noGradesDesc": "Your grades will appear here after your sessions are graded.",
     "sessionDate": "Session Date",
     "result": "Result",
     "grade": "Grade",
@@ -517,6 +528,7 @@
     "approve": "Approve",
     "reject": "Reject",
     "noRequests": "No leave requests",
+    "noRequestsDesc": "You haven't submitted any leave requests yet.",
     "pending": "Pending",
     "approved": "Approved",
     "rejected": "Rejected",
@@ -546,6 +558,7 @@
     "expiryDate": "Expiry Date",
     "save": "Save",
     "noAnnouncements": "No announcements",
+    "noAnnouncementsDesc": "New announcements from your teachers will appear here.",
     "active": "Active",
     "expired": "Expired",
     "selectRole": "Select Role",
@@ -556,6 +569,7 @@
     "markAllRead": "Mark All as Read",
     "viewAll": "View All",
     "noNotifications": "No notifications",
+    "noNotificationsDesc": "You're all caught up! New notifications will appear here.",
     "justNow": "Just now",
     "minutesAgo": "{count}m ago",
     "hoursAgo": "{count}h ago",
@@ -580,6 +594,7 @@
     "unassigned": "Unassigned",
     "escalated": "Escalated",
     "noTickets": "No support tickets",
+    "noTicketsDesc": "Need help? Create a support ticket above.",
     "backToList": "Back to tickets",
     "open": "Open",
     "inProgress": "In Progress",

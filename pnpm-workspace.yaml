@@ -1,0 +1,20 @@
+onlyBuiltDependencies:
+  - "@prisma/engines"
+  - "prisma"
+  - "esbuild"
+  - "@swc/core"
+  - "sharp"
+  - "@parcel/watcher"
+  - "unrs-resolver"
+
+allowBuilds:
+  "@prisma/engines": true
+  "prisma": true
+  "esbuild": true
+  "@swc/core": true
+  "sharp": true
+  "@parcel/watcher": true
+  "unrs-resolver": true
+  "msw": true
+
+strictDepBuilds: false

@@ -108,6 +108,9 @@ export function NotificationBell({
                   }`}
                 >
                   <p className={`${!n.read ? "font-semibold" : ""}`}>{n.title}</p>
+                  {n.body && (
+                    <p className="mt-0.5 text-xs text-muted-foreground line-clamp-2">{n.body}</p>
+                  )}
                   <p className="mt-0.5 text-xs text-muted-foreground">
                     {timeAgo(n.createdAt, t)}
                   </p>

@@ -12,7 +12,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/shared/empty-state";
+import { HelpCircle } from "lucide-react";
+import { SubmitButton } from "@/components/shared/submit-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
@@ -24,15 +26,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { STATUS_COLORS } from "@/lib/constants/status-colors";
 
 const createTicket = createTicketAction as unknown as (formData: FormData) => void;
-
-const STATUS_COLORS: Record<string, string> = {
-  OPEN: "bg-blue-100 text-blue-800",
-  IN_PROGRESS: "bg-yellow-100 text-yellow-800",
-  RESOLVED: "bg-green-100 text-green-800",
-  CLOSED: "bg-gray-100 text-gray-600",
-};
 
 export default async function StudentTicketsPage({
   params,
@@ -57,11 +53,11 @@ export default async function StudentTicketsPage({
     return (
       <div className="space-y-6">
         <h1 className="text-2xl font-bold">{t("title")}</h1>
-        <Card>
-          <CardContent className="py-8 text-center text-muted-foreground">
-            {t("noTickets")}
-          </CardContent>
-        </Card>
+        <EmptyState
+          icon={HelpCircle}
+          title={t("noTickets")}
+          description={t("noTicketsDesc")}
+        />
       </div>
     );
   }
@@ -93,54 +89,76 @@ export default async function StudentTicketsPage({
               />
             </div>
             <div>
-              <Button type="submit">{t("submit")}</Button>
+              <SubmitButton>{t("submit")}</SubmitButton>
             </div>
           </form>
         </CardContent>
       </Card>
 
       {tickets.length > 0 ? (
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>{t("subject")}</TableHead>
-              <TableHead>{t("status")}</TableHead>
-              <TableHead>{t("createdAt")}</TableHead>
-              <TableHead>{t("updatedAt")}</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {tickets.map((ticket) => (
-              <TableRow key={ticket.id}>
-                <TableCell className="font-medium">
-                  <Link
-                    href={`/${locale}/student/tickets/${ticket.id}`}
-                    className="text-blue-600 hover:underline"
-                  >
-                    {ticket.subject}
-                  </Link>
-                </TableCell>
-                <TableCell>
-                  <Badge className={STATUS_COLORS[ticket.status] || ""}>
-                    {t(ticket.status === "IN_PROGRESS" ? "inProgress" : ticket.status.toLowerCase() as "open" | "resolved" | "closed")}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  {new Date(ticket.createdAt).toLocaleDateString(locale)}
-                </TableCell>
-                <TableCell>
-                  {new Date(ticket.updatedAt).toLocaleDateString(locale)}
-                </TableCell>
+        <>
+          <Table className="hidden md:table">
+            <TableHeader>
+              <TableRow>
+                <TableHead>{t("subject")}</TableHead>
+                <TableHead>{t("status")}</TableHead>
+                <TableHead>{t("createdAt")}</TableHead>
+                <TableHead>{t("updatedAt")}</TableHead>
               </TableRow>
+            </TableHeader>
+            <TableBody>
+              {tickets.map((ticket) => (
+                <TableRow key={ticket.id}>
+                  <TableCell className="font-medium">
+                    <Link
+                      href={`/${locale}/student/tickets/${ticket.id}`}
+                      className="text-primary hover:underline"
+                    >
+                      {ticket.subject}
+                    </Link>
+                  </TableCell>
+                  <TableCell>
+                    <Badge className={STATUS_COLORS[ticket.status] || ""}>
+                      {t(ticket.status === "IN_PROGRESS" ? "inProgress" : ticket.status.toLowerCase() as "open" | "resolved" | "closed")}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    {new Date(ticket.createdAt).toLocaleDateString(locale)}
+                  </TableCell>
+                  <TableCell>
+                    {new Date(ticket.updatedAt).toLocaleDateString(locale)}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+
+          <div className="space-y-3 md:hidden">
+            {tickets.map((ticket) => (
+              <Link key={ticket.id} href={`/${locale}/student/tickets/${ticket.id}`}>
+                <Card className="transition-colors hover:border-primary">
+                  <CardContent className="pt-4">
+                    <div className="flex items-start justify-between">
+                      <p className="font-medium">{ticket.subject}</p>
+                      <Badge className={STATUS_COLORS[ticket.status] || ""}>
+                        {t(ticket.status === "IN_PROGRESS" ? "inProgress" : ticket.status.toLowerCase() as "open" | "resolved" | "closed")}
+                      </Badge>
+                    </div>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      {new Date(ticket.createdAt).toLocaleDateString(locale)}
+                    </p>
+                  </CardContent>
+                </Card>
+              </Link>
             ))}
-          </TableBody>
-        </Table>
+          </div>
+        </>
       ) : (
-        <Card>
-          <CardContent className="py-8 text-center text-muted-foreground">
-            {t("noTickets")}
-          </CardContent>
-        </Card>
+        <EmptyState
+          icon={HelpCircle}
+          title={t("noTickets")}
+          description={t("noTicketsDesc")}
+        />
       )}
     </div>
   );

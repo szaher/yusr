@@ -19,7 +19,13 @@
     "next": "التالي",
     "submit": "إرسال",
     "close": "إغلاق",
-    "noResults": "لا توجد نتائج"
+    "noResults": "لا توجد نتائج",
+    "errorTitle": "حدث خطأ",
+    "errorDescription": "حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى.",
+    "tryAgain": "حاول مرة أخرى",
+    "notFound": "الصفحة غير موجودة",
+    "notFoundDescription": "الصفحة التي تبحث عنها غير موجودة.",
+    "goHome": "العودة للرئيسية"
   },
   "auth": {
     "login": "تسجيل الدخول",
@@ -91,7 +97,8 @@
     "tickets": "تذاكر الدعم",
     "memorization": "الحفظ",
     "support": "الدعم",
-    "quranExplorer": "مستكشف القرآن"
+    "quranExplorer": "مستكشف القرآن",
+    "quran": "القرآن"
   },
   "exams": {
     "title": "الاختبارات",
@@ -104,6 +111,7 @@
     "createdAt": "تاريخ الإنشاء",
     "viewDetails": "عرض التفاصيل",
     "noExams": "لا توجد اختبارات بعد.",
+    "noExamsDesc": "ستظهر اختباراتك هنا بمجرد أن يعينها معلمك.",
     "addQuestion": "إضافة سؤال",
     "questionType": "نوع السؤال",
     "multipleChoice": "اختيار من متعدد",
@@ -327,6 +335,7 @@
     "confirmListening": "لقد استمعت",
     "confirmDisclaimer": "تأكيد الاستماع أمانة",
     "noAssignments": "لا توجد واجبات",
+    "noAssignmentsDesc": "لم يقم معلمك بتعيين أي مهام بعد. تحقق مرة أخرى قريبًا!",
     "studentProgress": "تقدم الطلاب",
     "eligible": "مؤهل",
     "notEligible": "غير مؤهل",
@@ -359,6 +368,7 @@
     "completeSession": "إنهاء الحلقة",
     "cancelSession": "إلغاء الحلقة",
     "noSessions": "لا توجد حلقات بعد",
+    "noSessionsDesc": "ستظهر الحلقات هنا بمجرد أن يحددها معلمك.",
     "upcoming": "القادمة",
     "past": "الحلقات السابقة",
     "studentProgress": "تقدم الطلاب",
@@ -421,6 +431,7 @@
   "grades": {
     "title": "الدرجات",
     "noGrades": "لا توجد درجات بعد",
+    "noGradesDesc": "ستظهر درجاتك هنا بعد تقييم حلقاتك.",
     "sessionDate": "تاريخ الحلقة",
     "result": "النتيجة",
     "grade": "الدرجة",
@@ -517,6 +528,7 @@
     "approve": "قبول",
     "reject": "رفض",
     "noRequests": "لا توجد طلبات إجازة",
+    "noRequestsDesc": "لم تقدم أي طلبات إجازة بعد.",
     "pending": "قيد المراجعة",
     "approved": "مقبول",
     "rejected": "مرفوض",
@@ -546,6 +558,7 @@
     "expiryDate": "تاريخ الانتهاء",
     "save": "حفظ",
     "noAnnouncements": "لا توجد إعلانات",
+    "noAnnouncementsDesc": "ستظهر الإعلانات الجديدة من معلميك هنا.",
     "active": "نشط",
     "expired": "منتهي",
     "selectRole": "اختر الدور",
@@ -556,6 +569,7 @@
     "markAllRead": "تعيين الكل كمقروء",
     "viewAll": "عرض الكل",
     "noNotifications": "لا توجد إشعارات",
+    "noNotificationsDesc": "أنت على اطلاع بكل شيء! ستظهر الإشعارات الجديدة هنا.",
     "justNow": "الآن",
     "minutesAgo": "منذ {count} دقيقة",
     "hoursAgo": "منذ {count} ساعة",
@@ -580,6 +594,7 @@
     "unassigned": "غير مسند",
     "escalated": "مصعّد",
     "noTickets": "لا توجد تذاكر دعم",
+    "noTicketsDesc": "تحتاج مساعدة؟ أنشئ تذكرة دعم أعلاه.",
     "backToList": "العودة للتذاكر",
     "open": "مفتوح",
     "inProgress": "قيد المعالجة",

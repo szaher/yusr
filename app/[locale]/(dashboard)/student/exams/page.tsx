@@ -9,6 +9,8 @@ import {
   Card,
   CardContent,
 } from "@/components/ui/card";
+import { EmptyState } from "@/components/shared/empty-state";
+import { FileText } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
   Table,
@@ -18,19 +20,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-
-const STATUS_COLORS: Record<string, string> = {
-  PUBLISHED: "bg-blue-100 text-blue-800",
-  IN_PROGRESS: "bg-yellow-100 text-yellow-800",
-  COMPLETED: "bg-green-100 text-green-800",
-};
-
-const SUBMISSION_COLORS: Record<string, string> = {
-  NOT_STARTED: "bg-gray-100 text-gray-600",
-  IN_PROGRESS: "bg-yellow-100 text-yellow-800",
-  SUBMITTED: "bg-blue-100 text-blue-800",
-  GRADED: "bg-green-100 text-green-800",
-};
+import { SUBMISSION_COLORS } from "@/lib/constants/status-colors";
 
 export default async function StudentExamsPage({
   params,
@@ -55,11 +45,11 @@ export default async function StudentExamsPage({
     return (
       <div className="space-y-6">
         <h1 className="text-2xl font-bold">{t("title")}</h1>
-        <Card>
-          <CardContent className="py-8 text-center text-muted-foreground">
-            {t("noExams")}
-          </CardContent>
-        </Card>
+        <EmptyState
+          icon={FileText}
+          title={t("noExams")}
+          description={t("noExamsDesc")}
+        />
       </div>
     );
   }
@@ -71,65 +61,103 @@ export default async function StudentExamsPage({
       <h1 className="text-2xl font-bold">{t("title")}</h1>
 
       {instances.length > 0 ? (
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>{t("examTitle")}</TableHead>
-              <TableHead>{t("groupName")}</TableHead>
-              <TableHead>{t("dateRange")}</TableHead>
-              <TableHead>{t("submissionStatus")}</TableHead>
-              <TableHead>{t("score")}</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
+        <>
+          <Table className="hidden md:table">
+            <TableHeader>
+              <TableRow>
+                <TableHead>{t("examTitle")}</TableHead>
+                <TableHead>{t("groupName")}</TableHead>
+                <TableHead>{t("dateRange")}</TableHead>
+                <TableHead>{t("submissionStatus")}</TableHead>
+                <TableHead>{t("score")}</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {instances.map((inst) => {
+                const subStatusKey = inst.latestStatus === "IN_PROGRESS" ? "inProgress" : inst.latestStatus === "NOT_STARTED" ? "notStarted" : inst.latestStatus.toLowerCase();
+
+                return (
+                  <TableRow key={inst.id}>
+                    <TableCell>
+                      <Link href={`/${locale}/student/exams/${inst.id}`} className="font-medium hover:underline">
+                        {inst.template.title}
+                      </Link>
+                      {inst.timeLimitMinutes && (
+                        <span className="ms-2 text-xs text-muted-foreground">⏱ {inst.timeLimitMinutes}min</span>
+                      )}
+                    </TableCell>
+                    <TableCell>{inst.group.name}</TableCell>
+                    <TableCell>
+                      {new Date(inst.startDate).toLocaleDateString(locale)} — {new Date(inst.endDate).toLocaleDateString(locale)}
+                    </TableCell>
+                    <TableCell>
+                      <Badge className={SUBMISSION_COLORS[inst.latestStatus] || ""}>
+                        {t(subStatusKey as "notStarted" | "inProgress" | "submitted" | "graded")}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      {inst.bestScore !== null ? (
+                        <>
+                          {Math.round(inst.bestScore)}%{" "}
+                          <Badge className={inst.bestPassed ? "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300" : "bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300"}>
+                            {inst.bestPassed ? t("passed") : t("failed")}
+                          </Badge>
+                          {inst.maxAttempts && inst.totalAttempts > 0 && (
+                            <span className="ms-2 text-xs text-muted-foreground">
+                              ({inst.totalAttempts}/{inst.maxAttempts})
+                            </span>
+                          )}
+                        </>
+                      ) : "—"}
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+
+          <div className="space-y-3 md:hidden">
             {instances.map((inst) => {
               const subStatusKey = inst.latestStatus === "IN_PROGRESS" ? "inProgress" : inst.latestStatus === "NOT_STARTED" ? "notStarted" : inst.latestStatus.toLowerCase();
 
               return (
-                <TableRow key={inst.id}>
-                  <TableCell>
-                    <Link href={`/${locale}/student/exams/${inst.id}`} className="font-medium hover:underline">
-                      {inst.template.title}
-                    </Link>
-                    {inst.timeLimitMinutes && (
-                      <span className="ms-2 text-xs text-muted-foreground">⏱ {inst.timeLimitMinutes}min</span>
-                    )}
-                  </TableCell>
-                  <TableCell>{inst.group.name}</TableCell>
-                  <TableCell>
-                    {new Date(inst.startDate).toLocaleDateString(locale)} — {new Date(inst.endDate).toLocaleDateString(locale)}
-                  </TableCell>
-                  <TableCell>
-                    <Badge className={SUBMISSION_COLORS[inst.latestStatus] || ""}>
-                      {t(subStatusKey as "notStarted" | "inProgress" | "submitted" | "graded")}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    {inst.bestScore !== null ? (
-                      <>
-                        {Math.round(inst.bestScore)}%{" "}
-                        <Badge className={inst.bestPassed ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}>
-                          {inst.bestPassed ? t("passed") : t("failed")}
+                <Link key={inst.id} href={`/${locale}/student/exams/${inst.id}`}>
+                  <Card className="transition-colors hover:border-primary">
+                    <CardContent className="pt-4">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <p className="font-medium">{inst.template.title}</p>
+                          <p className="text-sm text-muted-foreground">{inst.group.name}</p>
+                        </div>
+                        <Badge className={SUBMISSION_COLORS[inst.latestStatus] || ""}>
+                          {t(subStatusKey as "notStarted" | "inProgress" | "submitted" | "graded")}
                         </Badge>
-                        {inst.maxAttempts && inst.totalAttempts > 0 && (
-                          <span className="ms-2 text-xs text-muted-foreground">
-                            ({inst.totalAttempts}/{inst.maxAttempts})
-                          </span>
-                        )}
-                      </>
-                    ) : "—"}
-                  </TableCell>
-                </TableRow>
+                      </div>
+                      <div className="mt-2 flex items-center gap-3 text-sm text-muted-foreground">
+                        <span>{new Date(inst.startDate).toLocaleDateString(locale)} — {new Date(inst.endDate).toLocaleDateString(locale)}</span>
+                        {inst.timeLimitMinutes && <span>⏱ {inst.timeLimitMinutes}min</span>}
+                      </div>
+                      {inst.bestScore !== null && (
+                        <div className="mt-2 flex items-center gap-2">
+                          <span className="font-semibold">{Math.round(inst.bestScore)}%</span>
+                          <Badge className={inst.bestPassed ? "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300" : "bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300"}>
+                            {inst.bestPassed ? t("passed") : t("failed")}
+                          </Badge>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </Link>
               );
             })}
-          </TableBody>
-        </Table>
+          </div>
+        </>
       ) : (
-        <Card>
-          <CardContent className="py-8 text-center text-muted-foreground">
-            {t("noExams")}
-          </CardContent>
-        </Card>
+        <EmptyState
+          icon={FileText}
+          title={t("noExams")}
+          description={t("noExamsDesc")}
+        />
       )}
     </div>
   );

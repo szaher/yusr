@@ -88,9 +88,9 @@ export default async function StudentDashboardPage({
               key={ann.id}
               className={`rounded-lg border p-4 ${
                 ann.priority === "urgent"
-                  ? "border-red-300 bg-red-50"
+                  ? "border-red-300 bg-red-500/10 dark:border-red-800 dark:bg-red-500/10"
                   : ann.priority === "high"
-                    ? "border-amber-300 bg-amber-50"
+                    ? "border-amber-300 bg-amber-500/10 dark:border-amber-800 dark:bg-amber-500/10"
                     : "border-border bg-card"
               }`}
             >

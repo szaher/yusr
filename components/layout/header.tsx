@@ -6,8 +6,16 @@ import { Button } from "@/components/ui/button";
 import { getTranslations } from "next-intl/server";
 import { getUnreadCount, getUnreadNotifications } from "@/server/services/notification";
 import { NotificationBell } from "./notification-bell";
+import { MobileSidebar } from "./mobile-sidebar";
+import { ThemeToggle } from "./theme-toggle";
 
-export async function Header() {
+export async function Header({
+  role,
+  enabledFlags,
+}: {
+  role?: string;
+  enabledFlags?: string[];
+}) {
   const session = await auth();
   const t = await getTranslations("auth");
 
@@ -35,14 +43,16 @@ export async function Header() {
   }));
 
   return (
-    <header className="flex h-16 items-center justify-between border-b bg-card px-6">
-      <div className="flex items-center gap-3">
+    <header className="flex h-16 items-center justify-between border-b bg-card px-4 md:px-6">
+      <div className="flex items-center gap-2 md:gap-3">
+        {role && <MobileSidebar role={role} enabledFlags={enabledFlags} />}
         <span className="text-sm font-medium">{session.user.name}</span>
         <Badge variant="secondary">
           {roleLabels[session.user.role] ?? session.user.role}
         </Badge>
       </div>
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2 md:gap-3">
+        <ThemeToggle />
         <LocaleSwitcher />
         <NotificationBell
           unreadCount={unreadCount}

@@ -1,8 +1,9 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect } from "react";
 import { confirmListeningAction } from "@/server/actions/assignment";
-import { Button } from "@/components/ui/button";
+import { SubmitButton } from "@/components/shared/submit-button";
+import { toast } from "sonner";
 
 type Props = {
   studentAssignmentId: string;
@@ -18,16 +19,21 @@ function formAction(_prev: { success?: boolean; error?: string } | null, formDat
 }
 
 export function ConfirmListeningButton({ studentAssignmentId, labels, isComplete }: Props) {
-  const [state, action, pending] = useActionState(formAction, null);
+  const [state, action] = useActionState(formAction, null);
+
+  useEffect(() => {
+    if (!state) return;
+    if ("success" in state && state.success) toast.success(labels.confirm);
+    if ("error" in state && state.error) toast.error(state.error);
+  }, [state, labels.confirm]);
 
   return (
     <form action={action}>
       <input type="hidden" name="studentAssignmentId" value={studentAssignmentId} />
       <p className="mb-2 text-sm text-muted-foreground">{labels.disclaimer}</p>
-      <Button type="submit" disabled={pending || isComplete}>
+      <SubmitButton disabled={isComplete}>
         {labels.confirm}
-      </Button>
-      {state?.error && <p className="mt-2 text-sm text-red-600">{state.error}</p>}
+      </SubmitButton>
     </form>
   );
 }

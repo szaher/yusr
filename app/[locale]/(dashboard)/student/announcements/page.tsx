@@ -2,6 +2,8 @@ import { setRequestLocale, getTranslations } from "next-intl/server";
 import { requireApprovedUser } from "@/server/auth/session";
 import { listAnnouncements } from "@/server/services/announcement";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { EmptyState } from "@/components/shared/empty-state";
+import { Megaphone } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 function priorityVariant(priority: string) {
@@ -29,7 +31,11 @@ export default async function StudentAnnouncementsPage({
       <h1 className="text-2xl font-bold">{t("title")}</h1>
 
       {announcements.length === 0 ? (
-        <p className="text-muted-foreground">{t("noAnnouncements")}</p>
+        <EmptyState
+          icon={Megaphone}
+          title={t("noAnnouncements")}
+          description={t("noAnnouncementsDesc")}
+        />
       ) : (
         announcements.map((ann) => (
           <Card key={ann.id}>

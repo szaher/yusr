@@ -3,6 +3,8 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { redirect } from "next/navigation";
 import { getStudentAssignments } from "@/server/services/assignment";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { EmptyState } from "@/components/shared/empty-state";
+import { BookOpen } from "lucide-react";
 import Link from "next/link";
 import { AssignmentType, StudentAssignmentStatus } from "@/prisma/generated/prisma/enums";
 
@@ -45,11 +47,11 @@ export default async function StudentAssignmentsPage({
       <h1 className="mb-6 text-2xl font-bold">{t("title")}</h1>
 
       {assignments.length === 0 ? (
-        <Card>
-          <CardContent className="pt-6 text-center">
-            <p className="text-muted-foreground">{t("noAssignments")}</p>
-          </CardContent>
-        </Card>
+        <EmptyState
+          icon={BookOpen}
+          title={t("noAssignments")}
+          description={t("noAssignmentsDesc")}
+        />
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {assignments.map((sa) => {

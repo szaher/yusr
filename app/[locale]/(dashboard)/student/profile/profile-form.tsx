@@ -1,10 +1,11 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect } from "react";
 import { updateStudentProfileAction } from "@/server/actions/student";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
+import { SubmitButton } from "@/components/shared/submit-button";
+import { toast } from "sonner";
 
 type Props = {
   profile: {
@@ -30,7 +31,12 @@ function formAction(_prev: { success?: boolean; error?: string } | null, formDat
 }
 
 export function StudentProfileForm({ profile, labels }: Props) {
-  const [state, action, pending] = useActionState(formAction, null);
+  const [state, action] = useActionState(formAction, null);
+
+  useEffect(() => {
+    if (state?.success) toast.success(labels.saved);
+    if (state?.error) toast.error(state.error);
+  }, [state, labels.saved]);
 
   return (
     <form action={action} className="space-y-4">
@@ -69,17 +75,7 @@ export function StudentProfileForm({ profile, labels }: Props) {
         </div>
       </div>
 
-      <div className="flex items-center gap-4">
-        <Button type="submit" disabled={pending}>
-          {labels.save}
-        </Button>
-        {state?.success && (
-          <p className="text-sm text-green-600">{labels.saved}</p>
-        )}
-        {state?.error && (
-          <p className="text-sm text-red-600">{state.error}</p>
-        )}
-      </div>
+      <SubmitButton>{labels.save}</SubmitButton>
     </form>
   );
 }

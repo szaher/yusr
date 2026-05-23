@@ -3,16 +3,11 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { getStudentSessions } from "@/server/services/session";
 import { getStudentEligibility } from "@/server/services/assignment";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { EmptyState } from "@/components/shared/empty-state";
+import { Calendar, History } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
-
-const STATUS_COLORS: Record<string, string> = {
-  SCHEDULED: "bg-blue-100 text-blue-800",
-  OPEN: "bg-green-100 text-green-800",
-  IN_PROGRESS: "bg-yellow-100 text-yellow-800",
-  COMPLETED: "bg-gray-100 text-gray-800",
-  CANCELLED: "bg-red-100 text-red-800",
-};
+import { STATUS_COLORS, RESULT_COLORS } from "@/lib/constants/status-colors";
 
 const STATUS_KEYS: Record<string, string> = {
   SCHEDULED: "statusScheduled",
@@ -20,15 +15,6 @@ const STATUS_KEYS: Record<string, string> = {
   IN_PROGRESS: "statusInProgress",
   COMPLETED: "statusCompleted",
   CANCELLED: "statusCancelled",
-};
-
-const RESULT_COLORS: Record<string, string> = {
-  EXCELLENT: "bg-green-100 text-green-800",
-  GOOD: "bg-blue-100 text-blue-800",
-  NEEDS_REVIEW: "bg-yellow-100 text-yellow-800",
-  INCOMPLETE: "bg-orange-100 text-orange-800",
-  NOT_RECITED: "bg-red-100 text-red-800",
-  NOT_GRADED: "bg-gray-100 text-gray-800",
 };
 
 const RESULT_KEYS: Record<string, string> = {
@@ -69,9 +55,9 @@ export default async function StudentSessionsPage({
       <h1 className="mb-6 text-2xl font-bold">{t("title")}</h1>
 
       {!eligibility.eligible && (
-        <Card className="mb-6 border-yellow-200 bg-yellow-50">
+        <Card className="mb-6 border-yellow-300 bg-yellow-500/10 dark:border-yellow-800 dark:bg-yellow-500/10">
           <CardContent className="pt-6">
-            <p className="text-yellow-800">
+            <p className="text-yellow-800 dark:text-yellow-300">
               {t("eligibilityWarning", {
                 completed: eligibility.completed,
                 total: eligibility.total,
@@ -85,11 +71,11 @@ export default async function StudentSessionsPage({
         <div>
           <h2 className="mb-4 text-xl font-semibold">{t("upcomingSessions")}</h2>
           {upcomingSessions.length === 0 ? (
-            <Card>
-              <CardContent className="pt-6 text-center">
-                <p className="text-muted-foreground">{t("noUpcomingSessions")}</p>
-              </CardContent>
-            </Card>
+            <EmptyState
+              icon={Calendar}
+              title={t("noUpcomingSessions")}
+              description={t("noSessionsDesc")}
+            />
           ) : (
             <div className="grid gap-4">
               {upcomingSessions.map((ss) => {
@@ -138,11 +124,10 @@ export default async function StudentSessionsPage({
         <div>
           <h2 className="mb-4 text-xl font-semibold">{t("pastSessions")}</h2>
           {pastSessions.length === 0 ? (
-            <Card>
-              <CardContent className="pt-6 text-center">
-                <p className="text-muted-foreground">{t("noPastSessions")}</p>
-              </CardContent>
-            </Card>
+            <EmptyState
+              icon={History}
+              title={t("noPastSessions")}
+            />
           ) : (
             <div className="grid gap-4">
               {pastSessions.map((ss) => (

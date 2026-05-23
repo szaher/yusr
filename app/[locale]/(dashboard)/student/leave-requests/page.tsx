@@ -11,7 +11,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/shared/empty-state";
+import { CalendarOff } from "lucide-react";
+import { SubmitButton } from "@/components/shared/submit-button";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -22,14 +24,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { STATUS_COLORS } from "@/lib/constants/status-colors";
 
 const createLeaveRequest = createLeaveRequestAction as unknown as (formData: FormData) => void;
-
-const STATUS_COLORS: Record<string, string> = {
-  PENDING: "bg-yellow-100 text-yellow-800",
-  APPROVED: "bg-green-100 text-green-800",
-  REJECTED: "bg-red-100 text-red-800",
-};
 
 export default async function StudentLeaveRequestsPage({
   params,
@@ -54,11 +51,11 @@ export default async function StudentLeaveRequestsPage({
     return (
       <div className="space-y-6">
         <h1 className="text-2xl font-bold">{t("title")}</h1>
-        <Card>
-          <CardContent className="py-8 text-center text-muted-foreground">
-            {t("noRequests")}
-          </CardContent>
-        </Card>
+        <EmptyState
+          icon={CalendarOff}
+          title={t("noRequests")}
+          description={t("noRequestsDesc")}
+        />
       </div>
     );
   }
@@ -106,7 +103,7 @@ export default async function StudentLeaveRequestsPage({
                 />
               </div>
               <div className="sm:col-span-2">
-                <Button type="submit">{t("submit")}</Button>
+                <SubmitButton>{t("submit")}</SubmitButton>
               </div>
             </form>
           )}
@@ -114,44 +111,67 @@ export default async function StudentLeaveRequestsPage({
       </Card>
 
       {requests.length > 0 && (
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>{t("sessionDate")}</TableHead>
-              <TableHead>{t("groupName")}</TableHead>
-              <TableHead>{t("reason")}</TableHead>
-              <TableHead>{t("status")}</TableHead>
-              <TableHead>{t("submittedAt")}</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {requests.map((req) => (
-              <TableRow key={req.id}>
-                <TableCell>
-                  {new Date(req.session.date).toLocaleDateString(locale)}
-                </TableCell>
-                <TableCell>{req.session.group.name}</TableCell>
-                <TableCell className="max-w-xs truncate">{req.reason}</TableCell>
-                <TableCell>
-                  <Badge className={STATUS_COLORS[req.status] || ""}>
-                    {t(req.status.toLowerCase() as "pending" | "approved" | "rejected")}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  {new Date(req.createdAt).toLocaleDateString(locale)}
-                </TableCell>
+        <>
+          <Table className="hidden md:table">
+            <TableHeader>
+              <TableRow>
+                <TableHead>{t("sessionDate")}</TableHead>
+                <TableHead>{t("groupName")}</TableHead>
+                <TableHead>{t("reason")}</TableHead>
+                <TableHead>{t("status")}</TableHead>
+                <TableHead>{t("submittedAt")}</TableHead>
               </TableRow>
+            </TableHeader>
+            <TableBody>
+              {requests.map((req) => (
+                <TableRow key={req.id}>
+                  <TableCell>
+                    {new Date(req.session.date).toLocaleDateString(locale)}
+                  </TableCell>
+                  <TableCell>{req.session.group.name}</TableCell>
+                  <TableCell className="max-w-xs truncate">{req.reason}</TableCell>
+                  <TableCell>
+                    <Badge className={STATUS_COLORS[req.status] || ""}>
+                      {t(req.status.toLowerCase() as "pending" | "approved" | "rejected")}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    {new Date(req.createdAt).toLocaleDateString(locale)}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+
+          <div className="space-y-3 md:hidden">
+            {requests.map((req) => (
+              <Card key={req.id}>
+                <CardContent className="pt-4">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <p className="font-medium">{req.session.group.name}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {new Date(req.session.date).toLocaleDateString(locale)}
+                      </p>
+                    </div>
+                    <Badge className={STATUS_COLORS[req.status] || ""}>
+                      {t(req.status.toLowerCase() as "pending" | "approved" | "rejected")}
+                    </Badge>
+                  </div>
+                  <p className="mt-2 text-sm text-muted-foreground line-clamp-2">{req.reason}</p>
+                </CardContent>
+              </Card>
             ))}
-          </TableBody>
-        </Table>
+          </div>
+        </>
       )}
 
       {requests.length === 0 && (
-        <Card>
-          <CardContent className="py-8 text-center text-muted-foreground">
-            {t("noRequests")}
-          </CardContent>
-        </Card>
+        <EmptyState
+          icon={CalendarOff}
+          title={t("noRequests")}
+          description={t("noRequestsDesc")}
+        />
       )}
     </div>
   );

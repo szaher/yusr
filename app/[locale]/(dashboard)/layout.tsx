@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/server/auth/config";
 import { AppShell } from "@/components/layout/app-shell";
 import { setRequestLocale } from "next-intl/server";
+import { getEnabledFeatureFlags } from "@/server/services/feature-flag";
 
 export default async function DashboardLayout({
   children,
@@ -20,5 +21,7 @@ export default async function DashboardLayout({
     redirect(`/${locale}/login`);
   }
 
-  return <AppShell role={session.user.role}>{children}</AppShell>;
+  const enabledFlags = await getEnabledFeatureFlags();
+
+  return <AppShell role={session.user.role} enabledFlags={[...enabledFlags]}>{children}</AppShell>;
 }

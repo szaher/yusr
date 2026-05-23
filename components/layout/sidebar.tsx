@@ -30,6 +30,7 @@ type NavItem = {
   labelKey: string;
   href: string;
   icon: React.ElementType;
+  featureFlag?: string;
 };
 
 const adminNav: NavItem[] = [
@@ -44,10 +45,10 @@ const adminNav: NavItem[] = [
   { labelKey: "auditLogs", href: "/admin/audit-logs", icon: ScrollText },
   { labelKey: "assignments", href: "/admin/assignments", icon: BookOpen },
   { labelKey: "sessions", href: "/admin/sessions", icon: Calendar },
-  { labelKey: "announcements", href: "/admin/announcements", icon: Megaphone },
-  { labelKey: "tickets", href: "/admin/tickets", icon: FileText },
-  { labelKey: "exams", href: "/admin/exams", icon: ClipboardCheck },
-  { labelKey: "quranExplorer", href: "/quran", icon: BookOpenText },
+  { labelKey: "announcements", href: "/admin/announcements", icon: Megaphone, featureFlag: "announcements" },
+  { labelKey: "tickets", href: "/admin/tickets", icon: FileText, featureFlag: "support_tickets" },
+  { labelKey: "exams", href: "/admin/exams", icon: ClipboardCheck, featureFlag: "exams" },
+  { labelKey: "quran", href: "/quran", icon: BookOpenText },
 ];
 
 const moderatorNav: NavItem[] = [
@@ -57,9 +58,9 @@ const moderatorNav: NavItem[] = [
   { labelKey: "assignments", href: "/moderator/assignments", icon: BookOpen },
   { labelKey: "sessions", href: "/moderator/sessions", icon: Calendar },
   { labelKey: "memorization", href: "/moderator/memorization", icon: BookOpenCheck },
-  { labelKey: "leaveRequests", href: "/moderator/leave-requests", icon: CalendarOff },
-  { labelKey: "exams", href: "/moderator/exams", icon: ClipboardCheck },
-  { labelKey: "quranExplorer", href: "/quran", icon: BookOpenText },
+  { labelKey: "leaveRequests", href: "/moderator/leave-requests", icon: CalendarOff, featureFlag: "leave_requests" },
+  { labelKey: "exams", href: "/moderator/exams", icon: ClipboardCheck, featureFlag: "exams" },
+  { labelKey: "quran", href: "/quran", icon: BookOpenText },
 ];
 
 const studentNav: NavItem[] = [
@@ -69,16 +70,16 @@ const studentNav: NavItem[] = [
   { labelKey: "sessions", href: "/student/sessions", icon: Calendar },
   { labelKey: "grades", href: "/student/grades", icon: Award },
   { labelKey: "memorization", href: "/student/memorization", icon: BookOpenCheck },
-  { labelKey: "leaveRequests", href: "/student/leave-requests", icon: CalendarOff },
-  { labelKey: "support", href: "/student/tickets", icon: Headset },
-  { labelKey: "exams", href: "/student/exams", icon: ClipboardCheck },
-  { labelKey: "quranExplorer", href: "/quran", icon: BookOpenText },
+  { labelKey: "leaveRequests", href: "/student/leave-requests", icon: CalendarOff, featureFlag: "leave_requests" },
+  { labelKey: "support", href: "/student/tickets", icon: Headset, featureFlag: "support_tickets" },
+  { labelKey: "exams", href: "/student/exams", icon: ClipboardCheck, featureFlag: "exams" },
+  { labelKey: "quran", href: "/quran", icon: BookOpenText },
 ];
 
 const supportNav: NavItem[] = [
   { labelKey: "dashboard", href: "/support/dashboard", icon: LayoutDashboard },
-  { labelKey: "tickets", href: "/support/tickets", icon: FileText },
-  { labelKey: "quranExplorer", href: "/quran", icon: BookOpenText },
+  { labelKey: "tickets", href: "/support/tickets", icon: FileText, featureFlag: "support_tickets" },
+  { labelKey: "quran", href: "/quran", icon: BookOpenText },
 ];
 
 const navByRole: Record<string, NavItem[]> = {
@@ -88,14 +89,17 @@ const navByRole: Record<string, NavItem[]> = {
   support: supportNav,
 };
 
-export function Sidebar({ role }: { role: string }) {
+export function Sidebar({ role, enabledFlags = [], onNavClick }: { role: string; enabledFlags?: string[]; onNavClick?: () => void }) {
   const t = useTranslations("nav");
   const locale = useLocale();
   const pathname = usePathname();
-  const items = navByRole[role] ?? studentNav;
+  const flagSet = new Set(enabledFlags);
+  const items = (navByRole[role] ?? studentNav).filter(
+    (item) => !item.featureFlag || flagSet.has(item.featureFlag)
+  );
 
   return (
-    <aside className="flex h-full w-64 flex-col border-e bg-card">
+    <aside className="hidden md:flex h-full w-64 flex-col border-e bg-card">
       <div className="flex h-16 items-center justify-center border-b px-4">
         <Link
           href={`/${locale}`}
@@ -114,6 +118,7 @@ export function Sidebar({ role }: { role: string }) {
             <Link
               key={item.href}
               href={href}
+              onClick={onNavClick}
               className={cn(
                 "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
                 isActive

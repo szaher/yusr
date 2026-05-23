@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { QURAN_SURAHS } from "@/prisma/data/quran-surahs";
 import {
@@ -12,6 +12,34 @@ import {
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+
+const STORAGE_KEY = "quran-explorer-settings";
+
+type SavedSettings = {
+  surah: number;
+  ayah: number;
+  reciter: string;
+  mushaf: string;
+  translation: string;
+};
+
+function loadSavedSettings(): SavedSettings | null {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw) as SavedSettings;
+  } catch {
+    return null;
+  }
+}
+
+function saveSettings(settings: SavedSettings) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+  } catch {
+    // localStorage unavailable
+  }
+}
 
 const selectClassName =
   "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm";
@@ -34,24 +62,55 @@ export function QuranExplorer({
 
   const defaultTranslation = locale === "ar" ? "ar_mu" : "en_sh";
 
-  const [surah, setSurah] = useState(initialSurah ?? 1);
-  const [ayah, setAyah] = useState(initialAyah ?? 1);
-  const [reciter, setReciter] = useState(initialReciter ?? "husary.e");
-  const [mushaf, setMushaf] = useState(initialMushaf ?? "hafs");
-  const [translation, setTranslation] = useState(
-    initialTranslation ?? defaultTranslation
-  );
+  const hasInitialProps =
+    initialSurah !== undefined ||
+    initialReciter !== undefined ||
+    initialMushaf !== undefined ||
+    initialTranslation !== undefined;
 
+  const startSurah = initialSurah ?? 1;
+  const startAyah = initialAyah ?? 1;
+  const startReciter = initialReciter ?? "husary.e";
+  const startMushaf = initialMushaf ?? "hafs";
+  const startTranslation = initialTranslation ?? defaultTranslation;
+
+  const [surah, setSurah] = useState(startSurah);
+  const [ayah, setAyah] = useState(startAyah);
+  const [reciter, setReciter] = useState(startReciter);
+  const [mushaf, setMushaf] = useState(startMushaf);
+  const [translation, setTranslation] = useState(startTranslation);
+
+  const [iframeKey, setIframeKey] = useState(0);
   const [iframeSrc, setIframeSrc] = useState(() =>
     buildKsuUrl({
       locale,
-      surah: initialSurah ?? 1,
-      ayah: initialAyah ?? 1,
-      mushaf: initialMushaf ?? "hafs",
-      reciter: initialReciter ?? "husary.e",
-      translation: initialTranslation ?? defaultTranslation,
+      surah: startSurah,
+      ayah: startAyah,
+      mushaf: startMushaf,
+      reciter: startReciter,
+      translation: startTranslation,
     })
   );
+
+  useEffect(() => {
+    if (hasInitialProps) return;
+    const saved = loadSavedSettings();
+    if (!saved) return;
+
+    const s = saved.surah ?? startSurah;
+    const a = saved.ayah ?? startAyah;
+    const r = saved.reciter ?? startReciter;
+    const m = saved.mushaf ?? startMushaf;
+    const tr = saved.translation ?? startTranslation;
+
+    setSurah(s);
+    setAyah(a);
+    setReciter(r);
+    setMushaf(m);
+    setTranslation(tr);
+    setIframeSrc(buildKsuUrl({ locale, surah: s, ayah: a, mushaf: m, reciter: r, translation: tr }));
+    setIframeKey((k) => k + 1);
+  }, []);
 
   const selectedSurah = QURAN_SURAHS.find((s) => s.number === surah);
   const maxAyah = selectedSurah?.ayahCount ?? 286;
@@ -66,11 +125,13 @@ export function QuranExplorer({
     setIframeSrc(
       buildKsuUrl({ locale, surah, ayah, mushaf, reciter, translation })
     );
+    setIframeKey((k) => k + 1);
+    saveSettings({ surah, ayah, reciter, mushaf, translation });
   }
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-end gap-3">
+      <div className="grid gap-3 sm:grid-cols-2 md:flex md:flex-wrap md:items-end">
         <div className="space-y-1">
           <Label className="text-xs">{t("surah")}</Label>
           <select
@@ -93,11 +154,8 @@ export function QuranExplorer({
             min={1}
             max={maxAyah}
             value={ayah}
-            onChange={(e) =>
-              setAyah(
-                Math.max(1, Math.min(maxAyah, parseInt(e.target.value, 10) || 1))
-              )
-            }
+            onChange={(e) => setAyah(parseInt(e.target.value, 10) || 1)}
+            onBlur={() => setAyah((v) => Math.max(1, Math.min(maxAyah, v)))}
             className="w-20"
           />
         </div>
@@ -147,12 +205,13 @@ export function QuranExplorer({
           </select>
         </div>
 
-        <Button onClick={handleGo}>{t("go")}</Button>
+        <Button onClick={handleGo} className="sm:col-span-2 md:col-span-1">{t("go")}</Button>
       </div>
 
       <iframe
+        key={iframeKey}
         src={iframeSrc}
-        className="h-[700px] w-full rounded-lg border"
+        className="h-[400px] w-full rounded-lg border md:h-[700px]"
         sandbox="allow-scripts allow-same-origin allow-popups"
         allowFullScreen
       />

@@ -21,14 +21,7 @@ import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { BookOpenText } from "lucide-react";
 import { Label } from "@/components/ui/label";
-
-const RESULT_COLORS: Record<string, string> = {
-  EXCELLENT: "bg-green-100 text-green-800",
-  GOOD: "bg-blue-100 text-blue-800",
-  ACCEPTABLE: "bg-yellow-100 text-yellow-800",
-  NEEDS_IMPROVEMENT: "bg-orange-100 text-orange-800",
-  FAILED: "bg-red-100 text-red-800",
-};
+import { RESULT_COLORS } from "@/lib/constants/status-colors";
 
 export default async function StudentMemorizationPage({
   params,
@@ -158,8 +151,8 @@ export default async function StudentMemorizationPage({
   return (
     <div className="space-y-6">
       {/* Hero Card */}
-      <div className="rounded-xl bg-gradient-to-br from-green-900 to-green-700 p-6 text-white">
-        <div className="flex items-start justify-between">
+      <div className="rounded-xl bg-gradient-to-br from-green-900 to-green-700 p-4 text-white sm:p-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <p className="text-xs uppercase tracking-wider opacity-80">
               {t("dashboard.currentlyMemorizing")}
@@ -169,13 +162,13 @@ export default async function StudentMemorizationPage({
               {surahNameEn} · {t("plan.ayah")} {plan.currentAyahNumber} / {plan.currentSurah.ayahCount}
             </p>
           </div>
-          <div className="text-right">
+          <div className="sm:text-right">
             <p className="text-xs opacity-80">{t("plan.overallProgress")}</p>
             <p className="text-3xl font-bold">{progress?.percentage ?? 0}%</p>
             <p className="text-xs opacity-80">{t("dashboard.ofQuran")}</p>
           </div>
         </div>
-        <div className="mt-4 flex gap-6 text-sm opacity-90">
+        <div className="mt-4 flex flex-wrap gap-4 text-sm opacity-90 sm:gap-6">
           <span>{t("plan.juz")} <strong>{progress?.juz ?? "—"}</strong>/30</span>
           <span>{t("plan.hizb")} <strong>{progress?.hizb ?? "—"}</strong>/60</span>
           <span>
@@ -254,7 +247,7 @@ export default async function StudentMemorizationPage({
             </span>
           </div>
         </div>
-        <div className="grid grid-cols-15 gap-1">
+        <div className="grid grid-cols-6 gap-1 sm:grid-cols-10 md:grid-cols-15">
           {juzData.map((j) => (
             <div
               key={j.number}
