@@ -815,6 +815,7 @@ model ExamQuestion {
   order           Int
   options         Json?
   correctAnswer   String?
+  tags            String[]
   fromSurahNumber Int?
   fromAyah        Int?
   toSurahNumber   Int?
@@ -839,6 +840,10 @@ model ExamInstance {
   startDate      DateTime
   endDate        DateTime
   customizations Json?
+  timeLimitMinutes  Int?
+  shuffleQuestions  Boolean            @default(false)
+  maxAttempts       Int?
+  poolConfig        Json?
   createdById    String
   createdAt      DateTime           @default(now())
   updatedAt      DateTime           @updatedAt
@@ -859,6 +864,8 @@ model ExamSubmission {
   instanceId  String
   studentId   String
   status      ExamSubmissionStatus @default(NOT_STARTED)
+  attemptNumber Int                @default(1)
+  questionOrder Json?
   startedAt   DateTime?
   submittedAt DateTime?
   gradedAt    DateTime?
@@ -871,7 +878,7 @@ model ExamSubmission {
   student  StudentProfile @relation(fields: [studentId], references: [id])
   answers  ExamAnswer[]
 
-  @@unique([instanceId, studentId])
+  @@unique([instanceId, studentId, attemptNumber])
   @@index([instanceId])
   @@index([studentId])
 }
