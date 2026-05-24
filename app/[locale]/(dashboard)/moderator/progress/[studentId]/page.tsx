@@ -22,15 +22,24 @@ export default async function ModeratorStudentProgressPage({
 }) {
   const { locale, studentId } = await params;
   setRequestLocale(locale);
-  await requireApprovedUser();
+  const session = await requireApprovedUser();
 
   const enabled = await isFeatureEnabled("progress_tracking");
   if (!enabled) notFound();
 
   const t = await getTranslations("progress");
 
-  const student = await db.studentProfile.findUnique({
-    where: { id: studentId },
+  const student = await db.studentProfile.findFirst({
+    where: {
+      id: studentId,
+      groupStudents: {
+        some: {
+          group: {
+            moderator: { userId: session.user.id },
+          },
+        },
+      },
+    },
     select: {
       user: { select: { name: true } },
       groupStudents: {
