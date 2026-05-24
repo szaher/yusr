@@ -1,6 +1,7 @@
 import { db } from "@/server/db/client";
 import { createNotification } from "@/server/services/notification";
 import { createAuditLog } from "@/server/services/audit-log";
+import { checkBadges } from "@/server/services/gamification";
 
 const TOTAL_QURAN_AYAHS = 6236;
 
@@ -117,6 +118,10 @@ export async function checkMilestones(
       const prismaErr = err as { code?: string };
       if (prismaErr.code !== "P2002") throw err;
     }
+  }
+
+  if (newMilestones.length > 0) {
+    checkBadges(plan.studentId).catch(() => {});
   }
 }
 
