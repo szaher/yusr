@@ -479,3 +479,67 @@ export async function getGroupProgressComparison() {
 
   return results.sort((a, b) => b.value - a.value);
 }
+
+export async function createCustomGoal(
+  planId: string,
+  data: { title: string; targetSurahNumber: number; targetAyahNumber: number; deadline?: string },
+  actorId: string,
+) {
+  const plan = await db.studentMemorizationPlan.findUnique({
+    where: { id: planId },
+    select: { currentSurahId: true, currentAyahNumber: true },
+  });
+
+  if (!plan) throw new Error("Plan not found");
+
+  const ahead =
+    data.targetSurahNumber > plan.currentSurahId ||
+    (data.targetSurahNumber === plan.currentSurahId && data.targetAyahNumber > plan.currentAyahNumber);
+
+  if (!ahead) throw new Error("Target must be ahead of current position");
+
+  const goal = await db.customGoal.create({
+    data: {
+      planId,
+      createdById: actorId,
+      targetSurahNumber: data.targetSurahNumber,
+      targetAyahNumber: data.targetAyahNumber,
+      deadline: data.deadline ? new Date(data.deadline) : null,
+      title: data.title,
+    },
+  });
+
+  await createAuditLog({
+    actorId,
+    action: "CUSTOM_GOAL_CREATE",
+    entityType: "CustomGoal",
+    entityId: goal.id,
+    metadata: { planId, title: data.title, targetSurahNumber: data.targetSurahNumber, targetAyahNumber: data.targetAyahNumber },
+  });
+
+  return goal;
+}
+
+export async function getCustomGoals(planId: string) {
+  return db.customGoal.findMany({
+    where: { planId },
+    include: { targetSurah: { select: { nameAr: true, nameEn: true } } },
+    orderBy: [{ completedAt: "asc" }, { createdAt: "desc" }],
+  });
+}
+
+export async function deleteCustomGoal(goalId: string, actorId: string) {
+  const goal = await db.customGoal.findUnique({ where: { id: goalId } });
+  if (!goal) throw new Error("Goal not found");
+  if (goal.completedAt) throw new Error("Cannot delete a completed goal");
+
+  await db.customGoal.delete({ where: { id: goalId } });
+
+  await createAuditLog({
+    actorId,
+    action: "CUSTOM_GOAL_DELETE",
+    entityType: "CustomGoal",
+    entityId: goalId,
+    metadata: { planId: goal.planId, title: goal.title },
+  });
+}
