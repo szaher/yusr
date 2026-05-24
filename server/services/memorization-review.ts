@@ -2,6 +2,7 @@ import { db } from "@/server/db/client";
 import { createAuditLog } from "./audit-log";
 import type { CreateReviewInput } from "@/lib/validations/memorization";
 import type { MeetingCadence } from "@/prisma/generated/prisma/enums";
+import { checkMilestones, checkCustomGoals } from "./progress";
 
 function calculateNextReviewDate(
   fromDate: Date,
@@ -36,12 +37,16 @@ export async function createReview(input: CreateReviewInput, actorId: string) {
 
   if (!plan) throw new Error("Plan not found");
 
+  // Save old position before transaction
+  const oldSurahNumber = plan.currentSurahId;
+  const oldAyahNumber = plan.currentAyahNumber;
+
   const effectiveCadence = plan.meetingCadence || plan.group.meetingCadence;
   const effectiveCustomDays = plan.customCadenceDays || plan.group.customCadenceDays;
   const reviewDate = new Date();
   const nextReviewDate = calculateNextReviewDate(reviewDate, effectiveCadence, effectiveCustomDays);
 
-  return db.$transaction(async (tx) => {
+  const review = await db.$transaction(async (tx) => {
     const review = await tx.memorizationReview.create({
       data: {
         planId: input.planId,
@@ -107,6 +112,12 @@ export async function createReview(input: CreateReviewInput, actorId: string) {
 
     return review;
   });
+
+  // Fire-and-forget milestone detection
+  checkMilestones(input.planId, oldSurahNumber, oldAyahNumber, input.toSurahNumber, input.toAyah).catch(() => {});
+  checkCustomGoals(input.planId, input.toSurahNumber, input.toAyah).catch(() => {});
+
+  return review;
 }
 
 export async function getReviewsByPlan(planId: string) {
