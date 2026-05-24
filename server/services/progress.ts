@@ -387,7 +387,16 @@ export async function getSchoolProgressStats() {
   };
 }
 
-export async function getTopPerformers(limit = 10) {
+interface TopPerformer {
+  studentId: string;
+  studentName: string;
+  groupName: string;
+  quranPercentage: number;
+  milestoneCount: number;
+  currentStreak: number;
+}
+
+export async function getTopPerformers(limit = 10): Promise<TopPerformer[]> {
   const performers = await db.studentMilestone.groupBy({
     by: ["studentId"],
     _count: { id: true },

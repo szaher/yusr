@@ -79,7 +79,7 @@ export default async function ModeratorStudentProgressPage({
     orderBy: { number: "asc" },
   });
 
-  const serializedGoals = goals.map((g) => ({
+  const serializedGoals = goals.map((g: typeof goals[number]) => ({
     id: g.id,
     title: g.title,
     targetSurahNumber: g.targetSurahNumber,
