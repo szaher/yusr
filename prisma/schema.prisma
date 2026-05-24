@@ -39,6 +39,7 @@ model User {
   ticketReplies         TicketReply[]          @relation("ticketReplyAuthor")
   createdExamTemplates ExamTemplate[] @relation("examTemplateCreator")
   createdExamInstances ExamInstance[] @relation("examInstanceCreator")
+  createdGoals         CustomGoal[]       @relation("goalCreator")
 
   @@index([email])
   @@index([roleId])
@@ -129,6 +130,7 @@ model StudentProfile {
   leaveRequests      LeaveRequest[]
   supportTickets     SupportTicket[]
   examSubmissions ExamSubmission[]
+  milestones         StudentMilestone[]
 }
 
 model EnrollmentApplication {
@@ -555,6 +557,7 @@ model QuranSurah {
   reviewNextToSurahs   MemorizationReview[] @relation("reviewNextToSurah")
   examQuestionsFrom ExamQuestion[] @relation("examQuestionFromSurah")
   examQuestionsTo   ExamQuestion[] @relation("examQuestionToSurah")
+  customGoalTargets  CustomGoal[]       @relation("goalTargetSurah")
 }
 
 model QuranAyah {
@@ -626,6 +629,8 @@ model StudentMemorizationPlan {
   updatedAt         DateTime        @updatedAt
 
   reviews MemorizationReview[]
+  milestones    StudentMilestone[]
+  customGoals   CustomGoal[]
 
   @@unique([studentId, groupId])
   @@index([studentId])
@@ -748,6 +753,39 @@ model AttendanceAlertConfig {
   notifyAdmin                  Boolean  @default(true)
   createdAt                    DateTime @default(now())
   updatedAt                    DateTime @updatedAt
+}
+
+model StudentMilestone {
+  id         String                  @id @default(cuid())
+  studentId  String
+  student    StudentProfile          @relation(fields: [studentId], references: [id])
+  planId     String
+  plan       StudentMemorizationPlan @relation(fields: [planId], references: [id])
+  type       String
+  value      String
+  label      String
+  achievedAt DateTime                @default(now())
+
+  @@unique([studentId, type, value])
+  @@index([studentId])
+  @@index([planId])
+}
+
+model CustomGoal {
+  id                String                  @id @default(cuid())
+  planId            String
+  plan              StudentMemorizationPlan @relation(fields: [planId], references: [id])
+  createdById       String
+  createdBy         User                    @relation("goalCreator", fields: [createdById], references: [id])
+  targetSurahNumber Int
+  targetAyahNumber  Int
+  targetSurah       QuranSurah              @relation("goalTargetSurah", fields: [targetSurahNumber], references: [number])
+  deadline          DateTime?
+  completedAt       DateTime?
+  title             String
+  createdAt         DateTime                @default(now())
+
+  @@index([planId])
 }
 
 model Announcement {

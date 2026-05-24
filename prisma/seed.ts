@@ -78,6 +78,7 @@ async function seedFeatureFlags() {
     { key: "leave_requests", enabled: true, description: "Student leave request system" },
     { key: "memorization_plans", enabled: true, description: "Individual student memorization plan tracking" },
     { key: "moderator_voice_notes", enabled: true, description: "Moderator voice note attachments" },
+    { key: "progress_tracking", enabled: true, description: "Student progress tracking, milestones, and goals" },
     { key: "quran_explorer", enabled: true, description: "Native Quran text explorer (experimental)" },
     { key: "student_audio_upload", enabled: false, description: "Student audio upload for recitation" },
     { key: "support_tickets", enabled: true, description: "Support ticket system" },
