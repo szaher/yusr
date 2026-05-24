@@ -23,6 +23,7 @@ import {
   Megaphone,
   Headset,
   ClipboardCheck,
+  CalendarCheck,
   BookOpenText,
   BookType,
 } from "lucide-react";
@@ -49,6 +50,7 @@ const adminNav: NavItem[] = [
   { labelKey: "announcements", href: "/admin/announcements", icon: Megaphone, featureFlag: "announcements" },
   { labelKey: "tickets", href: "/admin/tickets", icon: FileText, featureFlag: "support_tickets" },
   { labelKey: "exams", href: "/admin/exams", icon: ClipboardCheck, featureFlag: "exams" },
+  { labelKey: "attendance", href: "/admin/attendance", icon: CalendarCheck, featureFlag: "attendance_management" },
   { labelKey: "quran", href: "/quran", icon: BookOpenText },
   { labelKey: "quranReader", href: "/quran/explorer", icon: BookType, featureFlag: "quran_explorer" },
 ];
@@ -62,6 +64,7 @@ const moderatorNav: NavItem[] = [
   { labelKey: "memorization", href: "/moderator/memorization", icon: BookOpenCheck },
   { labelKey: "leaveRequests", href: "/moderator/leave-requests", icon: CalendarOff, featureFlag: "leave_requests" },
   { labelKey: "exams", href: "/moderator/exams", icon: ClipboardCheck, featureFlag: "exams" },
+  { labelKey: "attendance", href: "/moderator/attendance", icon: CalendarCheck, featureFlag: "attendance_management" },
   { labelKey: "quran", href: "/quran", icon: BookOpenText },
   { labelKey: "quranReader", href: "/quran/explorer", icon: BookType, featureFlag: "quran_explorer" },
 ];
@@ -76,6 +79,7 @@ const studentNav: NavItem[] = [
   { labelKey: "leaveRequests", href: "/student/leave-requests", icon: CalendarOff, featureFlag: "leave_requests" },
   { labelKey: "support", href: "/student/tickets", icon: Headset, featureFlag: "support_tickets" },
   { labelKey: "exams", href: "/student/exams", icon: ClipboardCheck, featureFlag: "exams" },
+  { labelKey: "attendance", href: "/student/attendance", icon: CalendarCheck, featureFlag: "attendance_management" },
   { labelKey: "quran", href: "/quran", icon: BookOpenText },
   { labelKey: "quranReader", href: "/quran/explorer", icon: BookType, featureFlag: "quran_explorer" },
 ];
