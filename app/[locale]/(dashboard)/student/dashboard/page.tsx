@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { getStudentEligibility } from "@/server/services/assignment";
 import { getActiveAnnouncementsForUser } from "@/server/services/announcement";
 import { isFeatureEnabled } from "@/server/services/feature-flag";
+import { getRecentBadges } from "@/server/services/gamification";
 import {
   getStudentKPIs,
   getStudentGradeHistory,
@@ -13,6 +14,7 @@ import {
 } from "@/server/services/analytics";
 import { StatsCard } from "@/components/charts/stats-card";
 import { LineChartCard } from "@/components/charts/line-chart-card";
+import { Trophy, Star, Flame, BookOpen, Mic, TrendingUp, Users, Heart, Crown } from "lucide-react";
 
 export default async function StudentDashboardPage({
   params,
@@ -48,6 +50,7 @@ export default async function StudentDashboardPage({
   }
 
   const analyticsEnabled = await isFeatureEnabled("analytics");
+  const gamificationEnabled = await isFeatureEnabled("gamification");
   const announcements = await getActiveAnnouncementsForUser(session.user.id);
 
   const studentProfile = await db.studentProfile.findUnique({
@@ -76,6 +79,12 @@ export default async function StudentDashboardPage({
 
   const groupAssignment = studentProfile?.groupStudents[0];
   const eligibility = await getStudentEligibility(session.user.id);
+
+  let recentBadges: Awaited<ReturnType<typeof getRecentBadges>> = [];
+  if (gamificationEnabled && studentProfile) {
+    recentBadges = await getRecentBadges(studentProfile.id);
+  }
+  const tg = await getTranslations("gamification");
 
   return (
     <div>
@@ -133,6 +142,39 @@ export default async function StudentDashboardPage({
             assignmentsCompleted: t("assignmentsCompleted"),
           }}
         />
+      )}
+
+      {recentBadges.length > 0 && (
+        <div className="mt-6">
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-sm font-semibold">{tg("recentBadges")}</h2>
+            <a
+              href={`/${locale}/student/progress`}
+              className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {tg("viewAll")} →
+            </a>
+          </div>
+          <div className="flex gap-2 flex-wrap">
+            {recentBadges.map((sb) => {
+              const iconMap: Record<string, React.ElementType> = {
+                trophy: Trophy, star: Star, flame: Flame,
+                "book-open": BookOpen, mic: Mic, "trending-up": TrendingUp,
+                users: Users, heart: Heart, crown: Crown,
+              };
+              const Icon = iconMap[sb.badge.icon] ?? Trophy;
+              return (
+                <div
+                  key={sb.id}
+                  className="flex items-center gap-1.5 rounded-full border px-3 py-1"
+                >
+                  <Icon className="size-4" style={{ color: sb.badge.color }} />
+                  <span className="text-xs font-medium">{tg(`badge_${sb.badge.key}`)}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
       )}
     </div>
   );
