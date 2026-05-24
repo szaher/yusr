@@ -17,6 +17,7 @@ import {
 } from "@/lib/validations/session";
 import { revalidatePath } from "next/cache";
 import { db } from "@/server/db/client";
+import { checkAttendanceAlerts } from "@/server/services/attendance";
 
 export async function createSessionAction(formData: FormData) {
   await requirePermission(PERMISSIONS.SESSIONS_CREATE);
@@ -190,6 +191,14 @@ export async function gradeStudentAction(formData: FormData) {
     await gradeStudent(parsed.data, session.user.id);
   } catch (e) {
     return { error: e instanceof Error ? e.message : "unknownError" };
+  }
+
+  const sessionStudentRecord = await db.sessionStudent.findUnique({
+    where: { id: parsed.data.sessionStudentId },
+    select: { sessionId: true },
+  });
+  if (sessionStudentRecord) {
+    await checkAttendanceAlerts(sessionStudentRecord.sessionId);
   }
 
   revalidatePath("/ar/moderator/sessions");
