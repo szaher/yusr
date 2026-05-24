@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { PrismaClient } from "./generated/prisma/client";
+import { Prisma, PrismaClient } from "./generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { QURAN_SURAHS } from "./data/quran-surahs";
 import { JUZ_BOUNDARIES } from "./data/quran-juz-boundaries";
@@ -625,17 +625,18 @@ async function seedBadges() {
     { key: "reviews_100", icon: "book-open", color: "#3b82f6", category: "REVIEW", trigger: { type: "REVIEW_COUNT", count: 100 }, sortOrder: 1 },
     { key: "reviews_500", icon: "book-open", color: "#3b82f6", category: "REVIEW", trigger: { type: "REVIEW_COUNT", count: 500 }, sortOrder: 2 },
     { key: "reviews_1000", icon: "book-open", color: "#2563eb", category: "REVIEW", trigger: { type: "REVIEW_COUNT", count: 1000 }, sortOrder: 3 },
-    { key: "excellent_tajweed", icon: "mic", color: "#8b5cf6", category: "SPECIAL", trigger: null, sortOrder: 1 },
-    { key: "most_improved", icon: "trending-up", color: "#10b981", category: "SPECIAL", trigger: null, sortOrder: 2 },
-    { key: "peer_helper", icon: "users", color: "#06b6d4", category: "SPECIAL", trigger: null, sortOrder: 3 },
-    { key: "outstanding_dedication", icon: "heart", color: "#ec4899", category: "SPECIAL", trigger: null, sortOrder: 4 },
+    { key: "excellent_tajweed", icon: "mic", color: "#8b5cf6", category: "SPECIAL", trigger: null as unknown, sortOrder: 1 },
+    { key: "most_improved", icon: "trending-up", color: "#10b981", category: "SPECIAL", trigger: null as unknown, sortOrder: 2 },
+    { key: "peer_helper", icon: "users", color: "#06b6d4", category: "SPECIAL", trigger: null as unknown, sortOrder: 3 },
+    { key: "outstanding_dedication", icon: "heart", color: "#ec4899", category: "SPECIAL", trigger: null as unknown, sortOrder: 4 },
   ];
 
   for (const badge of badges) {
+    const triggerValue = badge.trigger === null ? Prisma.JsonNull : badge.trigger;
     await prisma.badgeDefinition.upsert({
       where: { key: badge.key },
-      update: { icon: badge.icon, color: badge.color, category: badge.category, trigger: badge.trigger ?? undefined, sortOrder: badge.sortOrder },
-      create: badge,
+      update: { icon: badge.icon, color: badge.color, category: badge.category, trigger: triggerValue ?? undefined, sortOrder: badge.sortOrder },
+      create: { ...badge, trigger: triggerValue },
     });
   }
 
