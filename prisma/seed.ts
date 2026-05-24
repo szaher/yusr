@@ -68,18 +68,19 @@ async function seedPermissions() {
 async function seedFeatureFlags() {
   const flags = [
     { key: "ai_recitation_review", enabled: false, description: "AI-powered recitation review" },
-    { key: "student_audio_upload", enabled: false, description: "Student audio upload for recitation" },
-    { key: "moderator_voice_notes", enabled: true, description: "Moderator voice note attachments" },
+    { key: "analytics", enabled: true, description: "Dashboard analytics and charts" },
+    { key: "announcements", enabled: true, description: "Announcement system" },
+    { key: "attendance_management", enabled: true, description: "Attendance tracking, reports, and alerts" },
+    { key: "audio_playback_tracking", enabled: false, description: "Track actual audio playback" },
+    { key: "email_notifications", enabled: false, description: "Email notification delivery" },
+    { key: "english_locale", enabled: true, description: "English language support" },
     { key: "exams", enabled: true, description: "Exam system" },
     { key: "leave_requests", enabled: true, description: "Student leave request system" },
-    { key: "announcements", enabled: true, description: "Announcement system" },
-    { key: "english_locale", enabled: true, description: "English language support" },
-    { key: "email_notifications", enabled: false, description: "Email notification delivery" },
-    { key: "support_tickets", enabled: true, description: "Support ticket system" },
-    { key: "audio_playback_tracking", enabled: false, description: "Track actual audio playback" },
     { key: "memorization_plans", enabled: true, description: "Individual student memorization plan tracking" },
-    { key: "analytics", enabled: true, description: "Dashboard analytics and charts" },
+    { key: "moderator_voice_notes", enabled: true, description: "Moderator voice note attachments" },
     { key: "quran_explorer", enabled: true, description: "Native Quran text explorer (experimental)" },
+    { key: "student_audio_upload", enabled: false, description: "Student audio upload for recitation" },
+    { key: "support_tickets", enabled: true, description: "Support ticket system" },
   ];
 
   for (const flag of flags) {
@@ -90,6 +91,23 @@ async function seedFeatureFlags() {
     });
   }
   console.log(`Seeded ${flags.length} feature flags`);
+}
+
+async function seedAttendanceConfig() {
+  const existing = await prisma.attendanceAlertConfig.findFirst({
+    where: { groupId: null },
+  });
+  if (!existing) {
+    await prisma.attendanceAlertConfig.create({
+      data: {
+        consecutiveAbsenceThreshold: 3,
+        attendanceRateThreshold: 75,
+        notifyModerator: true,
+        notifyAdmin: true,
+      },
+    });
+  }
+  console.log("Seeded default attendance alert config");
 }
 
 async function seedTajweedCategories() {
@@ -591,6 +609,7 @@ async function main() {
   await seedRoles();
   await seedPermissions();
   await seedFeatureFlags();
+  await seedAttendanceConfig();
   await seedTajweedCategories();
   await seedSystemSettings();
   await seedAdminUser();

@@ -207,6 +207,7 @@ model Group {
   sessions          WeeklySession[]
   memorizationPlans  StudentMemorizationPlan[]
   examInstances ExamInstance[]
+  attendanceAlertConfig AttendanceAlertConfig?
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
 
@@ -735,6 +736,18 @@ model Notification {
 
   @@index([recipientId, read])
   @@index([createdAt])
+}
+
+model AttendanceAlertConfig {
+  id                           String   @id @default(cuid())
+  groupId                      String?  @unique
+  group                        Group?   @relation(fields: [groupId], references: [id])
+  consecutiveAbsenceThreshold  Int      @default(3)
+  attendanceRateThreshold      Int      @default(75)
+  notifyModerator              Boolean  @default(true)
+  notifyAdmin                  Boolean  @default(true)
+  createdAt                    DateTime @default(now())
+  updatedAt                    DateTime @updatedAt
 }
 
 model Announcement {
