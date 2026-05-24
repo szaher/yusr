@@ -183,3 +183,111 @@ export async function checkCustomGoals(
     }
   }
 }
+
+export async function getStudentMilestones(studentProfileId: string, limit = 50) {
+  return db.studentMilestone.findMany({
+    where: { studentId: studentProfileId },
+    orderBy: { achievedAt: "desc" },
+    take: limit,
+  });
+}
+
+function getMonday(date: Date): number {
+  const d = new Date(date);
+  d.setHours(0, 0, 0, 0);
+  const day = d.getDay();
+  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+  d.setDate(diff);
+  return d.getTime();
+}
+
+export async function getReviewStreak(studentProfileId: string) {
+  const reviews = await db.memorizationReview.findMany({
+    where: { plan: { studentId: studentProfileId, active: true } },
+    select: { reviewDate: true },
+    orderBy: { reviewDate: "desc" },
+  });
+
+  if (reviews.length === 0) return { currentStreak: 0, longestStreak: 0 };
+
+  const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+  const mondaySet = new Set(reviews.map((r) => getMonday(r.reviewDate)));
+  const ascending = Array.from(mondaySet).sort((a, b) => a - b);
+
+  const thisMonday = getMonday(new Date());
+  let currentStreak = 0;
+  let check = thisMonday;
+  if (!mondaySet.has(check)) check -= WEEK_MS;
+  while (mondaySet.has(check)) {
+    currentStreak++;
+    check -= WEEK_MS;
+  }
+
+  let longestStreak = 1;
+  let streak = 1;
+  for (let i = 1; i < ascending.length; i++) {
+    if (ascending[i] - ascending[i - 1] === WEEK_MS) {
+      streak++;
+    } else {
+      longestStreak = Math.max(longestStreak, streak);
+      streak = 1;
+    }
+  }
+  longestStreak = Math.max(longestStreak, streak);
+
+  return { currentStreak, longestStreak };
+}
+
+export async function getStudentProgressSummary(studentProfileId: string) {
+  const plan = await db.studentMemorizationPlan.findFirst({
+    where: { studentId: studentProfileId, active: true },
+    select: { id: true, currentSurahId: true, currentAyahNumber: true },
+  });
+
+  if (!plan) return null;
+
+  const [quranPercentage, milestones, streak] = await Promise.all([
+    getQuranPercentage(plan.currentSurahId, plan.currentAyahNumber),
+    db.studentMilestone.findMany({
+      where: { studentId: studentProfileId },
+      orderBy: { achievedAt: "desc" },
+    }),
+    getReviewStreak(studentProfileId),
+  ]);
+
+  return {
+    planId: plan.id,
+    quranPercentage,
+    juzCompleted: milestones.filter((m) => m.type === "JUZ_COMPLETE").length,
+    surahsCompleted: milestones.filter((m) => m.type === "SURAH_COMPLETE").length,
+    reviewStreak: streak,
+    latestMilestone: milestones[0] ?? null,
+    totalMilestones: milestones.length,
+  };
+}
+
+export async function getReviewsByMonth(studentProfileId: string) {
+  const sixMonthsAgo = new Date();
+  sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+
+  const reviews = await db.memorizationReview.findMany({
+    where: {
+      plan: { studentId: studentProfileId, active: true },
+      reviewDate: { gte: sixMonthsAgo },
+    },
+    select: { reviewDate: true },
+  });
+
+  const months: Record<string, { label: string; value: number }> = {};
+  for (const r of reviews) {
+    const d = new Date(r.reviewDate);
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+    const label = d.toLocaleDateString("en-US", { month: "short" });
+    if (!months[key]) months[key] = { label, value: 0 };
+    months[key].value++;
+  }
+
+  return Object.entries(months)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([, v]) => v);
+}
