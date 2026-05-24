@@ -4,6 +4,11 @@ import { isFeatureEnabled } from "@/server/services/feature-flag";
 import { notFound } from "next/navigation";
 import { db } from "@/server/db/client";
 import { getGroupProgressOverview } from "@/server/services/progress";
+import {
+  getGroupLeaderboard,
+  getBadgeCatalog,
+} from "@/server/services/gamification";
+import { AwardBadgeDialog } from "@/components/gamification/award-badge-dialog";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import {
@@ -66,6 +71,21 @@ export default async function ModeratorProgressPage({
     include: { student: { select: { user: { select: { name: true } } } } },
   });
 
+  const gamificationEnabled = await isFeatureEnabled("gamification");
+
+  let leaderboard: Awaited<ReturnType<typeof getGroupLeaderboard>> = [];
+  let manualBadges: { id: string; key: string; icon: string; color: string }[] = [];
+
+  if (gamificationEnabled) {
+    const catalog = await getBadgeCatalog();
+    manualBadges = catalog
+      .filter((b) => b.category === "SPECIAL")
+      .map((b) => ({ id: b.id, key: b.key, icon: b.icon, color: b.color }));
+    leaderboard = await getGroupLeaderboard(selectedGroupId);
+  }
+
+  const tg = await getTranslations("gamification");
+
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">{t("groupProgress")}</h1>
@@ -125,6 +145,52 @@ export default async function ModeratorProgressPage({
           </Table>
         </div>
       </div>
+
+      {gamificationEnabled && leaderboard.length > 0 && (
+        <div>
+          <h2 className="text-lg font-semibold mb-3">{tg("groupLeaderboard")}</h2>
+          <div className="rounded-md border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>{tg("rank")}</TableHead>
+                  <TableHead>{tg("studentName")}</TableHead>
+                  <TableHead>{tg("milestones")}</TableHead>
+                  <TableHead>{tg("quranPercentage")}</TableHead>
+                  <TableHead>{tg("streak")}</TableHead>
+                  <TableHead>{tg("badges")}</TableHead>
+                  <TableHead></TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {leaderboard.map((entry) => {
+                  const earnedBadgeIds = new Set<string>();
+                  return (
+                    <TableRow key={entry.studentId}>
+                      <TableCell className="font-bold">{entry.rank}</TableCell>
+                      <TableCell className="font-medium">{entry.studentName}</TableCell>
+                      <TableCell>{entry.milestoneCount}</TableCell>
+                      <TableCell>{entry.quranPercentage}%</TableCell>
+                      <TableCell>{t("weeksStreak", { count: entry.currentStreak })}</TableCell>
+                      <TableCell>{entry.badgeCount}</TableCell>
+                      <TableCell>
+                        {manualBadges.length > 0 && (
+                          <AwardBadgeDialog
+                            studentId={entry.studentId}
+                            studentName={entry.studentName}
+                            manualBadges={manualBadges}
+                            earnedBadgeIds={earnedBadgeIds}
+                          />
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </div>
+        </div>
+      )}
 
       {recentMilestones.length > 0 && (
         <div>
