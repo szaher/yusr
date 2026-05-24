@@ -49,8 +49,12 @@ export async function checkMilestones(
   const newMilestones: { type: string; value: string; label: string }[] = [];
 
   if (newAyah.juzNumber > oldAyah.juzNumber) {
+    const juzRecords = await db.quranJuz.findMany({
+      where: { number: { gte: oldAyah.juzNumber, lt: newAyah.juzNumber } },
+    });
+    const juzMap = new Map(juzRecords.map((j) => [j.number, j]));
     for (let juz = oldAyah.juzNumber; juz < newAyah.juzNumber; juz++) {
-      const juzInfo = await db.quranJuz.findUnique({ where: { number: juz } });
+      const juzInfo = juzMap.get(juz);
       newMilestones.push({
         type: "JUZ_COMPLETE",
         value: String(juz),
@@ -109,8 +113,9 @@ export async function checkMilestones(
           title: m.label,
         });
       }
-    } catch {
-      // Unique constraint violation — milestone already exists
+    } catch (err) {
+      const prismaErr = err as { code?: string };
+      if (prismaErr.code !== "P2002") throw err;
     }
   }
 }
@@ -157,8 +162,9 @@ export async function checkCustomGoals(
             label: goal.title,
           },
         });
-      } catch {
-        // Duplicate milestone
+      } catch (err) {
+        const prismaErr = err as { code?: string };
+        if (prismaErr.code !== "P2002") throw err;
       }
 
       await createNotification({
