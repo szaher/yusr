@@ -156,7 +156,7 @@ export default async function StudentDashboardPage({
             </a>
           </div>
           <div className="flex gap-2 flex-wrap">
-            {recentBadges.map((sb) => {
+            {recentBadges.map((sb: typeof recentBadges[number]) => {
               const iconMap: Record<string, React.ElementType> = {
                 trophy: Trophy, star: Star, flame: Flame,
                 "book-open": BookOpen, mic: Mic, "trending-up": TrendingUp,

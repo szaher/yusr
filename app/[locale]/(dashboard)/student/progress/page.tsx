@@ -171,7 +171,7 @@ export default async function StudentProgressPage({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {leaderboard.map((entry) => (
+                {leaderboard.map((entry: typeof leaderboard[number]) => (
                   <TableRow
                     key={entry.studentId}
                     className={entry.studentId === profile.id ? "bg-primary/5" : ""}

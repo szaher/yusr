@@ -157,14 +157,14 @@ export default async function ModeratorStudentProgressPage({
           <h2 className="text-lg font-semibold mb-3">{tg("myBadges")}</h2>
           <BadgeGrid catalog={badgeCatalog} earned={studentBadges} />
 
-          {studentBadges.filter((sb) => sb.awardedById).length > 0 && (
+          {studentBadges.filter((sb: typeof studentBadges[number]) => sb.awardedById).length > 0 && (
             <div className="mt-4 space-y-2">
               <h3 className="text-sm font-semibold text-muted-foreground">
                 {tg("manualBadge")}
               </h3>
               {studentBadges
-                .filter((sb) => sb.awardedById)
-                .map((sb) => (
+                .filter((sb: typeof studentBadges[number]) => sb.awardedById)
+                .map((sb: typeof studentBadges[number]) => (
                   <div
                     key={sb.id}
                     className="flex items-center justify-between rounded-md border p-3"

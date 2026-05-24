@@ -79,8 +79,8 @@ export default async function ModeratorProgressPage({
   if (gamificationEnabled) {
     const catalog = await getBadgeCatalog();
     manualBadges = catalog
-      .filter((b) => b.category === "SPECIAL")
-      .map((b) => ({ id: b.id, key: b.key, icon: b.icon, color: b.color }));
+      .filter((b: typeof catalog[number]) => b.category === "SPECIAL")
+      .map((b: typeof catalog[number]) => ({ id: b.id, key: b.key, icon: b.icon, color: b.color }));
     leaderboard = await getGroupLeaderboard(selectedGroupId);
   }
 
@@ -163,7 +163,7 @@ export default async function ModeratorProgressPage({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {leaderboard.map((entry) => {
+                {leaderboard.map((entry: typeof leaderboard[number]) => {
                   const earnedBadgeIds = new Set<string>();
                   return (
                     <TableRow key={entry.studentId}>
