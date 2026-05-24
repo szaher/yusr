@@ -12,6 +12,20 @@ import {
 import { StatsCard } from "@/components/charts/stats-card";
 import { LineChartCard } from "@/components/charts/line-chart-card";
 import { MilestoneTimeline } from "@/components/progress/milestone-timeline";
+import {
+  getStudentBadges,
+  getBadgeCatalog,
+  getGroupLeaderboard,
+} from "@/server/services/gamification";
+import { BadgeGrid } from "@/components/gamification/badge-grid";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 export default async function StudentProgressPage({
   params,
@@ -26,6 +40,7 @@ export default async function StudentProgressPage({
   if (!enabled) notFound();
 
   const t = await getTranslations("progress");
+  const tg = await getTranslations("gamification");
 
   const profile = await db.studentProfile.findUnique({
     where: { userId: session.user.id },
@@ -33,6 +48,28 @@ export default async function StudentProgressPage({
   });
 
   if (!profile) notFound();
+
+  const gamificationEnabled = await isFeatureEnabled("gamification");
+
+  let badgeCatalog: Awaited<ReturnType<typeof getBadgeCatalog>> = [];
+  let studentBadges: Awaited<ReturnType<typeof getStudentBadges>> = [];
+  let leaderboard: Awaited<ReturnType<typeof getGroupLeaderboard>> = [];
+
+  if (gamificationEnabled) {
+    const group = await db.groupStudent.findFirst({
+      where: { studentId: profile.id },
+      select: { groupId: true },
+    });
+
+    [badgeCatalog, studentBadges] = await Promise.all([
+      getBadgeCatalog(),
+      getStudentBadges(profile.id),
+    ]);
+
+    if (group) {
+      leaderboard = await getGroupLeaderboard(group.groupId);
+    }
+  }
 
   const summary = await getStudentProgressSummary(profile.id);
 
@@ -81,6 +118,13 @@ export default async function StudentProgressPage({
         />
       </div>
 
+      {gamificationEnabled && badgeCatalog.length > 0 && (
+        <div>
+          <h2 className="text-lg font-semibold mb-3">{tg("myBadges")}</h2>
+          <BadgeGrid catalog={badgeCatalog} earned={studentBadges} />
+        </div>
+      )}
+
       {(activeGoals.length > 0 || completedGoals.length > 0) && (
         <div>
           <h2 className="text-lg font-semibold mb-3">{t("customGoals")}</h2>
@@ -110,6 +154,41 @@ export default async function StudentProgressPage({
         </div>
         <LineChartCard title={t("monthlyReviews")} data={reviewsByMonth} color="#8b5cf6" />
       </div>
+
+      {gamificationEnabled && leaderboard.length > 0 && (
+        <div>
+          <h2 className="text-lg font-semibold mb-3">{tg("groupLeaderboard")}</h2>
+          <div className="rounded-md border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>{tg("rank")}</TableHead>
+                  <TableHead>{tg("studentName")}</TableHead>
+                  <TableHead>{tg("milestones")}</TableHead>
+                  <TableHead>{tg("quranPercentage")}</TableHead>
+                  <TableHead>{tg("streak")}</TableHead>
+                  <TableHead>{tg("badges")}</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {leaderboard.map((entry) => (
+                  <TableRow
+                    key={entry.studentId}
+                    className={entry.studentId === profile.id ? "bg-primary/5" : ""}
+                  >
+                    <TableCell className="font-bold">{entry.rank}</TableCell>
+                    <TableCell className="font-medium">{entry.studentName}</TableCell>
+                    <TableCell>{entry.milestoneCount}</TableCell>
+                    <TableCell>{entry.quranPercentage}%</TableCell>
+                    <TableCell>{t("weeksStreak", { count: entry.currentStreak })}</TableCell>
+                    <TableCell>{entry.badgeCount}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
