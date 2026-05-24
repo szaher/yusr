@@ -8,6 +8,10 @@ import {
   getGroupProgressComparison,
   getTopPerformers,
 } from "@/server/services/progress";
+import {
+  getSchoolLeaderboard,
+  getBadgesAwardedThisMonth,
+} from "@/server/services/gamification";
 import { StatsCard } from "@/components/charts/stats-card";
 import { BarChartCard } from "@/components/charts/bar-chart-card";
 import { StackedBarChartCard } from "@/components/charts/stacked-bar-chart-card";
@@ -34,6 +38,7 @@ export default async function AdminProgressPage({
   if (!enabled) notFound();
 
   const t = await getTranslations("progress");
+  const tg = await getTranslations("gamification");
 
   const [stats, milestonesByMonth, groupComparison, topPerformers] = await Promise.all([
     getSchoolProgressStats(),
@@ -41,6 +46,18 @@ export default async function AdminProgressPage({
     getGroupProgressComparison(),
     getTopPerformers(),
   ]);
+
+  const gamificationEnabled = await isFeatureEnabled("gamification");
+
+  let badgesThisMonth = 0;
+  let schoolLeaderboard: Awaited<ReturnType<typeof getSchoolLeaderboard>> = [];
+
+  if (gamificationEnabled) {
+    [badgesThisMonth, schoolLeaderboard] = await Promise.all([
+      getBadgesAwardedThisMonth(),
+      getSchoolLeaderboard(),
+    ]);
+  }
 
   return (
     <div className="space-y-6">
@@ -67,6 +84,13 @@ export default async function AdminProgressPage({
           value={t("weeksStreak", { count: stats.topStreak })}
           colorClass="text-purple-600"
         />
+        {gamificationEnabled && (
+          <StatsCard
+            title={tg("badgesThisMonth")}
+            value={badgesThisMonth}
+            colorClass="text-pink-600"
+          />
+        )}
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
@@ -111,6 +135,38 @@ export default async function AdminProgressPage({
                     </TableCell>
                     <TableCell>{p.milestoneCount}</TableCell>
                     <TableCell>{t("weeksStreak", { count: p.currentStreak })}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </div>
+      )}
+
+      {gamificationEnabled && schoolLeaderboard.length > 0 && (
+        <div>
+          <h2 className="text-lg font-semibold mb-3">{tg("schoolLeaderboard")}</h2>
+          <div className="rounded-md border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>{tg("rank")}</TableHead>
+                  <TableHead>{tg("studentName")}</TableHead>
+                  <TableHead>{tg("milestones")}</TableHead>
+                  <TableHead>{tg("quranPercentage")}</TableHead>
+                  <TableHead>{tg("streak")}</TableHead>
+                  <TableHead>{tg("badges")}</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {schoolLeaderboard.map((entry: typeof schoolLeaderboard[number]) => (
+                  <TableRow key={entry.studentId}>
+                    <TableCell className="font-bold">{entry.rank}</TableCell>
+                    <TableCell className="font-medium">{entry.studentName}</TableCell>
+                    <TableCell>{entry.milestoneCount}</TableCell>
+                    <TableCell>{entry.quranPercentage}%</TableCell>
+                    <TableCell>{t("weeksStreak", { count: entry.currentStreak })}</TableCell>
+                    <TableCell>{entry.badgeCount}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
