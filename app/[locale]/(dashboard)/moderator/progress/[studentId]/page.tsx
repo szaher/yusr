@@ -9,10 +9,17 @@ import {
   getReviewsByMonth,
   getCustomGoals,
 } from "@/server/services/progress";
+import {
+  getStudentBadges,
+  getBadgeCatalog,
+} from "@/server/services/gamification";
 import { StatsCard } from "@/components/charts/stats-card";
 import { LineChartCard } from "@/components/charts/line-chart-card";
 import { MilestoneTimeline } from "@/components/progress/milestone-timeline";
 import { CustomGoalForm } from "@/components/progress/custom-goal-form";
+import { BadgeGrid } from "@/components/gamification/badge-grid";
+import { Button } from "@/components/ui/button";
+import { revokeBadgeAction } from "@/server/actions/gamification";
 import Link from "next/link";
 
 export default async function ModeratorStudentProgressPage({
@@ -79,6 +86,20 @@ export default async function ModeratorStudentProgressPage({
     orderBy: { number: "asc" },
   });
 
+  const gamificationEnabled = await isFeatureEnabled("gamification");
+
+  let badgeCatalog: Awaited<ReturnType<typeof getBadgeCatalog>> = [];
+  let studentBadges: Awaited<ReturnType<typeof getStudentBadges>> = [];
+
+  if (gamificationEnabled) {
+    [badgeCatalog, studentBadges] = await Promise.all([
+      getBadgeCatalog(),
+      getStudentBadges(studentId),
+    ]);
+  }
+
+  const tg = await getTranslations("gamification");
+
   const serializedGoals = goals.map((g: typeof goals[number]) => ({
     id: g.id,
     title: g.title,
@@ -130,6 +151,51 @@ export default async function ModeratorStudentProgressPage({
       </div>
 
       <CustomGoalForm planId={summary.planId} goals={serializedGoals} surahs={surahs} />
+
+      {gamificationEnabled && badgeCatalog.length > 0 && (
+        <div>
+          <h2 className="text-lg font-semibold mb-3">{tg("myBadges")}</h2>
+          <BadgeGrid catalog={badgeCatalog} earned={studentBadges} />
+
+          {studentBadges.filter((sb) => sb.awardedById).length > 0 && (
+            <div className="mt-4 space-y-2">
+              <h3 className="text-sm font-semibold text-muted-foreground">
+                {tg("manualBadge")}
+              </h3>
+              {studentBadges
+                .filter((sb) => sb.awardedById)
+                .map((sb) => (
+                  <div
+                    key={sb.id}
+                    className="flex items-center justify-between rounded-md border p-3"
+                  >
+                    <div>
+                      <p className="text-sm font-medium">
+                        {tg(`badge_${sb.badge.key}`)}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {sb.awardedBy?.name
+                          ? tg("awardedBy", { name: sb.awardedBy.name })
+                          : ""}
+                        {sb.note ? ` — ${sb.note}` : ""}
+                      </p>
+                    </div>
+                    <form
+                      action={async () => {
+                        "use server";
+                        await revokeBadgeAction(sb.id);
+                      }}
+                    >
+                      <Button variant="ghost" size="sm" className="text-destructive">
+                        {tg("revokeBadge")}
+                      </Button>
+                    </form>
+                  </div>
+                ))}
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="grid gap-4 lg:grid-cols-2">
         <div>
