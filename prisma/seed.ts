@@ -75,6 +75,7 @@ async function seedFeatureFlags() {
     { key: "email_notifications", enabled: false, description: "Email notification delivery" },
     { key: "english_locale", enabled: true, description: "English language support" },
     { key: "exams", enabled: true, description: "Exam system" },
+    { key: "gamification", enabled: true, description: "Badges, achievements, and group leaderboards" },
     { key: "leave_requests", enabled: true, description: "Student leave request system" },
     { key: "memorization_plans", enabled: true, description: "Individual student memorization plan tracking" },
     { key: "moderator_voice_notes", enabled: true, description: "Moderator voice note attachments" },
@@ -604,6 +605,43 @@ async function seedDemoData() {
   console.log("Set enrollment state to open");
 }
 
+async function seedBadges() {
+  const badges = [
+    { key: "first_juz", icon: "trophy", color: "#f59e0b", category: "MILESTONE", trigger: { type: "JUZ_COMPLETE", count: 1 }, sortOrder: 1 },
+    { key: "five_juz", icon: "trophy", color: "#f59e0b", category: "MILESTONE", trigger: { type: "JUZ_COMPLETE", count: 5 }, sortOrder: 2 },
+    { key: "ten_juz", icon: "trophy", color: "#f59e0b", category: "MILESTONE", trigger: { type: "JUZ_COMPLETE", count: 10 }, sortOrder: 3 },
+    { key: "fifteen_juz", icon: "trophy", color: "#eab308", category: "MILESTONE", trigger: { type: "JUZ_COMPLETE", count: 15 }, sortOrder: 4 },
+    { key: "twenty_juz", icon: "trophy", color: "#eab308", category: "MILESTONE", trigger: { type: "JUZ_COMPLETE", count: 20 }, sortOrder: 5 },
+    { key: "half_quran", icon: "crown", color: "#a855f7", category: "MILESTONE", trigger: { type: "JUZ_COMPLETE", count: 15 }, sortOrder: 6 },
+    { key: "full_quran", icon: "crown", color: "#a855f7", category: "MILESTONE", trigger: { type: "JUZ_COMPLETE", count: 30 }, sortOrder: 7 },
+    { key: "first_surah", icon: "star", color: "#22c55e", category: "MILESTONE", trigger: { type: "SURAH_COMPLETE", count: 1 }, sortOrder: 8 },
+    { key: "ten_surahs", icon: "star", color: "#22c55e", category: "MILESTONE", trigger: { type: "SURAH_COMPLETE", count: 10 }, sortOrder: 9 },
+    { key: "fifty_surahs", icon: "star", color: "#22c55e", category: "MILESTONE", trigger: { type: "SURAH_COMPLETE", count: 50 }, sortOrder: 10 },
+    { key: "all_surahs", icon: "star", color: "#16a34a", category: "MILESTONE", trigger: { type: "SURAH_COMPLETE", count: 114 }, sortOrder: 11 },
+    { key: "streak_4", icon: "flame", color: "#ef4444", category: "STREAK", trigger: { type: "STREAK", weeks: 4 }, sortOrder: 1 },
+    { key: "streak_10", icon: "flame", color: "#ef4444", category: "STREAK", trigger: { type: "STREAK", weeks: 10 }, sortOrder: 2 },
+    { key: "streak_26", icon: "flame", color: "#dc2626", category: "STREAK", trigger: { type: "STREAK", weeks: 26 }, sortOrder: 3 },
+    { key: "streak_52", icon: "flame", color: "#dc2626", category: "STREAK", trigger: { type: "STREAK", weeks: 52 }, sortOrder: 4 },
+    { key: "reviews_100", icon: "book-open", color: "#3b82f6", category: "REVIEW", trigger: { type: "REVIEW_COUNT", count: 100 }, sortOrder: 1 },
+    { key: "reviews_500", icon: "book-open", color: "#3b82f6", category: "REVIEW", trigger: { type: "REVIEW_COUNT", count: 500 }, sortOrder: 2 },
+    { key: "reviews_1000", icon: "book-open", color: "#2563eb", category: "REVIEW", trigger: { type: "REVIEW_COUNT", count: 1000 }, sortOrder: 3 },
+    { key: "excellent_tajweed", icon: "mic", color: "#8b5cf6", category: "SPECIAL", trigger: null, sortOrder: 1 },
+    { key: "most_improved", icon: "trending-up", color: "#10b981", category: "SPECIAL", trigger: null, sortOrder: 2 },
+    { key: "peer_helper", icon: "users", color: "#06b6d4", category: "SPECIAL", trigger: null, sortOrder: 3 },
+    { key: "outstanding_dedication", icon: "heart", color: "#ec4899", category: "SPECIAL", trigger: null, sortOrder: 4 },
+  ];
+
+  for (const badge of badges) {
+    await prisma.badgeDefinition.upsert({
+      where: { key: badge.key },
+      update: { icon: badge.icon, color: badge.color, category: badge.category, trigger: badge.trigger ?? undefined, sortOrder: badge.sortOrder },
+      create: badge,
+    });
+  }
+
+  console.log(`  Seeded ${badges.length} badge definitions`);
+}
+
 async function main() {
   console.log("Starting seed...\n");
 
@@ -616,6 +654,7 @@ async function main() {
   await seedAdminUser();
   await seedQuranData();
   await seedDemoData();
+  await seedBadges();
 
   console.log("\nSeed complete!");
 }
