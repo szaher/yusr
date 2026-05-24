@@ -291,3 +291,191 @@ export async function getReviewsByMonth(studentProfileId: string) {
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([, v]) => v);
 }
+
+export async function getGroupProgressOverview(groupId: string) {
+  const groupStudents = await db.groupStudent.findMany({
+    where: { groupId },
+    select: {
+      student: {
+        select: {
+          id: true,
+          user: { select: { name: true } },
+          memorizationPlans: {
+            where: { groupId, active: true },
+            select: { id: true, currentSurahId: true, currentAyahNumber: true },
+            take: 1,
+          },
+        },
+      },
+    },
+  });
+
+  const results = await Promise.all(
+    groupStudents.map(async (gs) => {
+      const plan = gs.student.memorizationPlans[0];
+      if (!plan) {
+        return {
+          studentId: gs.student.id,
+          studentName: gs.student.user.name,
+          quranPercentage: 0,
+          juzCount: 0,
+          currentStreak: 0,
+          lastReview: null as Date | null,
+        };
+      }
+
+      const [quranPct, juzCount, streak, latest] = await Promise.all([
+        getQuranPercentage(plan.currentSurahId, plan.currentAyahNumber),
+        db.studentMilestone.count({ where: { studentId: gs.student.id, type: "JUZ_COMPLETE" } }),
+        getReviewStreak(gs.student.id),
+        db.memorizationReview.findFirst({
+          where: { planId: plan.id },
+          orderBy: { reviewDate: "desc" },
+          select: { reviewDate: true },
+        }),
+      ]);
+
+      return {
+        studentId: gs.student.id,
+        studentName: gs.student.user.name,
+        quranPercentage: quranPct,
+        juzCount,
+        currentStreak: streak.currentStreak,
+        lastReview: latest?.reviewDate ?? null,
+      };
+    })
+  );
+
+  return results.sort((a, b) => b.quranPercentage - a.quranPercentage);
+}
+
+export async function getSchoolProgressStats() {
+  const now = new Date();
+  const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+  const [milestonesThisMonth, activePlans] = await Promise.all([
+    db.studentMilestone.count({ where: { achievedAt: { gte: thirtyDaysAgo } } }),
+    db.studentMemorizationPlan.findMany({
+      where: { active: true },
+      select: { currentSurahId: true, currentAyahNumber: true, studentId: true },
+    }),
+  ]);
+
+  let avgQuranPercentage = 0;
+  let topStreak = 0;
+
+  if (activePlans.length > 0) {
+    const percentages = await Promise.all(
+      activePlans.map((p) => getQuranPercentage(p.currentSurahId, p.currentAyahNumber))
+    );
+    avgQuranPercentage = Math.round(
+      percentages.reduce((a, b) => a + b, 0) / percentages.length
+    );
+
+    const studentIds = [...new Set(activePlans.map((p) => p.studentId))];
+    const streaks = await Promise.all(
+      studentIds.map(async (id) => (await getReviewStreak(id)).currentStreak)
+    );
+    topStreak = Math.max(0, ...streaks);
+  }
+
+  return {
+    milestonesThisMonth,
+    studentsWithActivePlans: activePlans.length,
+    avgQuranPercentage,
+    topStreak,
+  };
+}
+
+export async function getTopPerformers(limit = 10) {
+  const performers = await db.studentMilestone.groupBy({
+    by: ["studentId"],
+    _count: { id: true },
+    orderBy: { _count: { id: "desc" } },
+    take: limit,
+  });
+
+  return Promise.all(
+    performers.map(async (p) => {
+      const student = await db.studentProfile.findUnique({
+        where: { id: p.studentId },
+        select: {
+          user: { select: { name: true } },
+          groupStudents: { select: { group: { select: { name: true } } }, take: 1 },
+          memorizationPlans: {
+            where: { active: true },
+            select: { currentSurahId: true, currentAyahNumber: true },
+            take: 1,
+          },
+        },
+      });
+
+      const plan = student?.memorizationPlans[0];
+      const quranPercentage = plan
+        ? await getQuranPercentage(plan.currentSurahId, plan.currentAyahNumber)
+        : 0;
+      const streak = await getReviewStreak(p.studentId);
+
+      return {
+        studentId: p.studentId,
+        studentName: student?.user.name ?? "—",
+        groupName: student?.groupStudents[0]?.group.name ?? "—",
+        quranPercentage,
+        milestoneCount: p._count.id,
+        currentStreak: streak.currentStreak,
+      };
+    })
+  );
+}
+
+export async function getMilestonesByMonth() {
+  const sixMonthsAgo = new Date();
+  sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+
+  const milestones = await db.studentMilestone.findMany({
+    where: { achievedAt: { gte: sixMonthsAgo } },
+    select: { type: true, achievedAt: true },
+  });
+
+  const months: Record<string, { label: string; juz: number; surah: number; hizb: number; custom: number }> = {};
+
+  for (const m of milestones) {
+    const d = new Date(m.achievedAt);
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+    const label = d.toLocaleDateString("en-US", { month: "short", year: "numeric" });
+    if (!months[key]) months[key] = { label, juz: 0, surah: 0, hizb: 0, custom: 0 };
+    if (m.type === "JUZ_COMPLETE") months[key].juz++;
+    else if (m.type === "SURAH_COMPLETE") months[key].surah++;
+    else if (m.type === "HIZB_COMPLETE") months[key].hizb++;
+    else if (m.type === "CUSTOM_GOAL") months[key].custom++;
+  }
+
+  return Object.entries(months)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([, v]) => v);
+}
+
+export async function getGroupProgressComparison() {
+  const groups = await db.group.findMany({
+    where: { active: true },
+    select: {
+      name: true,
+      memorizationPlans: {
+        where: { active: true },
+        select: { currentSurahId: true, currentAyahNumber: true },
+      },
+    },
+  });
+
+  const results = await Promise.all(
+    groups.map(async (g) => {
+      if (g.memorizationPlans.length === 0) return { label: g.name, value: 0 };
+      const pcts = await Promise.all(
+        g.memorizationPlans.map((p) => getQuranPercentage(p.currentSurahId, p.currentAyahNumber))
+      );
+      return { label: g.name, value: Math.round(pcts.reduce((a, b) => a + b, 0) / pcts.length) };
+    })
+  );
+
+  return results.sort((a, b) => b.value - a.value);
+}
