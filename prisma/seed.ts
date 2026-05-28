@@ -657,6 +657,11 @@ async function main() {
   await seedDemoData();
   await seedBadges();
 
+  if (process.env.SEED_DEMO_DATA === "true") {
+    const { seedFullDemo } = await import("./demo-seed.js");
+    await seedFullDemo(prisma);
+  }
+
   console.log("\nSeed complete!");
 }
 

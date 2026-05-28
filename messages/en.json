@@ -413,6 +413,7 @@
     "videoUrl": "Video URL",
     "iframeEmbed": "Iframe Embed",
     "progress": "Progress",
+    "status": "Status",
     "completed": "Completed",
     "inProgress": "In Progress",
     "assigned": "Assigned",
