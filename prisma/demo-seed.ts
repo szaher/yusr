@@ -317,6 +317,39 @@ export async function seedFullDemo(prisma: PrismaClient) {
 
   console.log(`  Created ${plans.size} memorization plans`);
 
+  // After all plans are created, assign templates and set one override
+  const rubPlans = await prisma.studentMemorizationPlan.findMany({
+    where: { paceUnit: "RUB" },
+  });
+  for (const plan of rubPlans) {
+    await prisma.studentMemorizationPlan.update({
+      where: { id: plan.id },
+      data: { templateId: "tpl-rub" },
+    });
+  }
+
+  // Set override on Ibrahim's plan to demonstrate the feature
+  const ibrahimProfile = studentProfiles.get("ibrahim@yusr.academy");
+  if (ibrahimProfile) {
+    const ibrahimPlan = await prisma.studentMemorizationPlan.findFirst({
+      where: { studentId: ibrahimProfile.id },
+    });
+    if (ibrahimPlan) {
+      await prisma.studentMemorizationPlan.update({
+        where: { id: ibrahimPlan.id },
+        data: {
+          nextOverride: {
+            paceUnit: "RUB",
+            paceValue: 1.5,
+            note: "أضف نصف ربع إضافي للمراجعة القادمة",
+          },
+        },
+      });
+    }
+  }
+
+  console.log("  Updated plans with templates and one override");
+
   // -----------------------------------------------------------------------
   // 3. Weekly Sessions
   // -----------------------------------------------------------------------
