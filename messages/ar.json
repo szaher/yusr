@@ -400,6 +400,7 @@
   "assignments": {
     "title": "الواجبات",
     "create": "إنشاء واجب",
+    "createAssignment": "إنشاء واجب",
     "type": "نوع الواجب",
     "typeQuranMemorization": "حفظ قرآن",
     "typeQuranRevision": "مراجعة قرآن",
@@ -415,6 +416,23 @@
     "fromAyah": "من آية",
     "toSurah": "إلى سورة",
     "toAyah": "إلى آية",
+    "titleField": "العنوان",
+    "description": "الوصف",
+    "quranFields": "حقول القرآن",
+    "tajweedFields": "حقول التجويد",
+    "homeworkFields": "حقول الواجب المنزلي",
+    "types": {
+      "QURAN_MEMORIZATION": "حفظ قرآن",
+      "QURAN_REVISION": "مراجعة قرآن",
+      "TAJWEED": "تجويد",
+      "HOMEWORK": "واجب منزلي"
+    },
+    "materialTypes": {
+      "AUDIO_URL": "رابط صوتي",
+      "VIDEO_URL": "رابط فيديو",
+      "IFRAME_EMBED": "تضمين صفحة"
+    },
+    "materialUrlField": "رابط المادة",
     "topicTitle": "عنوان الدرس",
     "topicDescription": "وصف الدرس",
     "instructions": "التعليمات",

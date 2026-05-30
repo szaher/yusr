@@ -400,6 +400,7 @@
   "assignments": {
     "title": "Assignments",
     "create": "Create Assignment",
+    "createAssignment": "Create Assignment",
     "type": "Assignment Type",
     "typeQuranMemorization": "Quran Memorization",
     "typeQuranRevision": "Quran Revision",
@@ -415,6 +416,23 @@
     "fromAyah": "From Ayah",
     "toSurah": "To Surah",
     "toAyah": "To Ayah",
+    "titleField": "Title",
+    "description": "Description",
+    "quranFields": "Quran Fields",
+    "tajweedFields": "Tajweed Fields",
+    "homeworkFields": "Homework Fields",
+    "types": {
+      "QURAN_MEMORIZATION": "Quran Memorization",
+      "QURAN_REVISION": "Quran Revision",
+      "TAJWEED": "Tajweed",
+      "HOMEWORK": "Homework"
+    },
+    "materialTypes": {
+      "AUDIO_URL": "Audio URL",
+      "VIDEO_URL": "Video URL",
+      "IFRAME_EMBED": "Iframe Embed"
+    },
+    "materialUrlField": "Material URL",
     "topicTitle": "Topic Title",
     "topicDescription": "Topic Description",
     "instructions": "Instructions",
