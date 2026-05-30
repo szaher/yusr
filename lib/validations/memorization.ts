@@ -28,6 +28,7 @@ export const createPlanSchema = z
     paceValue: z.coerce.number().min(1),
     meetingCadence: meetingCadenceEnum.optional(),
     customCadenceDays: z.coerce.number().int().min(1).optional(),
+    templateId: z.string().optional(),
   })
   .refine(
     (data) => {
@@ -107,3 +108,33 @@ export const updateGroupCadenceSchema = z.object({
 });
 
 export type UpdateGroupCadenceInput = z.infer<typeof updateGroupCadenceSchema>;
+
+export const createTemplateSchema = z.object({
+  name: z.string().min(1).max(100),
+  nameAr: z.string().min(1).max(100),
+  paceUnit: paceUnitEnum,
+  paceValue: z.coerce.number().min(0.5),
+  description: z.string().max(500).optional(),
+});
+
+export type CreateTemplateInput = z.infer<typeof createTemplateSchema>;
+
+export const updateTemplateSchema = z.object({
+  id: z.string().min(1),
+  name: z.string().min(1).max(100).optional(),
+  nameAr: z.string().min(1).max(100).optional(),
+  paceUnit: paceUnitEnum.optional(),
+  paceValue: z.coerce.number().min(0.5).optional(),
+  description: z.string().max(500).nullable().optional(),
+});
+
+export type UpdateTemplateInput = z.infer<typeof updateTemplateSchema>;
+
+export const setOverrideSchema = z.object({
+  planId: z.string().min(1),
+  paceUnit: paceUnitEnum,
+  paceValue: z.coerce.number().min(0.5),
+  note: z.string().max(500).optional(),
+});
+
+export type SetOverrideInput = z.infer<typeof setOverrideSchema>;
