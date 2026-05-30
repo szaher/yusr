@@ -329,10 +329,10 @@ export async function seedFullDemo(prisma: PrismaClient) {
   }
 
   // Set override on Ibrahim's plan to demonstrate the feature
-  const ibrahimProfile = studentProfiles.get("ibrahim@yusr.academy");
-  if (ibrahimProfile) {
+  const ibrahimSp = studentProfiles.get("ibrahim@yusr.academy");
+  if (ibrahimSp) {
     const ibrahimPlan = await prisma.studentMemorizationPlan.findFirst({
-      where: { studentId: ibrahimProfile.id },
+      where: { studentId: ibrahimSp.id },
     });
     if (ibrahimPlan) {
       await prisma.studentMemorizationPlan.update({
@@ -424,10 +424,10 @@ export async function seedFullDemo(prisma: PrismaClient) {
     for (const session of groupSessions) {
       if (session.status === "SCHEDULED") continue;
 
-      const attendance = getAttendance(arch.attendance, session.weekIndex);
+      const attendance = getAttendance(arch.attendance, session.weekIndex) as "PRESENT" | "ABSENT" | "LATE" | "EXCUSED_ABSENCE";
       const isPresent = attendance === "PRESENT" || attendance === "LATE";
       const grade = isPresent ? getGrade(arch.gradeBase, session.weekIndex) : undefined;
-      const recitation = grade ? getRecitationResult(grade) : "NOT_GRADED";
+      const recitation = (grade ? getRecitationResult(grade) : "NOT_GRADED") as "EXCELLENT" | "GOOD" | "NEEDS_REVIEW" | "INCOMPLETE" | "NOT_GRADED";
 
       const sessionStudent = await prisma.sessionStudent.create({
         data: {

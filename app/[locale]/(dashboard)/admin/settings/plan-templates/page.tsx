@@ -6,6 +6,10 @@ import { isFeatureEnabled } from "@/server/services/feature-flag";
 import { notFound } from "next/navigation";
 import { listTemplates } from "@/server/services/memorization-plan-template";
 import { deleteTemplateAction } from "@/server/actions/memorization";
+
+const deleteTemplate = deleteTemplateAction as unknown as (
+  formData: FormData
+) => void;
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
@@ -79,7 +83,7 @@ export default async function PlanTemplatesPage({
                     </TableCell>
                     <TableCell>
                       {!tpl.isDefault && (
-                        <form action={deleteTemplateAction}>
+                        <form action={deleteTemplate}>
                           <input type="hidden" name="id" value={tpl.id} />
                           <Button variant="ghost" size="sm" className="text-destructive">
                             {t("plan.deleteTemplate")}
