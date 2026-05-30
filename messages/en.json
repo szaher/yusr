@@ -102,7 +102,19 @@
     "quranReader": "Quran Text",
     "attendance": "Attendance",
     "progress": "Progress",
-    "planTemplates": "Plan Templates"
+    "planTemplates": "Plan Templates",
+    "more": "More"
+  },
+  "pwa": {
+    "offline": "You are offline",
+    "tryAgain": "Try Again",
+    "offlineDesc": "Some content is available offline",
+    "enableNotifications": "Enable Notifications",
+    "notificationPrompt": "Get notified about important updates",
+    "dismiss": "Later",
+    "pushEnabled": "Push notifications enabled",
+    "pushDisabled": "Push notifications disabled",
+    "installApp": "Install App"
   },
   "exams": {
     "title": "Exams",

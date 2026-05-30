@@ -102,7 +102,19 @@
     "quranReader": "نص القرآن",
     "attendance": "الحضور",
     "progress": "التقدم",
-    "planTemplates": "قوالب الخطط"
+    "planTemplates": "قوالب الخطط",
+    "more": "المزيد"
+  },
+  "pwa": {
+    "offline": "أنت غير متصل بالإنترنت",
+    "tryAgain": "حاول مرة أخرى",
+    "offlineDesc": "بعض المحتوى متاح بدون اتصال",
+    "enableNotifications": "تفعيل الإشعارات",
+    "notificationPrompt": "احصل على إشعارات للتحديثات المهمة",
+    "dismiss": "لاحقاً",
+    "pushEnabled": "الإشعارات مفعلة",
+    "pushDisabled": "الإشعارات معطلة",
+    "installApp": "تثبيت التطبيق"
   },
   "exams": {
     "title": "الاختبارات",
