@@ -1,6 +1,7 @@
 import { db } from "@/server/db/client";
+import { Prisma } from "@/prisma/generated/prisma/client";
 import { createAuditLog } from "./audit-log";
-import type { CreatePlanInput, UpdatePlanInput } from "@/lib/validations/memorization";
+import type { CreatePlanInput, UpdatePlanInput, SetOverrideInput } from "@/lib/validations/memorization";
 
 export async function createPlan(input: CreatePlanInput, actorId: string) {
   const plan = await db.studentMemorizationPlan.create({
@@ -13,6 +14,7 @@ export async function createPlan(input: CreatePlanInput, actorId: string) {
       paceValue: input.paceValue,
       meetingCadence: input.meetingCadence || null,
       customCadenceDays: input.customCadenceDays || null,
+      templateId: input.templateId || null,
     },
   });
 
@@ -162,4 +164,44 @@ export async function getStudentProgress(planId: string) {
     completedAyahs,
     totalAyahs,
   };
+}
+
+export async function setNextOverride(input: SetOverrideInput, actorId: string) {
+  const plan = await db.studentMemorizationPlan.update({
+    where: { id: input.planId },
+    data: {
+      nextOverride: {
+        paceUnit: input.paceUnit,
+        paceValue: input.paceValue,
+        note: input.note || null,
+      },
+    },
+  });
+
+  await createAuditLog({
+    actorId,
+    action: "memorization_plan.set_override",
+    entityType: "StudentMemorizationPlan",
+    entityId: input.planId,
+    metadata: { paceUnit: input.paceUnit, paceValue: input.paceValue },
+  });
+
+  return plan;
+}
+
+export async function clearNextOverride(planId: string, actorId: string) {
+  const plan = await db.studentMemorizationPlan.update({
+    where: { id: planId },
+    data: { nextOverride: Prisma.JsonNull },
+  });
+
+  await createAuditLog({
+    actorId,
+    action: "memorization_plan.clear_override",
+    entityType: "StudentMemorizationPlan",
+    entityId: planId,
+    metadata: {},
+  });
+
+  return plan;
 }
