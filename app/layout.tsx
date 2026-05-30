@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import type { Metadata, Viewport } from "next";
 import { getLocale } from "next-intl/server";
 import { Cairo, Inter, Amiri } from "next/font/google";
 import { ThemeProvider } from "@/components/providers/theme-provider";
@@ -21,9 +22,24 @@ const amiri = Amiri({
   variable: "--font-amiri",
 });
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Yusr Academy",
   description: "Yusr Academy for Quran Learning",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Yusr",
+  },
+  icons: {
+    icon: "/icons/favicon.ico",
+    apple: "/icons/apple-touch-icon.png",
+  },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#16a34a",
 };
 
 export default async function RootLayout({ children }: { children: ReactNode }) {
