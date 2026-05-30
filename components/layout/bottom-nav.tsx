@@ -64,11 +64,9 @@ export function BottomNav() {
           );
         })}
         <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-          <SheetTrigger asChild>
-            <button className="flex flex-1 flex-col items-center gap-1 py-2 text-xs text-muted-foreground">
-              <Menu className="h-5 w-5" />
-              <span>{t("more")}</span>
-            </button>
+          <SheetTrigger className="flex flex-1 flex-col items-center gap-1 py-2 text-xs text-muted-foreground">
+            <Menu className="h-5 w-5" />
+            <span>{t("more")}</span>
           </SheetTrigger>
           <SheetContent side="bottom" className="pb-safe">
             <SheetHeader>
