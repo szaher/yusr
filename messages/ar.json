@@ -101,7 +101,8 @@
     "quran": "القرآن",
     "quranReader": "نص القرآن",
     "attendance": "الحضور",
-    "progress": "التقدم"
+    "progress": "التقدم",
+    "planTemplates": "قوالب الخطط"
   },
   "exams": {
     "title": "الاختبارات",

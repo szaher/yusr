@@ -27,6 +27,7 @@ import {
   BookOpenText,
   BookType,
   TrendingUp,
+  FileStack,
 } from "lucide-react";
 
 type NavItem = {
@@ -45,6 +46,7 @@ const adminNav: NavItem[] = [
   { labelKey: "groups", href: "/admin/groups", icon: UsersRound },
   { labelKey: "featureFlags", href: "/admin/feature-flags", icon: ToggleLeft },
   { labelKey: "settings", href: "/admin/settings", icon: Settings },
+  { labelKey: "planTemplates", href: "/admin/settings/plan-templates", icon: FileStack, featureFlag: "memorization_plan_templates" },
   { labelKey: "auditLogs", href: "/admin/audit-logs", icon: ScrollText },
   { labelKey: "assignments", href: "/admin/assignments", icon: BookOpen },
   { labelKey: "sessions", href: "/admin/sessions", icon: Calendar },

@@ -101,7 +101,8 @@
     "quran": "Quran",
     "quranReader": "Quran Text",
     "attendance": "Attendance",
-    "progress": "Progress"
+    "progress": "Progress",
+    "planTemplates": "Plan Templates"
   },
   "exams": {
     "title": "Exams",
