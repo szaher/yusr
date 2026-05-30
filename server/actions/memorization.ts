@@ -6,8 +6,15 @@ import { auth } from "@/server/auth/config";
 import {
   createPlan,
   updatePlan,
+  setNextOverride,
+  clearNextOverride,
 } from "@/server/services/memorization-plan";
 import { createReview } from "@/server/services/memorization-review";
+import {
+  createTemplate,
+  updateTemplate,
+  deleteTemplate,
+} from "@/server/services/memorization-plan-template";
 import {
   createTajweedCategory,
   updateTajweedCategory,
@@ -19,6 +26,9 @@ import {
   createReviewSchema,
   tajweedCategorySchema,
   updateGroupCadenceSchema,
+  createTemplateSchema,
+  updateTemplateSchema,
+  setOverrideSchema,
 } from "@/lib/validations/memorization";
 import { revalidatePath } from "next/cache";
 import { db } from "@/server/db/client";
@@ -231,5 +241,111 @@ export async function updateGroupCadenceAction(formData: FormData) {
   revalidatePath("/en/moderator/groups");
   revalidatePath("/ar/admin/groups");
   revalidatePath("/en/admin/groups");
+  return { success: true };
+}
+
+export async function createTemplateAction(formData: FormData) {
+  await requirePermission(PERMISSIONS.MEMORIZATION_MANAGE);
+  const session = await auth();
+  if (!session?.user) throw new Error("Not authenticated");
+
+  const raw = Object.fromEntries(formData.entries());
+  const parsed = createTemplateSchema.safeParse(raw);
+  if (!parsed.success) {
+    return { error: "validationError", details: parsed.error.flatten() };
+  }
+
+  try {
+    await createTemplate(parsed.data, session.user.id);
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "unknownError" };
+  }
+
+  revalidatePath("/ar/admin/settings/plan-templates");
+  revalidatePath("/en/admin/settings/plan-templates");
+  return { success: true };
+}
+
+export async function updateTemplateAction(formData: FormData) {
+  await requirePermission(PERMISSIONS.MEMORIZATION_MANAGE);
+  const session = await auth();
+  if (!session?.user) throw new Error("Not authenticated");
+
+  const raw = Object.fromEntries(formData.entries());
+  const parsed = updateTemplateSchema.safeParse(raw);
+  if (!parsed.success) {
+    return { error: "validationError", details: parsed.error.flatten() };
+  }
+
+  try {
+    await updateTemplate(parsed.data, session.user.id);
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "unknownError" };
+  }
+
+  revalidatePath("/ar/admin/settings/plan-templates");
+  revalidatePath("/en/admin/settings/plan-templates");
+  return { success: true };
+}
+
+export async function deleteTemplateAction(formData: FormData) {
+  await requirePermission(PERMISSIONS.MEMORIZATION_MANAGE);
+  const session = await auth();
+  if (!session?.user) throw new Error("Not authenticated");
+
+  const id = formData.get("id") as string;
+
+  try {
+    await deleteTemplate(id, session.user.id);
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "unknownError" };
+  }
+
+  revalidatePath("/ar/admin/settings/plan-templates");
+  revalidatePath("/en/admin/settings/plan-templates");
+  return { success: true };
+}
+
+export async function setOverrideAction(formData: FormData) {
+  await requirePermission(PERMISSIONS.MEMORIZATION_MANAGE);
+  const session = await auth();
+  if (!session?.user) throw new Error("Not authenticated");
+
+  const raw = Object.fromEntries(formData.entries());
+  const parsed = setOverrideSchema.safeParse(raw);
+  if (!parsed.success) {
+    return { error: "validationError", details: parsed.error.flatten() };
+  }
+
+  try {
+    await setNextOverride(parsed.data, session.user.id);
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "unknownError" };
+  }
+
+  revalidatePath("/ar/moderator/memorization");
+  revalidatePath("/en/moderator/memorization");
+  revalidatePath("/ar/student/memorization");
+  revalidatePath("/en/student/memorization");
+  return { success: true };
+}
+
+export async function clearOverrideAction(formData: FormData) {
+  await requirePermission(PERMISSIONS.MEMORIZATION_MANAGE);
+  const session = await auth();
+  if (!session?.user) throw new Error("Not authenticated");
+
+  const planId = formData.get("planId") as string;
+
+  try {
+    await clearNextOverride(planId, session.user.id);
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "unknownError" };
+  }
+
+  revalidatePath("/ar/moderator/memorization");
+  revalidatePath("/en/moderator/memorization");
+  revalidatePath("/ar/student/memorization");
+  revalidatePath("/en/student/memorization");
   return { success: true };
 }
