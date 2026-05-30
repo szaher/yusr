@@ -3,6 +3,8 @@ import { Prisma, PrismaClient } from "./generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { QURAN_SURAHS } from "./data/quran-surahs";
 import { JUZ_BOUNDARIES } from "./data/quran-juz-boundaries";
+import { HIZB_BOUNDARIES } from "./data/quran-hizb-boundaries";
+import { QUARTER_BOUNDARIES } from "./data/quran-quarter-boundaries";
 import quranAyahText from "./data/quran-ayah-text.json";
 import { PERMISSIONS, ROLE_PERMISSIONS } from "../lib/constants/permissions";
 import { hashPassword } from "../server/auth/password";
@@ -241,6 +243,42 @@ async function seedQuranData() {
     return juz;
   }
 
+  const sortedHizbBoundaries = [...HIZB_BOUNDARIES].sort((a, b) => {
+    if (a.surah !== b.surah) return a.surah - b.surah;
+    return a.ayah - b.ayah;
+  });
+
+  function getHizbForAyah(surahNum: number, ayahNum: number): number {
+    let hizb = 1;
+    for (const boundary of sortedHizbBoundaries) {
+      if (
+        surahNum > boundary.surah ||
+        (surahNum === boundary.surah && ayahNum >= boundary.ayah)
+      ) {
+        hizb = boundary.hizb;
+      }
+    }
+    return hizb;
+  }
+
+  const sortedQuarterBoundaries = [...QUARTER_BOUNDARIES].sort((a, b) => {
+    if (a.surah !== b.surah) return a.surah - b.surah;
+    return a.ayah - b.ayah;
+  });
+
+  function getQuarterForAyah(surahNum: number, ayahNum: number): number {
+    let quarter = 1;
+    for (const boundary of sortedQuarterBoundaries) {
+      if (
+        surahNum > boundary.surah ||
+        (surahNum === boundary.surah && ayahNum >= boundary.ayah)
+      ) {
+        quarter = boundary.quarter;
+      }
+    }
+    return quarter;
+  }
+
   const textMap = new Map(
     quranAyahText.map((a: { surahNumber: number; ayahNumber: number; textAr: string; textEn: string; page: number }) => [
       `${a.surahNumber}:${a.ayahNumber}`,
@@ -254,8 +292,8 @@ async function seedQuranData() {
     const ayahData = [];
     for (let a = 1; a <= surah.ayahCount; a++) {
       const juzNum = getJuzForAyah(surah.number, a);
-      const hizbNum = juzNum * 2 - 1;
-      const quarterNum = hizbNum * 4 - 3;
+      const hizbNum = getHizbForAyah(surah.number, a);
+      const quarterNum = getQuarterForAyah(surah.number, a);
       const text = textMap.get(`${surah.number}:${a}`);
 
       ayahData.push({
