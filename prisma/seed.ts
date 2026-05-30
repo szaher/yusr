@@ -80,6 +80,7 @@ async function seedFeatureFlags() {
     { key: "gamification", enabled: true, description: "Badges, achievements, and group leaderboards" },
     { key: "leave_requests", enabled: true, description: "Student leave request system" },
     { key: "memorization_plans", enabled: true, description: "Individual student memorization plan tracking" },
+    { key: "memorization_plan_templates", enabled: true, description: "Enable memorization plan template management and pace overrides" },
     { key: "moderator_voice_notes", enabled: true, description: "Moderator voice note attachments" },
     { key: "progress_tracking", enabled: true, description: "Student progress tracking, milestones, and goals" },
     { key: "quran_explorer", enabled: true, description: "Native Quran text explorer (experimental)" },
@@ -681,6 +682,39 @@ async function seedBadges() {
   console.log(`  Seeded ${badges.length} badge definitions`);
 }
 
+async function seedPlanTemplates() {
+  const templates = [
+    {
+      id: "tpl-rub",
+      name: "Quarter Hizb",
+      nameAr: "ربع حزب",
+      paceUnit: "RUB" as const,
+      paceValue: 1,
+      description: "1/4 hizb (~2.5 pages) per session",
+      isDefault: true,
+    },
+    {
+      id: "tpl-page",
+      name: "Page and Half",
+      nameAr: "صفحة ونصف",
+      paceUnit: "PAGE_COUNT" as const,
+      paceValue: 1.5,
+      description: "1.5 pages per session",
+      isDefault: true,
+    },
+  ];
+
+  for (const tpl of templates) {
+    await prisma.memorizationPlanTemplate.upsert({
+      where: { id: tpl.id },
+      update: { name: tpl.name, nameAr: tpl.nameAr, paceUnit: tpl.paceUnit, paceValue: tpl.paceValue },
+      create: tpl,
+    });
+  }
+
+  console.log(`  Seeded ${templates.length} plan templates`);
+}
+
 async function main() {
   console.log("Starting seed...\n");
 
@@ -694,6 +728,7 @@ async function main() {
   await seedQuranData();
   await seedDemoData();
   await seedBadges();
+  await seedPlanTemplates();
 
   if (process.env.SEED_DEMO_DATA === "true") {
     const { seedFullDemo } = await import("./demo-seed.js");
