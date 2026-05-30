@@ -1,4 +1,5 @@
 import { db } from "@/server/db/client";
+import { Prisma } from "@/prisma/generated/prisma/client";
 import { createAuditLog } from "./audit-log";
 import type { CreateReviewInput } from "@/lib/validations/memorization";
 import type { MeetingCadence } from "@/prisma/generated/prisma/enums";
@@ -96,6 +97,7 @@ export async function createReview(input: CreateReviewInput, actorId: string) {
         currentSurahId: input.toSurahNumber,
         currentAyahNumber: input.toAyah,
         nextReviewDate,
+        nextOverride: Prisma.JsonNull,
       },
     });
 
@@ -152,58 +154,47 @@ export async function getReviewDetail(reviewId: string) {
   });
 }
 
-export async function calculateNextHomework(planId: string) {
-  const plan = await db.studentMemorizationPlan.findUnique({
-    where: { id: planId },
-    select: {
-      currentSurahId: true,
-      currentAyahNumber: true,
-      paceUnit: true,
-      paceValue: true,
-    },
-  });
-
-  if (!plan) return null;
-
-  const currentAyah = await db.quranAyah.findUnique({
-    where: {
-      surahNumber_ayahNumber: {
-        surahNumber: plan.currentSurahId,
-        ayahNumber: plan.currentAyahNumber,
-      },
-    },
+export async function computeNextRange(
+  startSurah: number,
+  startAyah: number,
+  paceUnit: string,
+  paceValue: number
+): Promise<{ fromSurah: number; fromAyah: number; toSurah: number; toAyah: number }> {
+  const startAyahRow = await db.quranAyah.findUnique({
+    where: { surahNumber_ayahNumber: { surahNumber: startSurah, ayahNumber: startAyah } },
     select: { quarterNumber: true, hizbNumber: true, pageNumber: true },
   });
 
-  if (!currentAyah) return null;
+  if (!startAyahRow) {
+    return { fromSurah: startSurah, fromAyah: startAyah, toSurah: 114, toAyah: 6 };
+  }
 
-  const paceValue = Number(plan.paceValue);
   let endAyah: { surahNumber: number; ayahNumber: number } | null = null;
 
-  if (plan.paceUnit === "RUB") {
-    const targetQuarter = currentAyah.quarterNumber + paceValue;
-    const targetAyah = await db.quranAyah.findFirst({
-      where: { quarterNumber: { gte: Math.ceil(targetQuarter) } },
-      orderBy: [{ surahNumber: "asc" }, { ayahNumber: "asc" }],
+  if (paceUnit === "RUB") {
+    const targetQuarter = startAyahRow.quarterNumber + Math.floor(paceValue);
+    const lastInTarget = await db.quranAyah.findFirst({
+      where: { quarterNumber: targetQuarter },
+      orderBy: [{ surahNumber: "desc" }, { ayahNumber: "desc" }],
       select: { surahNumber: true, ayahNumber: true },
     });
-    endAyah = targetAyah;
-  } else if (plan.paceUnit === "HIZB") {
-    const targetHizb = currentAyah.hizbNumber + paceValue;
-    const targetAyah = await db.quranAyah.findFirst({
-      where: { hizbNumber: { gte: Math.ceil(targetHizb) } },
-      orderBy: [{ surahNumber: "asc" }, { ayahNumber: "asc" }],
+    endAyah = lastInTarget;
+  } else if (paceUnit === "HIZB") {
+    const targetHizb = startAyahRow.hizbNumber + Math.floor(paceValue);
+    const lastInTarget = await db.quranAyah.findFirst({
+      where: { hizbNumber: targetHizb },
+      orderBy: [{ surahNumber: "desc" }, { ayahNumber: "desc" }],
       select: { surahNumber: true, ayahNumber: true },
     });
-    endAyah = targetAyah;
-  } else if (plan.paceUnit === "PAGE_COUNT" && currentAyah.pageNumber) {
-    const targetPage = currentAyah.pageNumber + Math.ceil(paceValue);
-    const targetAyah = await db.quranAyah.findFirst({
-      where: { pageNumber: { gte: targetPage } },
-      orderBy: [{ surahNumber: "asc" }, { ayahNumber: "asc" }],
+    endAyah = lastInTarget;
+  } else if (paceUnit === "PAGE_COUNT" && startAyahRow.pageNumber) {
+    const targetPage = startAyahRow.pageNumber + Math.ceil(paceValue) - 1;
+    const lastOnPage = await db.quranAyah.findFirst({
+      where: { pageNumber: targetPage },
+      orderBy: [{ surahNumber: "desc" }, { ayahNumber: "desc" }],
       select: { surahNumber: true, ayahNumber: true },
     });
-    endAyah = targetAyah;
+    endAyah = lastOnPage;
   }
 
   if (!endAyah) {
@@ -211,9 +202,37 @@ export async function calculateNextHomework(planId: string) {
   }
 
   return {
-    fromSurahNumber: plan.currentSurahId,
-    fromAyah: plan.currentAyahNumber,
-    toSurahNumber: endAyah.surahNumber,
+    fromSurah: startSurah,
+    fromAyah: startAyah,
+    toSurah: endAyah.surahNumber,
     toAyah: endAyah.ayahNumber,
+  };
+}
+
+export async function computeNextRangeForPlan(planId: string) {
+  const plan = await db.studentMemorizationPlan.findUnique({
+    where: { id: planId },
+    select: {
+      currentSurahId: true,
+      currentAyahNumber: true,
+      paceUnit: true,
+      paceValue: true,
+      nextOverride: true,
+    },
+  });
+
+  if (!plan) return null;
+
+  const override = plan.nextOverride as { paceUnit: string; paceValue: number } | null;
+  const paceUnit = override?.paceUnit ?? plan.paceUnit;
+  const paceValue = override?.paceValue ?? Number(plan.paceValue);
+
+  const range = await computeNextRange(plan.currentSurahId, plan.currentAyahNumber, paceUnit, paceValue);
+
+  return {
+    fromSurahNumber: range.fromSurah,
+    fromAyah: range.fromAyah,
+    toSurahNumber: range.toSurah,
+    toAyah: range.toAyah,
   };
 }

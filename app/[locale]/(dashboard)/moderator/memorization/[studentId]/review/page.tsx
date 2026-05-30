@@ -1,7 +1,7 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
 import { requireApprovedUser } from "@/server/auth/session";
 import { getPlanByStudent, getStudentProgress } from "@/server/services/memorization-plan";
-import { calculateNextHomework } from "@/server/services/memorization-review";
+import { computeNextRangeForPlan } from "@/server/services/memorization-review";
 import { listTajweedCategories } from "@/server/services/tajweed-category";
 import { createReviewAction } from "@/server/actions/memorization";
 import { db } from "@/server/db/client";
@@ -54,7 +54,7 @@ export default async function ModeratorReviewPage({
 
   const [progress, suggestion, surahs, categories] = await Promise.all([
     getStudentProgress(plan.id),
-    calculateNextHomework(plan.id),
+    computeNextRangeForPlan(plan.id),
     db.quranSurah.findMany({ orderBy: { number: "asc" } }),
     listTajweedCategories(),
   ]);
