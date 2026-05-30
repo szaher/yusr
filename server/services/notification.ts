@@ -1,4 +1,5 @@
 import { db } from "@/server/db/client";
+import { sendPush, sendPushToMany } from "./push-notification";
 
 export async function createNotification(params: {
   recipientId: string;
@@ -6,7 +7,9 @@ export async function createNotification(params: {
   title: string;
   body?: string;
 }) {
-  return db.notification.create({ data: params });
+  const notification = await db.notification.create({ data: params });
+  sendPush(params.recipientId, { title: params.title, body: params.body, url: "/" }).catch(() => {});
+  return notification;
 }
 
 export async function getUnreadNotifications(userId: string) {
@@ -53,7 +56,7 @@ export async function createBulkNotifications(
 ) {
   if (recipientIds.length === 0) return;
 
-  return db.notification.createMany({
+  const result = await db.notification.createMany({
     data: recipientIds.map((recipientId) => ({
       recipientId,
       type,
@@ -61,4 +64,6 @@ export async function createBulkNotifications(
       body: body || null,
     })),
   });
+  sendPushToMany(recipientIds, { title, body, url: "/" }).catch(() => {});
+  return result;
 }
