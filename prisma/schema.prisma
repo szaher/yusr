@@ -41,6 +41,7 @@ model User {
   createdExamInstances ExamInstance[] @relation("examInstanceCreator")
   createdGoals         CustomGoal[]       @relation("goalCreator")
   awardedBadges        StudentBadge[]     @relation("badgeAwarder")
+  planTemplates        MemorizationPlanTemplate[] @relation("templateCreator")
 
   @@index([email])
   @@index([roleId])
@@ -612,6 +613,22 @@ model TajweedCategory {
   reviewScores ReviewTajweedScore[]
 }
 
+model MemorizationPlanTemplate {
+  id          String    @id @default(cuid())
+  name        String
+  nameAr      String
+  paceUnit    PaceUnit
+  paceValue   Decimal
+  description String?
+  isDefault   Boolean   @default(false)
+  createdById String?
+  createdBy   User?     @relation("templateCreator", fields: [createdById], references: [id])
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  plans StudentMemorizationPlan[]
+}
+
 model StudentMemorizationPlan {
   id                String          @id @default(cuid())
   studentId         String
@@ -626,6 +643,9 @@ model StudentMemorizationPlan {
   meetingCadence    MeetingCadence?
   customCadenceDays Int?
   nextReviewDate    DateTime?
+  templateId        String?
+  template          MemorizationPlanTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
+  nextOverride      Json?
   active            Boolean         @default(true)
   createdAt         DateTime        @default(now())
   updatedAt         DateTime        @updatedAt
