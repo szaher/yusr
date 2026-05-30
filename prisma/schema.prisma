@@ -42,6 +42,7 @@ model User {
   createdGoals         CustomGoal[]       @relation("goalCreator")
   awardedBadges        StudentBadge[]     @relation("badgeAwarder")
   planTemplates        MemorizationPlanTemplate[] @relation("templateCreator")
+  pushSubscriptions    PushSubscription[]
 
   @@index([email])
   @@index([roleId])
@@ -763,6 +764,18 @@ model Notification {
 
   @@index([recipientId, read])
   @@index([createdAt])
+}
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+
+  @@index([userId])
 }
 
 model AttendanceAlertConfig {
