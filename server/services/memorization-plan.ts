@@ -114,6 +114,7 @@ export async function getPlansForModerator(userId: string) {
       },
       currentSurah: { select: { number: true, nameAr: true, nameEn: true } },
       group: { select: { id: true, name: true } },
+      template: { select: { name: true, nameAr: true } },
       _count: { select: { reviews: true } },
     },
     orderBy: { updatedAt: "desc" },

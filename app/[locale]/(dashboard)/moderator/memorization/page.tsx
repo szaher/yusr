@@ -39,6 +39,7 @@ export default async function ModeratorMemorizationPage({
               <TableHead>{locale === "ar" ? "الطالب" : "Student"}</TableHead>
               <TableHead>{t("plan.surah")}</TableHead>
               <TableHead>{t("plan.ayah")}</TableHead>
+              <TableHead>{t("plan.template")}</TableHead>
               <TableHead>{t("plan.nextReview")}</TableHead>
               <TableHead>{t("review.reviewHistory")}</TableHead>
               <TableHead>{locale === "ar" ? "المجموعة" : "Group"}</TableHead>
@@ -67,6 +68,14 @@ export default async function ModeratorMemorizationPage({
                   </TableCell>
                   <TableCell>{surahName}</TableCell>
                   <TableCell>{plan.currentAyahNumber}</TableCell>
+                  <TableCell>
+                    {plan.template
+                      ? locale === "ar" ? plan.template.nameAr : plan.template.name
+                      : t("plan.custom")}
+                    {plan.nextOverride && (
+                      <Badge variant="outline" className="ms-2">{t("plan.overrideActive")}</Badge>
+                    )}
+                  </TableCell>
                   <TableCell>
                     {plan.nextReviewDate
                       ? new Date(plan.nextReviewDate).toLocaleDateString(locale)
