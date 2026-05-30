@@ -126,6 +126,7 @@ export default async function ModeratorReviewPage({
                   <Input
                     name="fromAyah"
                     type="number"
+                    inputMode="numeric"
                     min="1"
                     defaultValue={plan.currentAyahNumber}
                     className="w-24"
@@ -149,6 +150,7 @@ export default async function ModeratorReviewPage({
                   <Input
                     name="toAyah"
                     type="number"
+                    inputMode="numeric"
                     min="1"
                     defaultValue={suggestion?.toAyah || plan.currentAyahNumber}
                     className="w-24"
@@ -181,7 +183,7 @@ export default async function ModeratorReviewPage({
               </div>
               <div className="space-y-2">
                 <Label>{t("review.grade")}</Label>
-                <Input name="grade" type="number" min="0" max="100" required />
+                <Input name="grade" type="number" inputMode="numeric" min="0" max="100" required />
               </div>
             </div>
           </CardContent>
@@ -201,6 +203,7 @@ export default async function ModeratorReviewPage({
                     <Input
                       name={`tajweedScores.${idx}.score`}
                       type="number"
+                      inputMode="numeric"
                       min="1"
                       max="10"
                       placeholder="/10"
@@ -259,6 +262,7 @@ export default async function ModeratorReviewPage({
                   <Input
                     name="nextFromAyah"
                     type="number"
+                    inputMode="numeric"
                     min="1"
                     defaultValue={suggestion?.toAyah ? suggestion.toAyah + 1 : 1}
                     className="w-24"
@@ -282,6 +286,7 @@ export default async function ModeratorReviewPage({
                   <Input
                     name="nextToAyah"
                     type="number"
+                    inputMode="numeric"
                     min="1"
                     defaultValue={suggestion?.toAyah || 1}
                     className="w-24"

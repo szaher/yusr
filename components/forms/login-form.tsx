@@ -38,6 +38,7 @@ export function LoginForm() {
               id="email"
               name="email"
               type="email"
+              inputMode="email"
               required
               dir="ltr"
             />

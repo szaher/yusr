@@ -65,7 +65,7 @@ export function RegisterForm() {
           </div>
           <div className="space-y-2">
             <Label htmlFor="phone">{t("registration.phone")}</Label>
-            <Input id="phone" name="phone" dir="ltr" />
+            <Input id="phone" name="phone" inputMode="tel" dir="ltr" />
           </div>
           <div className="space-y-2">
             <Label htmlFor="country">{t("registration.country")}</Label>
