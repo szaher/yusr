@@ -838,15 +838,6 @@
   },
   "memorization": {
     "title": "Memorization Plans",
-    "cadence": {
-      "className": "Class",
-      "groupName": "Group",
-      "levelName": "Level",
-      "noGroups": "No groups",
-      "studentCount": "Students",
-      "weeklyDay": "Day",
-      "weeklyTime": "Time"
-    },
     "plan": {
       "title": "Memorization Plan",
       "currentPosition": "Current Position",
@@ -964,7 +955,14 @@
       "customDays": "Days between reviews",
       "inheritGroup": "Inherit from group",
       "enablePlans": "Enable Plans",
-      "save": "Save"
+      "save": "Save",
+      "className": "Class",
+      "groupName": "Group",
+      "levelName": "Level",
+      "noGroups": "No groups",
+      "studentCount": "Students",
+      "weeklyDay": "Day",
+      "weeklyTime": "Time"
     },
     "dashboard": {
       "title": "Memorization Journey",

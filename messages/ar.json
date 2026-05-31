@@ -838,15 +838,6 @@
   },
   "memorization": {
     "title": "خطط الحفظ",
-    "cadence": {
-      "className": "الفصل",
-      "groupName": "المجموعة",
-      "levelName": "المستوى",
-      "noGroups": "لا توجد مجموعات",
-      "studentCount": "الطلاب",
-      "weeklyDay": "اليوم",
-      "weeklyTime": "الوقت"
-    },
     "plan": {
       "title": "خطة الحفظ",
       "currentPosition": "الموقع الحالي",
@@ -964,7 +955,14 @@
       "customDays": "عدد الأيام بين المراجعات",
       "inheritGroup": "وراثة من المجموعة",
       "enablePlans": "تفعيل الخطط",
-      "save": "حفظ"
+      "save": "حفظ",
+      "className": "الفصل",
+      "groupName": "المجموعة",
+      "levelName": "المستوى",
+      "noGroups": "لا توجد مجموعات",
+      "studentCount": "الطلاب",
+      "weeklyDay": "اليوم",
+      "weeklyTime": "الوقت"
     },
     "dashboard": {
       "title": "رحلة الحفظ",
