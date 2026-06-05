@@ -234,7 +234,7 @@ export async function getStudentTickets(studentProfileId: string) {
 }
 
 export async function getTicketWithReplies(ticketId: string) {
-  return db.supportTicket.findUniqueOrThrow({
+  return db.supportTicket.findUnique({
     where: { id: ticketId },
     include: {
       student: {
@@ -271,18 +271,26 @@ export async function getAssignedTickets(
   });
 }
 
-export async function getAllTickets(statusFilter?: "active" | "all") {
-  return db.supportTicket.findMany({
-    where:
-      statusFilter === "active" || !statusFilter
-        ? { status: { not: "CLOSED" } }
-        : {},
-    include: {
-      student: {
-        include: { user: { select: { name: true, nameAr: true } } },
+export async function getAllTickets(statusFilter?: "active" | "all", page = 1, limit = 50) {
+  const where =
+    statusFilter === "active" || !statusFilter
+      ? { status: { not: "CLOSED" as const } }
+      : {};
+
+  const [items, total] = await Promise.all([
+    db.supportTicket.findMany({
+      where,
+      skip: (page - 1) * limit,
+      take: limit,
+      include: {
+        student: {
+          include: { user: { select: { name: true, nameAr: true } } },
+        },
+        assignedTo: { select: { name: true, nameAr: true } },
       },
-      assignedTo: { select: { name: true, nameAr: true } },
-    },
-    orderBy: { updatedAt: "desc" },
-  });
+      orderBy: { updatedAt: "desc" },
+    }),
+    db.supportTicket.count({ where }),
+  ]);
+  return { items, total, page, totalPages: Math.ceil(total / limit) };
 }

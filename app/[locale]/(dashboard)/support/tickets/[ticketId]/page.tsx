@@ -39,12 +39,8 @@ export default async function SupportTicketDetailPage({
   const enabled = await isFeatureEnabled("support_tickets");
   if (!enabled) notFound();
 
-  let ticket;
-  try {
-    ticket = await getTicketWithReplies(ticketId);
-  } catch {
-    notFound();
-  }
+  const ticket = await getTicketWithReplies(ticketId);
+  if (!ticket) notFound();
 
   if (ticket.assignedToId !== session.user.id) notFound();
 

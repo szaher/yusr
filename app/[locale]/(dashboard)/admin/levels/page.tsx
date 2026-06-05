@@ -1,9 +1,14 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
 import { requireApprovedUser } from "@/server/auth/session";
 import { getAllLevels } from "@/server/services/organization";
-import { createLevelAction } from "@/server/actions/organization";
+import { createLevelAction, updateLevelAction, deleteLevelAction } from "@/server/actions/organization";
+import { EditLevelDialog } from "./edit-level-dialog";
+import { ConfirmDialog } from "@/components/shared/confirm-dialog";
+import { Trash2 } from "lucide-react";
 
 const createLevel = createLevelAction as unknown as (formData: FormData) => void;
+const updateLevel = updateLevelAction as unknown as (formData: FormData) => void;
+const deleteLevel = deleteLevelAction as unknown as (formData: FormData) => void;
 
 import {
   Table,
@@ -34,6 +39,15 @@ export default async function AdminLevelsPage({
 
   const t = await getTranslations("admin.organization");
   const levels = await getAllLevels();
+
+  const editTranslations = {
+    edit: t("edit"),
+    editLevel: t("editLevel"),
+    nameAr: `${t("levelName")} (AR)`,
+    nameEn: `${t("levelName")} (EN)`,
+    sortOrder: "Sort Order",
+    save: t("save"),
+  };
 
   return (
     <div className="space-y-6">
@@ -70,6 +84,7 @@ export default async function AdminLevelsPage({
             <TableHead>{t("levelName")} (AR)</TableHead>
             <TableHead>{t("levelName")} (EN)</TableHead>
             <TableHead>Classes</TableHead>
+            <TableHead className="text-end">{t("edit")}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -78,6 +93,35 @@ export default async function AdminLevelsPage({
               <TableCell>{level.nameAr}</TableCell>
               <TableCell>{level.nameEn}</TableCell>
               <TableCell>{level._count.classes}</TableCell>
+              <TableCell className="text-end">
+                <div className="flex items-center justify-end gap-2">
+                  <EditLevelDialog
+                    level={{
+                      id: level.id,
+                      nameAr: level.nameAr,
+                      nameEn: level.nameEn,
+                      sortOrder: level.sortOrder,
+                    }}
+                    action={updateLevel}
+                    translations={editTranslations}
+                  />
+                  <ConfirmDialog
+                    trigger={
+                      <Button size="sm" variant="destructive">
+                        <Trash2 className="h-3 w-3 me-1" />
+                        {t("delete")}
+                      </Button>
+                    }
+                    title={t("delete")}
+                    description={t("deleteConfirm")}
+                    confirmLabel={t("delete")}
+                    cancelLabel={t("save")}
+                    variant="destructive"
+                    formAction={deleteLevel}
+                    hiddenFields={{ id: level.id }}
+                  />
+                </div>
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>

@@ -55,12 +55,8 @@ export default async function AdminExamDetailPage({
 
   const t = await getTranslations("exams");
 
-  let template;
-  try {
-    template = await getTemplate(examId);
-  } catch {
-    notFound();
-  }
+  const template = await getTemplate(examId);
+  if (!template) notFound();
 
   const [groups, surahs] = await Promise.all([
     db.group.findMany({ where: { active: true }, select: { id: true, name: true }, orderBy: { name: "asc" } }),

@@ -59,7 +59,7 @@ export async function updateAnnouncement(input: UpdateAnnouncementInput, actorId
 }
 
 export async function deleteAnnouncement(announcementId: string, actorId: string) {
-  await db.announcement.delete({ where: { id: announcementId } });
+  await db.announcement.update({ where: { id: announcementId }, data: { deletedAt: new Date() } });
 
   await createAuditLog({
     actorId,
@@ -70,13 +70,21 @@ export async function deleteAnnouncement(announcementId: string, actorId: string
   });
 }
 
-export async function listAnnouncements() {
-  return db.announcement.findMany({
-    include: {
-      createdBy: { select: { name: true, nameAr: true } },
-    },
-    orderBy: { createdAt: "desc" },
-  });
+export async function listAnnouncements(page = 1, limit = 50) {
+  const where = { deletedAt: null };
+  const [items, total] = await Promise.all([
+    db.announcement.findMany({
+      where,
+      skip: (page - 1) * limit,
+      take: limit,
+      include: {
+        createdBy: { select: { name: true, nameAr: true } },
+      },
+      orderBy: { createdAt: "desc" },
+    }),
+    db.announcement.count({ where }),
+  ]);
+  return { items, total, page, totalPages: Math.ceil(total / limit) };
 }
 
 export async function getActiveAnnouncementsForUser(userId: string) {
@@ -98,6 +106,7 @@ export async function getActiveAnnouncementsForUser(userId: string) {
 
   return db.announcement.findMany({
     where: {
+      deletedAt: null,
       publishDate: { lte: now },
       OR: [
         { expiryDate: null },

@@ -20,6 +20,7 @@ export function StatusBadge({
 }) {
   return (
     <Badge
+      role="status"
       variant="outline"
       className={statusColors[status] ?? "bg-gray-100 text-gray-800"}
     >

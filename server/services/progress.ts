@@ -2,6 +2,7 @@ import { db } from "@/server/db/client";
 import { createNotification } from "@/server/services/notification";
 import { createAuditLog } from "@/server/services/audit-log";
 import { checkBadges } from "@/server/services/gamification";
+import { logger } from "@/server/lib/logger";
 
 const TOTAL_QURAN_AYAHS = 6236;
 
@@ -121,7 +122,7 @@ export async function checkMilestones(
   }
 
   if (newMilestones.length > 0) {
-    checkBadges(plan.studentId).catch(() => {});
+    checkBadges(plan.studentId).catch((err) => { logger.warn({ err: err instanceof Error ? err.message : String(err) }, "Background task failed"); });
   }
 }
 
@@ -315,41 +316,120 @@ export async function getGroupProgressOverview(groupId: string) {
     },
   });
 
-  const results = await Promise.all(
-    groupStudents.map(async (gs) => {
-      const plan = gs.student.memorizationPlans[0];
-      if (!plan) {
-        return {
-          studentId: gs.student.id,
-          studentName: gs.student.user.name,
-          quranPercentage: 0,
-          juzCount: 0,
-          currentStreak: 0,
-          lastReview: null as Date | null,
-        };
-      }
+  if (groupStudents.length === 0) return [];
 
-      const [quranPct, juzCount, streak, latest] = await Promise.all([
-        getQuranPercentage(plan.currentSurahId, plan.currentAyahNumber),
-        db.studentMilestone.count({ where: { studentId: gs.student.id, type: "JUZ_COMPLETE" } }),
-        getReviewStreak(gs.student.id),
-        db.memorizationReview.findFirst({
-          where: { planId: plan.id },
+  const studentIds = groupStudents.map((gs) => gs.student.id);
+  const planIds = groupStudents
+    .map((gs) => gs.student.memorizationPlans[0]?.id)
+    .filter((id): id is string => !!id);
+
+  // Batch: quran percentages via deduplicated position counts
+  const positionKey = (s: number, a: number) => `${s}:${a}`;
+  const uniquePositions = new Map<string, { surahNumber: number; ayahNumber: number }>();
+  const studentPositionKeys = new Map<string, string>();
+
+  for (const gs of groupStudents) {
+    const plan = gs.student.memorizationPlans[0];
+    if (plan) {
+      const key = positionKey(plan.currentSurahId, plan.currentAyahNumber);
+      uniquePositions.set(key, { surahNumber: plan.currentSurahId, ayahNumber: plan.currentAyahNumber });
+      studentPositionKeys.set(gs.student.id, key);
+    }
+  }
+
+  const positionCounts = new Map<string, number>();
+  const [juzCounts, latestReviews, allReviews] = await Promise.all([
+    // Batch: juz milestone counts per student
+    db.studentMilestone.groupBy({
+      by: ["studentId"],
+      where: { studentId: { in: studentIds }, type: "JUZ_COMPLETE" },
+      _count: { id: true },
+    }),
+    // Batch: latest review per plan
+    planIds.length > 0
+      ? db.memorizationReview.findMany({
+          where: { planId: { in: planIds } },
           orderBy: { reviewDate: "desc" },
-          select: { reviewDate: true },
-        }),
-      ]);
+          distinct: ["planId" as const],
+          select: { planId: true, reviewDate: true },
+        })
+      : (Promise.resolve([]) as Promise<{ planId: string; reviewDate: Date }[]>),
+    // Batch: all review dates for streak calculation
+    db.memorizationReview.findMany({
+      where: { plan: { studentId: { in: studentIds }, active: true } },
+      select: { reviewDate: true, plan: { select: { studentId: true } } },
+      orderBy: { reviewDate: "desc" },
+    }),
+  ]);
 
+  // Batch: quran position counts
+  await Promise.all(
+    Array.from(uniquePositions.entries()).map(async ([key, pos]) => {
+      const count = await db.quranAyah.count({
+        where: {
+          OR: [
+            { surahNumber: { lt: pos.surahNumber } },
+            { surahNumber: pos.surahNumber, ayahNumber: { lte: pos.ayahNumber } },
+          ],
+        },
+      });
+      positionCounts.set(key, count);
+    }),
+  );
+
+  // Build lookup maps
+  const juzCountMap = new Map(juzCounts.map((g) => [g.studentId, g._count.id]));
+  const latestReviewMap = new Map(latestReviews.map((r) => [r.planId, r.reviewDate]));
+
+  // Compute streaks in JS
+  const reviewsByStudent = new Map<string, Date[]>();
+  for (const id of studentIds) reviewsByStudent.set(id, []);
+  for (const r of allReviews) {
+    reviewsByStudent.get(r.plan.studentId)?.push(r.reviewDate);
+  }
+
+  const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+  const thisMonday = getMonday(new Date());
+
+  const results = groupStudents.map((gs) => {
+    const plan = gs.student.memorizationPlans[0];
+    if (!plan) {
       return {
         studentId: gs.student.id,
         studentName: gs.student.user.name,
-        quranPercentage: quranPct,
-        juzCount,
-        currentStreak: streak.currentStreak,
-        lastReview: latest?.reviewDate ?? null,
+        quranPercentage: 0,
+        juzCount: 0,
+        currentStreak: 0,
+        lastReview: null as Date | null,
       };
-    })
-  );
+    }
+
+    const posKey = studentPositionKeys.get(gs.student.id);
+    const covered = posKey ? (positionCounts.get(posKey) ?? 0) : 0;
+    const quranPercentage = Math.round((covered / TOTAL_QURAN_AYAHS) * 100);
+
+    // Compute streak
+    const reviews = reviewsByStudent.get(gs.student.id) ?? [];
+    let currentStreak = 0;
+    if (reviews.length > 0) {
+      const mondaySet = new Set(reviews.map((r) => getMonday(r)));
+      let check = thisMonday;
+      if (!mondaySet.has(check)) check -= WEEK_MS;
+      while (mondaySet.has(check)) {
+        currentStreak++;
+        check -= WEEK_MS;
+      }
+    }
+
+    return {
+      studentId: gs.student.id,
+      studentName: gs.student.user.name,
+      quranPercentage,
+      juzCount: juzCountMap.get(gs.student.id) ?? 0,
+      currentStreak,
+      lastReview: latestReviewMap.get(plan.id) ?? null,
+    };
+  });
 
   return results.sort((a, b) => b.quranPercentage - a.quranPercentage);
 }
@@ -370,18 +450,66 @@ export async function getSchoolProgressStats() {
   let topStreak = 0;
 
   if (activePlans.length > 0) {
-    const percentages = await Promise.all(
-      activePlans.map((p) => getQuranPercentage(p.currentSurahId, p.currentAyahNumber))
-    );
-    avgQuranPercentage = Math.round(
-      percentages.reduce((a, b) => a + b, 0) / percentages.length
+    // Batch: deduplicate positions for quran percentage
+    const positionKey = (s: number, a: number) => `${s}:${a}`;
+    const uniquePositions = new Map<string, { surahNumber: number; ayahNumber: number }>();
+    for (const p of activePlans) {
+      const key = positionKey(p.currentSurahId, p.currentAyahNumber);
+      uniquePositions.set(key, { surahNumber: p.currentSurahId, ayahNumber: p.currentAyahNumber });
+    }
+
+    const positionCounts = new Map<string, number>();
+    await Promise.all(
+      Array.from(uniquePositions.entries()).map(async ([key, pos]) => {
+        const count = await db.quranAyah.count({
+          where: {
+            OR: [
+              { surahNumber: { lt: pos.surahNumber } },
+              { surahNumber: pos.surahNumber, ayahNumber: { lte: pos.ayahNumber } },
+            ],
+          },
+        });
+        positionCounts.set(key, count);
+      }),
     );
 
+    let totalPct = 0;
+    for (const p of activePlans) {
+      const key = positionKey(p.currentSurahId, p.currentAyahNumber);
+      const covered = positionCounts.get(key) ?? 0;
+      totalPct += Math.round((covered / TOTAL_QURAN_AYAHS) * 100);
+    }
+    avgQuranPercentage = Math.round(totalPct / activePlans.length);
+
+    // Batch: fetch all review dates for streak calculation
     const studentIds = [...new Set(activePlans.map((p) => p.studentId))];
-    const streaks = await Promise.all(
-      studentIds.map(async (id) => (await getReviewStreak(id)).currentStreak)
-    );
-    topStreak = Math.max(0, ...streaks);
+    const allReviews = await db.memorizationReview.findMany({
+      where: { plan: { studentId: { in: studentIds }, active: true } },
+      select: { reviewDate: true, plan: { select: { studentId: true } } },
+      orderBy: { reviewDate: "desc" },
+    });
+
+    const reviewsByStudent = new Map<string, Date[]>();
+    for (const id of studentIds) reviewsByStudent.set(id, []);
+    for (const r of allReviews) {
+      reviewsByStudent.get(r.plan.studentId)?.push(r.reviewDate);
+    }
+
+    const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+    const thisMonday = getMonday(new Date());
+
+    for (const [, reviews] of reviewsByStudent) {
+      if (reviews.length === 0) continue;
+      const mondaySet = new Set(reviews.map((r) => getMonday(r)));
+      let currentStreak = 0;
+      let check = thisMonday;
+      if (!mondaySet.has(check)) check -= WEEK_MS;
+      while (mondaySet.has(check)) {
+        currentStreak++;
+        check -= WEEK_MS;
+      }
+      topStreak = Math.max(topStreak, currentStreak);
+    }
   }
 
   return {
@@ -409,37 +537,103 @@ export async function getTopPerformers(limit = 10): Promise<TopPerformer[]> {
     take: limit,
   });
 
-  return Promise.all(
-    performers.map(async (p) => {
-      const student = await db.studentProfile.findUnique({
-        where: { id: p.studentId },
-        select: {
-          user: { select: { name: true } },
-          groupStudents: { select: { group: { select: { name: true } } }, take: 1 },
-          memorizationPlans: {
-            where: { active: true },
-            select: { currentSurahId: true, currentAyahNumber: true },
-            take: 1,
+  if (performers.length === 0) return [];
+
+  const studentIds = performers.map((p) => p.studentId);
+  const milestoneMap = new Map(performers.map((p) => [p.studentId, p._count.id]));
+
+  // Single batch query for all student profiles
+  const students = await db.studentProfile.findMany({
+    where: { id: { in: studentIds } },
+    select: {
+      id: true,
+      user: { select: { name: true } },
+      groupStudents: { select: { group: { select: { name: true } } }, take: 1 },
+      memorizationPlans: {
+        where: { active: true },
+        select: { currentSurahId: true, currentAyahNumber: true },
+        take: 1,
+      },
+    },
+  });
+
+  const studentMap = new Map(students.map((s) => [s.id, s]));
+
+  // Batch: deduplicate positions for quran percentage
+  const positionKey = (s: number, a: number) => `${s}:${a}`;
+  const uniquePositions = new Map<string, { surahNumber: number; ayahNumber: number }>();
+  const studentPositionKeys = new Map<string, string>();
+
+  for (const s of students) {
+    const plan = s.memorizationPlans[0];
+    if (plan) {
+      const key = positionKey(plan.currentSurahId, plan.currentAyahNumber);
+      uniquePositions.set(key, { surahNumber: plan.currentSurahId, ayahNumber: plan.currentAyahNumber });
+      studentPositionKeys.set(s.id, key);
+    }
+  }
+
+  const positionCounts = new Map<string, number>();
+
+  // Batch: quran counts + review dates in parallel
+  const [, allReviews] = await Promise.all([
+    Promise.all(
+      Array.from(uniquePositions.entries()).map(async ([key, pos]) => {
+        const count = await db.quranAyah.count({
+          where: {
+            OR: [
+              { surahNumber: { lt: pos.surahNumber } },
+              { surahNumber: pos.surahNumber, ayahNumber: { lte: pos.ayahNumber } },
+            ],
           },
-        },
-      });
+        });
+        positionCounts.set(key, count);
+      }),
+    ),
+    db.memorizationReview.findMany({
+      where: { plan: { studentId: { in: studentIds }, active: true } },
+      select: { reviewDate: true, plan: { select: { studentId: true } } },
+      orderBy: { reviewDate: "desc" },
+    }),
+  ]);
 
-      const plan = student?.memorizationPlans[0];
-      const quranPercentage = plan
-        ? await getQuranPercentage(plan.currentSurahId, plan.currentAyahNumber)
-        : 0;
-      const streak = await getReviewStreak(p.studentId);
+  // Compute streaks
+  const reviewsByStudent = new Map<string, Date[]>();
+  for (const id of studentIds) reviewsByStudent.set(id, []);
+  for (const r of allReviews) {
+    reviewsByStudent.get(r.plan.studentId)?.push(r.reviewDate);
+  }
 
-      return {
-        studentId: p.studentId,
-        studentName: student?.user.name ?? "—",
-        groupName: student?.groupStudents[0]?.group.name ?? "—",
-        quranPercentage,
-        milestoneCount: p._count.id,
-        currentStreak: streak.currentStreak,
-      };
-    })
-  );
+  const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+  const thisMonday = getMonday(new Date());
+
+  return performers.map((p) => {
+    const student = studentMap.get(p.studentId);
+    const posKey = studentPositionKeys.get(p.studentId);
+    const covered = posKey ? (positionCounts.get(posKey) ?? 0) : 0;
+    const quranPercentage = Math.round((covered / TOTAL_QURAN_AYAHS) * 100);
+
+    const reviews = reviewsByStudent.get(p.studentId) ?? [];
+    let currentStreak = 0;
+    if (reviews.length > 0) {
+      const mondaySet = new Set(reviews.map((r) => getMonday(r)));
+      let check = thisMonday;
+      if (!mondaySet.has(check)) check -= WEEK_MS;
+      while (mondaySet.has(check)) {
+        currentStreak++;
+        check -= WEEK_MS;
+      }
+    }
+
+    return {
+      studentId: p.studentId,
+      studentName: student?.user.name ?? "—",
+      groupName: student?.groupStudents[0]?.group.name ?? "—",
+      quranPercentage,
+      milestoneCount: milestoneMap.get(p.studentId) ?? 0,
+      currentStreak,
+    };
+  });
 }
 
 export async function getMilestonesByMonth() {
@@ -481,15 +675,42 @@ export async function getGroupProgressComparison() {
     },
   });
 
-  const results = await Promise.all(
-    groups.map(async (g) => {
-      if (g.memorizationPlans.length === 0) return { label: g.name, value: 0 };
-      const pcts = await Promise.all(
-        g.memorizationPlans.map((p) => getQuranPercentage(p.currentSurahId, p.currentAyahNumber))
-      );
-      return { label: g.name, value: Math.round(pcts.reduce((a, b) => a + b, 0) / pcts.length) };
-    })
+  // Batch: deduplicate all positions across all groups
+  const positionKey = (s: number, a: number) => `${s}:${a}`;
+  const uniquePositions = new Map<string, { surahNumber: number; ayahNumber: number }>();
+
+  for (const g of groups) {
+    for (const p of g.memorizationPlans) {
+      const key = positionKey(p.currentSurahId, p.currentAyahNumber);
+      uniquePositions.set(key, { surahNumber: p.currentSurahId, ayahNumber: p.currentAyahNumber });
+    }
+  }
+
+  const positionCounts = new Map<string, number>();
+  await Promise.all(
+    Array.from(uniquePositions.entries()).map(async ([key, pos]) => {
+      const count = await db.quranAyah.count({
+        where: {
+          OR: [
+            { surahNumber: { lt: pos.surahNumber } },
+            { surahNumber: pos.surahNumber, ayahNumber: { lte: pos.ayahNumber } },
+          ],
+        },
+      });
+      positionCounts.set(key, count);
+    }),
   );
+
+  const results = groups.map((g) => {
+    if (g.memorizationPlans.length === 0) return { label: g.name, value: 0 };
+    let totalPct = 0;
+    for (const p of g.memorizationPlans) {
+      const key = positionKey(p.currentSurahId, p.currentAyahNumber);
+      const covered = positionCounts.get(key) ?? 0;
+      totalPct += Math.round((covered / TOTAL_QURAN_AYAHS) * 100);
+    }
+    return { label: g.name, value: Math.round(totalPct / g.memorizationPlans.length) };
+  });
 
   return results.sort((a, b) => b.value - a.value);
 }

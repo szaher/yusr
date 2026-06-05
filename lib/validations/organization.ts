@@ -25,6 +25,13 @@ export const createGroupSchema = z.object({
   weeklyTime: z.string().optional(),
 });
 
+export const updateLevelSchema = createLevelSchema.extend({ id: z.string().min(1) });
+export const updateClassSchema = createClassSchema.extend({ id: z.string().min(1) });
+export const updateGroupSchema = createGroupSchema.extend({ id: z.string().min(1) });
+
 export type CreateLevelInput = z.infer<typeof createLevelSchema>;
 export type CreateClassInput = z.infer<typeof createClassSchema>;
 export type CreateGroupInput = z.infer<typeof createGroupSchema>;
+export type UpdateLevelInput = z.infer<typeof updateLevelSchema>;
+export type UpdateClassInput = z.infer<typeof updateClassSchema>;
+export type UpdateGroupInput = z.infer<typeof updateGroupSchema>;

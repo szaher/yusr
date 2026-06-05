@@ -16,6 +16,7 @@ import {
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { db } from "@/server/db/client";
+import { logger } from "@/server/lib/logger";
 
 export async function createAssignmentAction(formData: FormData) {
   await requirePermission(PERMISSIONS.ASSIGNMENTS_CREATE);
@@ -108,6 +109,7 @@ export async function confirmListeningAction(formData: FormData) {
     revalidatePath("/en/student/assignments");
     return { success: true, ...result };
   } catch (e) {
+    logger.error({ err: e instanceof Error ? e.message : String(e), action: "confirmListeningAction" }, "Action failed");
     return { error: e instanceof Error ? e.message : "unknownError" };
   }
 }

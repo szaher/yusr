@@ -40,7 +40,7 @@ export default async function ModeratorSessionsPage({
 
   const t = await getTranslations("sessions");
   const [sessions, groups] = await Promise.all([
-    getModeratorSessions(session.user.id),
+    getModeratorSessions(session.user.id).then((r) => r.items),
     getModeratorGroups(session.user.id),
   ]);
 

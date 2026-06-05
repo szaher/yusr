@@ -19,10 +19,13 @@ model User {
   nameAr       String?
   roleId       String
   role         Role           @relation(fields: [roleId], references: [id])
-  accountStatus AccountStatus?
-  locale       String         @default("ar")
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
+  accountStatus       AccountStatus?
+  failedLoginAttempts Int            @default(0)
+  lockedUntil         DateTime?
+  tokenVersion        Int            @default(0)
+  locale              String         @default("ar")
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
 
   studentProfile        StudentProfile?
   moderatorProfile      ModeratorProfile?
@@ -43,6 +46,7 @@ model User {
   awardedBadges        StudentBadge[]     @relation("badgeAwarder")
   planTemplates        MemorizationPlanTemplate[] @relation("templateCreator")
   pushSubscriptions    PushSubscription[]
+  notificationPreferences NotificationPreference[]
 
   @@index([email])
   @@index([roleId])
@@ -111,7 +115,7 @@ model PasswordResetToken {
 model StudentProfile {
   id                  String   @id @default(cuid())
   userId              String   @unique
-  user                User     @relation(fields: [userId], references: [id])
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   dateOfBirth         DateTime?
   gender              String?
   phone               String?
@@ -140,7 +144,7 @@ model StudentProfile {
 model EnrollmentApplication {
   id                 String             @id @default(cuid())
   userId             String             @unique
-  user               User               @relation(fields: [userId], references: [id])
+  user               User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   registrationStatus RegistrationStatus @default(PENDING_REVIEW)
   submittedAt        DateTime?
   reviewedById       String?
@@ -181,7 +185,7 @@ model Class {
   id           String   @id @default(cuid())
   name         String
   levelId      String
-  level        Level    @relation(fields: [levelId], references: [id])
+  level        Level    @relation(fields: [levelId], references: [id], onDelete: Cascade)
   defaultDay   String?
   timezone     String   @default("UTC")
   sessionTime  String?
@@ -199,7 +203,7 @@ model Group {
   id                String            @id @default(cuid())
   name              String
   classId           String
-  class             Class             @relation(fields: [classId], references: [id])
+  class             Class             @relation(fields: [classId], references: [id], onDelete: Cascade)
   moderatorId       String?
   moderator         ModeratorProfile? @relation(fields: [moderatorId], references: [id])
   weeklyDay         String?
@@ -224,7 +228,7 @@ model Group {
 model GroupStudent {
   groupId    String
   studentId  String
-  group      Group          @relation(fields: [groupId], references: [id])
+  group      Group          @relation(fields: [groupId], references: [id], onDelete: Cascade)
   student    StudentProfile @relation(fields: [studentId], references: [id])
   assignedAt DateTime       @default(now())
 
@@ -234,7 +238,7 @@ model GroupStudent {
 model ModeratorProfile {
   id        String   @id @default(cuid())
   userId    String   @unique
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   groups    Group[]
   sessions  WeeklySession[] @relation("sessionModerator")
   createdAt DateTime @default(now())
@@ -363,6 +367,7 @@ model Assignment {
   dueDate             DateTime?
   requiredRepetitions Int                  @default(1)
   active              Boolean              @default(true)
+  deletedAt           DateTime?
   createdAt           DateTime             @default(now())
   updatedAt           DateTime             @updatedAt
 
@@ -453,7 +458,7 @@ model ListeningConfirmation {
 model WeeklySession {
   id          String        @id @default(cuid())
   groupId     String
-  group       Group         @relation(fields: [groupId], references: [id])
+  group       Group         @relation(fields: [groupId], references: [id], onDelete: Cascade)
   moderatorId String
   moderator   ModeratorProfile @relation("sessionModerator", fields: [moderatorId], references: [id])
   date        DateTime
@@ -766,6 +771,18 @@ model Notification {
   @@index([createdAt])
 }
 
+model NotificationPreference {
+  id     String  @id @default(cuid())
+  userId String
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type   String
+  inApp  Boolean @default(true)
+  push   Boolean @default(true)
+
+  @@unique([userId, type])
+  @@index([userId])
+}
+
 model PushSubscription {
   id        String   @id @default(cuid())
   userId    String
@@ -834,7 +851,11 @@ model Announcement {
   expiryDate  DateTime?
   createdById String
   createdBy   User      @relation("announcementCreator", fields: [createdById], references: [id])
+  deletedAt   DateTime?
   createdAt   DateTime  @default(now())
+
+  @@index([publishDate])
+  @@index([targetType, targetId])
 }
 
 // ============================================================
@@ -936,7 +957,7 @@ model ExamInstance {
   createdAt      DateTime           @default(now())
   updatedAt      DateTime           @updatedAt
 
-  template    ExamTemplate   @relation(fields: [templateId], references: [id])
+  template    ExamTemplate   @relation(fields: [templateId], references: [id], onDelete: Restrict)
   group       Group          @relation(fields: [groupId], references: [id])
   session     WeeklySession? @relation(fields: [sessionId], references: [id])
   createdBy   User           @relation("examInstanceCreator", fields: [createdById], references: [id])
@@ -945,6 +966,7 @@ model ExamInstance {
   @@index([templateId])
   @@index([groupId])
   @@index([status])
+  @@index([startDate])
 }
 
 model ExamSubmission {

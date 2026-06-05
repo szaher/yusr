@@ -6,6 +6,7 @@ import { requireApprovedUser } from "@/server/auth/session";
 import { createAnnouncement, updateAnnouncement, deleteAnnouncement } from "@/server/services/announcement";
 import { createAnnouncementSchema, updateAnnouncementSchema } from "@/lib/validations/announcement";
 import { revalidatePath } from "next/cache";
+import { logger } from "@/server/lib/logger";
 
 export async function createAnnouncementAction(formData: FormData) {
   await requirePermission(PERMISSIONS.ANNOUNCEMENTS_CREATE);
@@ -20,6 +21,7 @@ export async function createAnnouncementAction(formData: FormData) {
   try {
     await createAnnouncement(parsed.data, session.user.id);
   } catch (e) {
+    logger.error({ err: e instanceof Error ? e.message : String(e), action: "createAnnouncementAction" }, "Action failed");
     return { error: e instanceof Error ? e.message : "unknownError" };
   }
 
@@ -49,6 +51,7 @@ export async function updateAnnouncementAction(formData: FormData) {
   try {
     await updateAnnouncement(parsed.data, session.user.id);
   } catch (e) {
+    logger.error({ err: e instanceof Error ? e.message : String(e), action: "updateAnnouncementAction" }, "Action failed");
     return { error: e instanceof Error ? e.message : "unknownError" };
   }
 
@@ -69,6 +72,7 @@ export async function deleteAnnouncementAction(formData: FormData) {
   try {
     await deleteAnnouncement(announcementId, session.user.id);
   } catch (e) {
+    logger.error({ err: e instanceof Error ? e.message : String(e), action: "deleteAnnouncementAction" }, "Action failed");
     return { error: e instanceof Error ? e.message : "unknownError" };
   }
 

@@ -36,13 +36,13 @@ export default async function ModeratorMemorizationPage({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>{locale === "ar" ? "الطالب" : "Student"}</TableHead>
+              <TableHead>{t("dashboard.student")}</TableHead>
               <TableHead>{t("plan.surah")}</TableHead>
               <TableHead>{t("plan.ayah")}</TableHead>
               <TableHead>{t("plan.template")}</TableHead>
               <TableHead>{t("plan.nextReview")}</TableHead>
               <TableHead>{t("review.reviewHistory")}</TableHead>
-              <TableHead>{locale === "ar" ? "المجموعة" : "Group"}</TableHead>
+              <TableHead>{t("dashboard.group")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

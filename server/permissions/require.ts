@@ -15,6 +15,11 @@ export async function requirePermission(permissionKey: string): Promise<void> {
     throw new PermissionDeniedError(permissionKey);
   }
 
+  const accountStatus = session.user.accountStatus;
+  if (accountStatus && accountStatus !== "ACTIVE") {
+    throw new PermissionDeniedError(permissionKey);
+  }
+
   const allowed = await hasPermission(session.user.id, permissionKey);
 
   if (!allowed) {

@@ -51,7 +51,7 @@ export default async function AdminAnnouncementsPage({
   const t = await getTranslations("announcements");
 
   const [announcements, roles, groups] = await Promise.all([
-    listAnnouncements(),
+    listAnnouncements().then((r) => r.items),
     db.role.findMany({ select: { name: true, nameAr: true }, orderBy: { name: "asc" } }),
     db.group.findMany({ select: { id: true, name: true }, where: { active: true }, orderBy: { name: "asc" } }),
   ]);

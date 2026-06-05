@@ -15,6 +15,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { AudioRecorder } from "@/components/shared/audio-recorder";
 
 const createReview = createReviewAction as unknown as (formData: FormData) => void;
 
@@ -31,6 +32,7 @@ export default async function ModeratorReviewPage({
   await requireApprovedUser();
 
   const t = await getTranslations("memorization");
+  const tAudio = await getTranslations("audio");
 
   const studentProfile = await db.studentProfile.findUnique({
     where: { userId: studentId },
@@ -234,7 +236,19 @@ export default async function ModeratorReviewPage({
             </div>
             <div className="space-y-2">
               <Label>{t("review.voiceNote")}</Label>
-              <Input name="voiceNoteUrl" type="url" />
+              <AudioRecorder
+                name="voiceNoteUrl"
+                translations={{
+                  record: tAudio("record"),
+                  stopRecording: tAudio("stopRecording"),
+                  reRecord: tAudio("reRecord"),
+                  uploadFile: tAudio("uploadFile"),
+                  uploading: tAudio("uploading"),
+                  removeAudio: tAudio("removeAudio"),
+                  micPermission: tAudio("micPermission"),
+                  unsupported: tAudio("unsupported"),
+                }}
+              />
             </div>
           </CardContent>
         </Card>

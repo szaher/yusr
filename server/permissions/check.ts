@@ -5,32 +5,8 @@ export const hasPermission = async (
   userId: string,
   permissionKey: string
 ): Promise<boolean> => {
-  const user = await db.user.findUnique({
-    where: { id: userId },
-    include: { role: true },
-  });
-
-  if (!user) return false;
-
-  const override = await db.userPermissionOverride.findFirst({
-    where: {
-      userId,
-      permission: { key: permissionKey },
-    },
-  });
-
-  if (override !== null) {
-    return override.granted;
-  }
-
-  const rolePermissions = await db.rolePermission.findMany({
-    where: {
-      roleId: user.roleId,
-      permission: { key: permissionKey },
-    },
-  });
-
-  return rolePermissions.length > 0;
+  const permissions = await getPermissionsForUser(userId);
+  return permissions.includes(permissionKey);
 };
 
 export const getPermissionsForUser = cache(

@@ -45,9 +45,9 @@ export default async function ModeratorDashboardPage({
               key={ann.id}
               className={`rounded-lg border p-4 ${
                 ann.priority === "urgent"
-                  ? "border-red-300 bg-red-50"
+                  ? "border-red-300 bg-red-500/10 text-red-900 dark:text-red-200"
                   : ann.priority === "high"
-                    ? "border-amber-300 bg-amber-50"
+                    ? "border-amber-300 bg-amber-500/10 text-amber-900 dark:text-amber-200"
                     : "border-border bg-card"
               }`}
             >

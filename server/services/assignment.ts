@@ -143,6 +143,7 @@ export async function getModeratorAssignments(userId: string) {
     where: {
       targetType: "GROUP",
       targetId: { in: groupIds },
+      deletedAt: null,
     },
     include: {
       quranAssignment: {
@@ -165,6 +166,7 @@ export async function getModeratorAssignments(userId: string) {
 
 export async function getAdminAssignments() {
   const assignments = await db.assignment.findMany({
+    where: { deletedAt: null },
     include: {
       createdBy: { select: { name: true } },
       quranAssignment: {
@@ -297,7 +299,6 @@ export async function confirmListening(studentAssignmentId: string, userId: stri
     include: {
       student: { select: { userId: true } },
       assignment: { select: { requiredRepetitions: true } },
-      _count: { select: { confirmations: true } },
     },
   });
 
@@ -305,21 +306,27 @@ export async function confirmListening(studentAssignmentId: string, userId: stri
   if (sa.student.userId !== userId) throw new Error("Not authorized");
   if (sa.status === "COMPLETED") throw new Error("Already completed");
 
-  const newCount = sa._count.confirmations + 1;
-  const isComplete = newCount >= sa.assignment.requiredRepetitions;
+  const { newCount, isComplete } = await db.$transaction(async (tx) => {
+    const currentCount = await tx.listeningConfirmation.count({
+      where: { studentAssignmentId },
+    });
 
-  await db.$transaction(async (tx) => {
     await tx.listeningConfirmation.create({
       data: { studentAssignmentId },
     });
 
+    const count = currentCount + 1;
+    const complete = count >= sa.assignment.requiredRepetitions;
+
     await tx.studentAssignment.update({
       where: { id: studentAssignmentId },
       data: {
-        status: isComplete ? "COMPLETED" : "IN_PROGRESS",
-        completedAt: isComplete ? new Date() : undefined,
+        status: complete ? "COMPLETED" : "IN_PROGRESS",
+        completedAt: complete ? new Date() : undefined,
       },
     });
+
+    return { newCount: count, isComplete: complete };
   });
 
   return { newCount, required: sa.assignment.requiredRepetitions, isComplete };
@@ -347,7 +354,10 @@ export async function getStudentEligibility(userId: string) {
 }
 
 export async function deleteAssignment(assignmentId: string, actorId: string) {
-  await db.assignment.delete({ where: { id: assignmentId } });
+  await db.assignment.update({
+    where: { id: assignmentId },
+    data: { deletedAt: new Date() },
+  });
 
   await createAuditLog({
     actorId,

@@ -4,11 +4,25 @@ import { requireApprovedUser } from "@/server/auth/session";
 import { checkAttendanceAlerts, upsertAlertConfig } from "@/server/services/attendance";
 import { db } from "@/server/db/client";
 import { revalidatePath } from "next/cache";
+import { z } from "zod";
+
+const markQuickAttendanceSchema = z.object({
+  sessionId: z.string().min(1),
+  records: z.array(z.object({
+    studentId: z.string().min(1),
+    status: z.string().min(1),
+  })),
+});
 
 export async function markQuickAttendanceAction(
   sessionId: string,
   records: { studentId: string; status: string }[]
 ) {
+  const parsed = markQuickAttendanceSchema.safeParse({ sessionId, records });
+  if (!parsed.success) {
+    return { error: "Invalid input" };
+  }
+
   const session = await requireApprovedUser();
 
   const weeklySession = await db.weeklySession.findUnique({

@@ -211,35 +211,28 @@ export async function getGroupLeaderboard(groupId: string): Promise<LeaderboardE
     },
   });
 
+  if (students.length === 0) return [];
+
+  const studentIds = students.map((s) => s.id);
   const totalAyahs = await db.quranAyah.count();
 
-  const entries: Omit<LeaderboardEntry, "rank">[] = [];
-  for (const s of students) {
-    const plan = s.memorizationPlans[0];
-    let quranPercentage = 0;
-    if (plan) {
-      const completed = await db.quranAyah.count({
-        where: {
-          OR: [
-            { surahNumber: { lt: plan.currentSurahId } },
-            { surahNumber: plan.currentSurahId, ayahNumber: { lt: plan.currentAyahNumber } },
-          ],
-        },
-      });
-      quranPercentage = totalAyahs > 0 ? Math.round((completed / totalAyahs) * 100) : 0;
-    }
+  // Batch quran percentage: one COUNT query per distinct position
+  const quranPctMap = await batchQuranPercentages(
+    students.map((s) => ({ id: s.id, plan: s.memorizationPlans[0] })),
+    totalAyahs,
+  );
 
-    const streak = await getReviewStreak(s.id);
+  // Batch review streaks
+  const streakMap = await batchReviewStreaks(studentIds);
 
-    entries.push({
-      studentId: s.id,
-      studentName: s.user.name ?? "—",
-      milestoneCount: s._count.milestones,
-      quranPercentage,
-      currentStreak: streak.currentStreak,
-      badgeCount: s._count.badges,
-    });
-  }
+  const entries: Omit<LeaderboardEntry, "rank">[] = students.map((s) => ({
+    studentId: s.id,
+    studentName: s.user.name ?? "—",
+    milestoneCount: s._count.milestones,
+    quranPercentage: quranPctMap.get(s.id) ?? 0,
+    currentStreak: streakMap.get(s.id) ?? 0,
+    badgeCount: s._count.badges,
+  }));
 
   entries.sort((a, b) => {
     if (b.milestoneCount !== a.milestoneCount) return b.milestoneCount - a.milestoneCount;
@@ -264,35 +257,28 @@ export async function getSchoolLeaderboard(limit = 10): Promise<LeaderboardEntry
     },
   });
 
+  if (students.length === 0) return [];
+
+  const studentIds = students.map((s) => s.id);
   const totalAyahs = await db.quranAyah.count();
 
-  const entries: Omit<LeaderboardEntry, "rank">[] = [];
-  for (const s of students) {
-    const plan = s.memorizationPlans[0];
-    let quranPercentage = 0;
-    if (plan) {
-      const completed = await db.quranAyah.count({
-        where: {
-          OR: [
-            { surahNumber: { lt: plan.currentSurahId } },
-            { surahNumber: plan.currentSurahId, ayahNumber: { lt: plan.currentAyahNumber } },
-          ],
-        },
-      });
-      quranPercentage = totalAyahs > 0 ? Math.round((completed / totalAyahs) * 100) : 0;
-    }
+  // Batch quran percentage
+  const quranPctMap = await batchQuranPercentages(
+    students.map((s) => ({ id: s.id, plan: s.memorizationPlans[0] })),
+    totalAyahs,
+  );
 
-    const streak = await getReviewStreak(s.id);
+  // Batch review streaks
+  const streakMap = await batchReviewStreaks(studentIds);
 
-    entries.push({
-      studentId: s.id,
-      studentName: s.user.name ?? "—",
-      milestoneCount: s._count.milestones,
-      quranPercentage,
-      currentStreak: streak.currentStreak,
-      badgeCount: s._count.badges,
-    });
-  }
+  const entries: Omit<LeaderboardEntry, "rank">[] = students.map((s) => ({
+    studentId: s.id,
+    studentName: s.user.name ?? "—",
+    milestoneCount: s._count.milestones,
+    quranPercentage: quranPctMap.get(s.id) ?? 0,
+    currentStreak: streakMap.get(s.id) ?? 0,
+    badgeCount: s._count.badges,
+  }));
 
   entries.sort((a, b) => {
     if (b.milestoneCount !== a.milestoneCount) return b.milestoneCount - a.milestoneCount;
@@ -301,6 +287,112 @@ export async function getSchoolLeaderboard(limit = 10): Promise<LeaderboardEntry
   });
 
   return entries.slice(0, limit).map((e, i) => ({ ...e, rank: i + 1 }));
+}
+
+// ── Batch helpers to eliminate N+1 queries ──
+
+async function batchQuranPercentages(
+  items: { id: string; plan?: { currentSurahId: number; currentAyahNumber: number } }[],
+  totalAyahs: number,
+): Promise<Map<string, number>> {
+  const result = new Map<string, number>();
+  if (totalAyahs === 0) return result;
+
+  // Deduplicate positions to minimize queries
+  const positionKey = (s: number, a: number) => `${s}:${a}`;
+  const uniquePositions = new Map<string, { surahNumber: number; ayahNumber: number }>();
+  const studentPositionKeys = new Map<string, string>();
+
+  for (const item of items) {
+    if (!item.plan) {
+      result.set(item.id, 0);
+      continue;
+    }
+    const key = positionKey(item.plan.currentSurahId, item.plan.currentAyahNumber);
+    uniquePositions.set(key, { surahNumber: item.plan.currentSurahId, ayahNumber: item.plan.currentAyahNumber });
+    studentPositionKeys.set(item.id, key);
+  }
+
+  // Run one COUNT per unique position (typically far fewer than N students)
+  const positionCounts = new Map<string, number>();
+  await Promise.all(
+    Array.from(uniquePositions.entries()).map(async ([key, pos]) => {
+      const count = await db.quranAyah.count({
+        where: {
+          OR: [
+            { surahNumber: { lt: pos.surahNumber } },
+            { surahNumber: pos.surahNumber, ayahNumber: { lt: pos.ayahNumber } },
+          ],
+        },
+      });
+      positionCounts.set(key, count);
+    }),
+  );
+
+  for (const item of items) {
+    const posKey = studentPositionKeys.get(item.id);
+    if (!posKey) continue;
+    const count = positionCounts.get(posKey) ?? 0;
+    result.set(item.id, Math.round((count / totalAyahs) * 100));
+  }
+
+  return result;
+}
+
+function getMonday(date: Date): number {
+  const d = new Date(date);
+  d.setHours(0, 0, 0, 0);
+  const day = d.getDay();
+  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+  d.setDate(diff);
+  return d.getTime();
+}
+
+async function batchReviewStreaks(studentIds: string[]): Promise<Map<string, number>> {
+  const result = new Map<string, number>();
+  if (studentIds.length === 0) return result;
+
+  // Single query: fetch all review dates for all students
+  const allReviews = await db.memorizationReview.findMany({
+    where: {
+      plan: { studentId: { in: studentIds }, active: true },
+    },
+    select: {
+      reviewDate: true,
+      plan: { select: { studentId: true } },
+    },
+    orderBy: { reviewDate: "desc" },
+  });
+
+  // Group by student
+  const reviewsByStudent = new Map<string, Date[]>();
+  for (const id of studentIds) reviewsByStudent.set(id, []);
+  for (const r of allReviews) {
+    reviewsByStudent.get(r.plan.studentId)?.push(r.reviewDate);
+  }
+
+  const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+  const thisMonday = getMonday(new Date());
+
+  // Compute streak per student in JS
+  for (const [studentId, reviews] of reviewsByStudent) {
+    if (reviews.length === 0) {
+      result.set(studentId, 0);
+      continue;
+    }
+
+    const mondaySet = new Set(reviews.map((r) => getMonday(r)));
+    let currentStreak = 0;
+    let check = thisMonday;
+    if (!mondaySet.has(check)) check -= WEEK_MS;
+    while (mondaySet.has(check)) {
+      currentStreak++;
+      check -= WEEK_MS;
+    }
+    result.set(studentId, currentStreak);
+  }
+
+  return result;
 }
 
 export async function getBadgesAwardedThisMonth(): Promise<number> {

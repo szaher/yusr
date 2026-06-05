@@ -24,6 +24,7 @@ import {
   Headset,
   ClipboardCheck,
   CalendarCheck,
+  CalendarDays,
   BookOpenText,
   BookType,
   TrendingUp,
@@ -65,6 +66,7 @@ const moderatorNav: NavItem[] = [
   { labelKey: "students", href: "/moderator/students", icon: GraduationCap },
   { labelKey: "assignments", href: "/moderator/assignments", icon: BookOpen },
   { labelKey: "sessions", href: "/moderator/sessions", icon: Calendar },
+  { labelKey: "calendar", href: "/moderator/calendar", icon: CalendarDays },
   { labelKey: "memorization", href: "/moderator/memorization", icon: BookOpenCheck },
   { labelKey: "leaveRequests", href: "/moderator/leave-requests", icon: CalendarOff, featureFlag: "leave_requests" },
   { labelKey: "exams", href: "/moderator/exams", icon: ClipboardCheck, featureFlag: "exams" },
@@ -79,6 +81,7 @@ const studentNav: NavItem[] = [
   { labelKey: "profile", href: "/student/profile", icon: Users },
   { labelKey: "assignments", href: "/student/assignments", icon: BookOpen },
   { labelKey: "sessions", href: "/student/sessions", icon: Calendar },
+  { labelKey: "calendar", href: "/student/calendar", icon: CalendarDays },
   { labelKey: "grades", href: "/student/grades", icon: Award },
   { labelKey: "memorization", href: "/student/memorization", icon: BookOpenCheck },
   { labelKey: "leaveRequests", href: "/student/leave-requests", icon: CalendarOff, featureFlag: "leave_requests" },
@@ -123,7 +126,7 @@ export function Sidebar({ role, enabledFlags = [], onNavClick }: { role: string;
           {locale === "ar" ? "أكاديمية يُسر" : "Yusr Academy"}
         </Link>
       </div>
-      <nav className="flex-1 space-y-1 p-4">
+      <nav aria-label="Main navigation" className="flex-1 space-y-1 p-4">
         {items.map((item) => {
           const href = `/${locale}${item.href}`;
           const isActive = pathname === href;
@@ -134,6 +137,7 @@ export function Sidebar({ role, enabledFlags = [], onNavClick }: { role: string;
               key={item.href}
               href={href}
               onClick={onNavClick}
+              aria-current={isActive ? "page" : undefined}
               className={cn(
                 "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
                 isActive

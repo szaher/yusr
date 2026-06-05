@@ -12,6 +12,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { STATUS_COLORS } from "@/lib/constants/status-colors";
+import { SearchInput } from "@/components/shared/search-input";
 
 const STATUS_KEYS: Record<string, string> = {
   SCHEDULED: "statusScheduled",
@@ -21,22 +22,60 @@ const STATUS_KEYS: Record<string, string> = {
   CANCELLED: "statusCancelled",
 };
 
+const STATUS_VALUES = ["SCHEDULED", "OPEN", "IN_PROGRESS", "COMPLETED", "CANCELLED"];
+
 export default async function AdminSessionsPage({
   params,
+  searchParams: searchParamsPromise,
 }: {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<{ search?: string; status?: string }>;
 }) {
   const { locale } = await params;
+  const { search, status } = await searchParamsPromise;
   setRequestLocale(locale);
 
   await requireApprovedUser();
   const t = await getTranslations("sessions");
+  const tCommon = await getTranslations("common");
 
-  const sessions = await getAdminSessions();
+  const { items: sessions } = await getAdminSessions(1, 50, search, status);
 
   return (
     <div>
       <h1 className="mb-6 text-2xl font-bold">{t("title")}</h1>
+
+      <div className="mb-6 flex items-center gap-4 flex-wrap">
+        <SearchInput placeholder={t("searchPlaceholder")} />
+        <div className="flex gap-1">
+          {[
+            { label: tCommon("all"), value: undefined },
+            ...STATUS_VALUES.map((s) => ({
+              label: t(STATUS_KEYS[s] as any),
+              value: s,
+            })),
+          ].map((f) => {
+            const params = new URLSearchParams();
+            if (search) params.set("search", search);
+            if (f.value) params.set("status", f.value);
+            const href = `?${params.toString()}`;
+            const active = status === f.value || (!status && !f.value);
+            return (
+              <a
+                key={f.value ?? "all"}
+                href={href}
+                className={`px-3 py-1 rounded-full text-sm ${
+                  active
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted hover:bg-muted/80"
+                }`}
+              >
+                {f.label}
+              </a>
+            );
+          })}
+        </div>
+      </div>
 
       {sessions.length === 0 ? (
         <Card>

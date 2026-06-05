@@ -19,6 +19,7 @@ import {
 } from "@/lib/validations/support-ticket";
 import { db } from "@/server/db/client";
 import { revalidatePath } from "next/cache";
+import { logger } from "@/server/lib/logger";
 
 function revalidateTicketPaths() {
   revalidatePath("/ar/student/tickets");
@@ -50,6 +51,7 @@ export async function createTicketAction(formData: FormData) {
   try {
     await createTicket(parsed.data, studentProfile.id, session.user.id);
   } catch (e) {
+    logger.error({ err: e instanceof Error ? e.message : String(e), action: "createTicketAction" }, "Action failed");
     return { error: e instanceof Error ? e.message : "unknownError" };
   }
 
@@ -82,6 +84,7 @@ export async function addReplyAction(formData: FormData) {
   try {
     await addReply(parsed.data, session.user.id);
   } catch (e) {
+    logger.error({ err: e instanceof Error ? e.message : String(e), action: "addReplyAction" }, "Action failed");
     return { error: e instanceof Error ? e.message : "unknownError" };
   }
 
@@ -102,6 +105,7 @@ export async function assignTicketAction(formData: FormData) {
   try {
     await assignTicket(parsed.data, session.user.id);
   } catch (e) {
+    logger.error({ err: e instanceof Error ? e.message : String(e), action: "assignTicketAction" }, "Action failed");
     return { error: e instanceof Error ? e.message : "unknownError" };
   }
 
@@ -137,6 +141,7 @@ export async function changeTicketStatusAction(formData: FormData) {
   try {
     await changeTicketStatus(parsed.data, session.user.id);
   } catch (e) {
+    logger.error({ err: e instanceof Error ? e.message : String(e), action: "changeTicketStatusAction" }, "Action failed");
     return { error: e instanceof Error ? e.message : "unknownError" };
   }
 
@@ -157,6 +162,7 @@ export async function escalateTicketAction(formData: FormData) {
   try {
     await escalateTicket(parsed.data.ticketId, session.user.id);
   } catch (e) {
+    logger.error({ err: e instanceof Error ? e.message : String(e), action: "escalateTicketAction" }, "Action failed");
     return { error: e instanceof Error ? e.message : "unknownError" };
   }
 

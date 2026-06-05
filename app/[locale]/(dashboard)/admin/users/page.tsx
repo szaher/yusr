@@ -3,6 +3,8 @@ import { requireApprovedUser } from "@/server/auth/session";
 import { getAllUsers } from "@/server/services/user";
 import { createModeratorAction, updateAccountStatusAction, promoteToModeratorAction } from "@/server/actions/user";
 import { StatusBadge } from "@/components/shared/status-badge";
+import { SearchInput } from "@/components/shared/search-input";
+import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 
 const createModerator = createModeratorAction as unknown as (formData: FormData) => void;
 const updateStatus = updateAccountStatusAction as unknown as (formData: FormData) => void;
@@ -24,24 +26,36 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Download } from "lucide-react";
 
 export default async function AdminUsersPage({
   params,
+  searchParams: searchParamsPromise,
 }: {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<{ search?: string; role?: string; status?: string }>;
 }) {
   const { locale } = await params;
+  const { search, role, status } = await searchParamsPromise;
   setRequestLocale(locale);
   await requireApprovedUser();
 
   const t = await getTranslations("admin.users");
   const tCommon = await getTranslations("common");
   const tAuth = await getTranslations("auth");
-  const users = await getAllUsers();
+  const { items: users } = await getAllUsers(1, 50, search, role, status);
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">{t("title")}</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold">{t("title")}</h1>
+        <a href="/api/export/users" download>
+          <Button variant="outline" size="sm">
+            <Download className="h-4 w-4 me-2" />
+            {t("exportUsers")}
+          </Button>
+        </a>
+      </div>
 
       <Card>
         <CardHeader>
@@ -72,6 +86,38 @@ export default async function AdminUsersPage({
         </CardContent>
       </Card>
 
+      <div className="flex items-center gap-4 flex-wrap">
+        <SearchInput placeholder={t("searchPlaceholder")} />
+        <div className="flex gap-1">
+          {[
+            { label: tCommon("all"), value: undefined },
+            { label: t("roleAdmin"), value: "admin" },
+            { label: tCommon("moderator"), value: "moderator" },
+            { label: tCommon("student"), value: "student" },
+          ].map((f) => {
+            const params = new URLSearchParams();
+            if (search) params.set("search", search);
+            if (f.value) params.set("role", f.value);
+            if (status) params.set("status", status);
+            const href = `?${params.toString()}`;
+            const active = role === f.value || (!role && !f.value);
+            return (
+              <a
+                key={f.label}
+                href={href}
+                className={`px-3 py-1 rounded-full text-sm ${
+                  active
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted hover:bg-muted/80"
+                }`}
+              >
+                {f.label}
+              </a>
+            );
+          })}
+        </div>
+      </div>
+
       <Table>
         <TableHeader>
           <TableRow>
@@ -97,18 +143,21 @@ export default async function AdminUsersPage({
                     <form action={promoteModerator}>
                       <input type="hidden" name="userId" value={user.id} />
                       <Button size="sm" variant="outline" type="submit">
-                        {locale === "ar" ? "ترقية لمشرف" : "Promote to Moderator"}
+                        {t("promoteToModerator")}
                       </Button>
                     </form>
                   )}
                   {user.accountStatus === "ACTIVE" && (
-                    <form action={updateStatus}>
-                      <input type="hidden" name="userId" value={user.id} />
-                      <input type="hidden" name="status" value="DEACTIVATED" />
-                      <Button size="sm" variant="outline" type="submit">
-                        {t("deactivate")}
-                      </Button>
-                    </form>
+                    <ConfirmDialog
+                      trigger={<Button size="sm" variant="outline">{t("deactivate")}</Button>}
+                      title={tCommon("confirmAction")}
+                      description={tCommon("confirmDeactivateDesc")}
+                      confirmLabel={t("deactivate")}
+                      cancelLabel={tCommon("cancel")}
+                      variant="default"
+                      formAction={updateStatus}
+                      hiddenFields={{ userId: user.id, status: "DEACTIVATED" }}
+                    />
                   )}
                   {user.accountStatus === "DEACTIVATED" && (
                     <form action={updateStatus}>
@@ -120,13 +169,16 @@ export default async function AdminUsersPage({
                     </form>
                   )}
                   {user.accountStatus !== "BANNED" && (
-                    <form action={updateStatus}>
-                      <input type="hidden" name="userId" value={user.id} />
-                      <input type="hidden" name="status" value="BANNED" />
-                      <Button size="sm" variant="destructive" type="submit">
-                        {t("ban")}
-                      </Button>
-                    </form>
+                    <ConfirmDialog
+                      trigger={<Button size="sm" variant="destructive">{t("ban")}</Button>}
+                      title={tCommon("confirmAction")}
+                      description={tCommon("confirmBanDesc")}
+                      confirmLabel={t("ban")}
+                      cancelLabel={tCommon("cancel")}
+                      variant="destructive"
+                      formAction={updateStatus}
+                      hiddenFields={{ userId: user.id, status: "BANNED" }}
+                    />
                   )}
                 </div>
               </TableCell>

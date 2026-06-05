@@ -44,7 +44,7 @@ export default async function AdminTicketsPage({
 
   const showAll = filter === "all";
   const [tickets, supportUsers] = await Promise.all([
-    getAllTickets(showAll ? "all" : "active"),
+    getAllTickets(showAll ? "all" : "active").then((r) => r.items),
     db.user.findMany({
       where: { accountStatus: "ACTIVE", role: { name: "support" } },
       select: { id: true, name: true, nameAr: true },

@@ -36,12 +36,8 @@ export default async function ModeratorGradingPage({
 
   const t = await getTranslations("exams");
 
-  let submission;
-  try {
-    submission = await getSubmissionForGrading(submissionId);
-  } catch {
-    notFound();
-  }
+  const submission = await getSubmissionForGrading(submissionId);
+  if (!submission) notFound();
 
   const allQuestions = submission.instance.template.questions;
   const questionOrder = submission.questionOrder as string[] | null;

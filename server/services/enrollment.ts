@@ -168,22 +168,26 @@ export async function rejectApplication(
 
   if (!application) throw new Error("Application not found");
 
-  await db.enrollmentApplication.update({
-    where: { id: applicationId },
-    data: {
-      registrationStatus: "REJECTED",
-      reviewedById: reviewerId,
-      reviewedAt: new Date(),
-      reviewNote: note,
-    },
-  });
+  await db.$transaction(async (tx) => {
+    await tx.enrollmentApplication.update({
+      where: { id: applicationId },
+      data: {
+        registrationStatus: "REJECTED",
+        reviewedById: reviewerId,
+        reviewedAt: new Date(),
+        reviewNote: note,
+      },
+    });
 
-  await createAuditLog({
-    actorId: reviewerId,
-    action: "enrollment.rejected",
-    entityType: "EnrollmentApplication",
-    entityId: applicationId,
-    metadata: { userId: application.userId, note },
+    await tx.auditLog.create({
+      data: {
+        actorId: reviewerId,
+        action: "enrollment.rejected",
+        entityType: "EnrollmentApplication",
+        entityId: applicationId,
+        metadata: { userId: application.userId, note },
+      },
+    });
   });
 }
 
@@ -198,21 +202,25 @@ export async function waitlistApplication(
 
   if (!application) throw new Error("Application not found");
 
-  await db.enrollmentApplication.update({
-    where: { id: applicationId },
-    data: {
-      registrationStatus: "WAITLISTED",
-      reviewedById: reviewerId,
-      reviewedAt: new Date(),
-      reviewNote: note,
-    },
-  });
+  await db.$transaction(async (tx) => {
+    await tx.enrollmentApplication.update({
+      where: { id: applicationId },
+      data: {
+        registrationStatus: "WAITLISTED",
+        reviewedById: reviewerId,
+        reviewedAt: new Date(),
+        reviewNote: note,
+      },
+    });
 
-  await createAuditLog({
-    actorId: reviewerId,
-    action: "enrollment.waitlisted",
-    entityType: "EnrollmentApplication",
-    entityId: applicationId,
-    metadata: { userId: application.userId, note },
+    await tx.auditLog.create({
+      data: {
+        actorId: reviewerId,
+        action: "enrollment.waitlisted",
+        entityType: "EnrollmentApplication",
+        entityId: applicationId,
+        metadata: { userId: application.userId, note },
+      },
+    });
   });
 }

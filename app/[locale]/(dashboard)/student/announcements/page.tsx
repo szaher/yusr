@@ -24,7 +24,7 @@ export default async function StudentAnnouncementsPage({
   await requireApprovedUser();
 
   const t = await getTranslations("announcements");
-  const announcements = await listAnnouncements();
+  const { items: announcements } = await listAnnouncements();
 
   return (
     <div className="space-y-6">

@@ -33,6 +33,7 @@ import {
 import { revalidatePath } from "next/cache";
 import { db } from "@/server/db/client";
 import { createAuditLog } from "@/server/services/audit-log";
+import { logger } from "@/server/lib/logger";
 
 export async function createPlanAction(formData: FormData) {
   await requirePermission(PERMISSIONS.MEMORIZATION_MANAGE);
@@ -46,9 +47,18 @@ export async function createPlanAction(formData: FormData) {
     return { error: "validationError", details: parsed.error.flatten() };
   }
 
+  // Moderator ownership check: verify the group belongs to this moderator
+  if (session.user.role !== "admin") {
+    const group = await db.group.findFirst({
+      where: { id: parsed.data.groupId, moderator: { userId: session.user.id } },
+    });
+    if (!group) throw new Error("Unauthorized");
+  }
+
   try {
     await createPlan(parsed.data, session.user.id);
   } catch (e) {
+    logger.error({ err: e instanceof Error ? e.message : String(e), action: "createPlanAction" }, "Action failed");
     return { error: e instanceof Error ? e.message : "unknownError" };
   }
 
@@ -71,9 +81,18 @@ export async function updatePlanAction(formData: FormData) {
     return { error: "validationError", details: parsed.error.flatten() };
   }
 
+  // Moderator ownership check: verify the plan's group belongs to this moderator
+  if (session.user.role !== "admin") {
+    const plan = await db.studentMemorizationPlan.findFirst({
+      where: { id: parsed.data.planId, group: { moderator: { userId: session.user.id } } },
+    });
+    if (!plan) throw new Error("Unauthorized");
+  }
+
   try {
     await updatePlan(parsed.data, session.user.id);
   } catch (e) {
+    logger.error({ err: e instanceof Error ? e.message : String(e), action: "updatePlanAction" }, "Action failed");
     return { error: e instanceof Error ? e.message : "unknownError" };
   }
 
@@ -137,9 +156,18 @@ export async function createReviewAction(formData: FormData) {
     return { error: "validationError", details: parsed.error.flatten() };
   }
 
+  // Moderator ownership check: verify the plan's group belongs to this moderator
+  if (session.user.role !== "admin") {
+    const plan = await db.studentMemorizationPlan.findFirst({
+      where: { id: parsed.data.planId, group: { moderator: { userId: session.user.id } } },
+    });
+    if (!plan) throw new Error("Unauthorized");
+  }
+
   try {
     await createReview(parsed.data, session.user.id);
   } catch (e) {
+    logger.error({ err: e instanceof Error ? e.message : String(e), action: "createReviewAction" }, "Action failed");
     return { error: e instanceof Error ? e.message : "unknownError" };
   }
 
@@ -217,6 +245,14 @@ export async function updateGroupCadenceAction(formData: FormData) {
     return { error: "validationError", details: parsed.error.flatten() };
   }
 
+  // Moderator ownership check: verify the group belongs to this moderator
+  if (session.user.role !== "admin") {
+    const group = await db.group.findFirst({
+      where: { id: parsed.data.groupId, moderator: { userId: session.user.id } },
+    });
+    if (!group) throw new Error("Unauthorized");
+  }
+
   await db.group.update({
     where: { id: parsed.data.groupId },
     data: {
@@ -258,6 +294,7 @@ export async function createTemplateAction(formData: FormData) {
   try {
     await createTemplate(parsed.data, session.user.id);
   } catch (e) {
+    logger.error({ err: e instanceof Error ? e.message : String(e), action: "createTemplateAction" }, "Action failed");
     return { error: e instanceof Error ? e.message : "unknownError" };
   }
 
@@ -280,6 +317,7 @@ export async function updateTemplateAction(formData: FormData) {
   try {
     await updateTemplate(parsed.data, session.user.id);
   } catch (e) {
+    logger.error({ err: e instanceof Error ? e.message : String(e), action: "updateTemplateAction" }, "Action failed");
     return { error: e instanceof Error ? e.message : "unknownError" };
   }
 
@@ -298,6 +336,7 @@ export async function deleteTemplateAction(formData: FormData) {
   try {
     await deleteTemplate(id, session.user.id);
   } catch (e) {
+    logger.error({ err: e instanceof Error ? e.message : String(e), action: "deleteTemplateAction" }, "Action failed");
     return { error: e instanceof Error ? e.message : "unknownError" };
   }
 
@@ -317,9 +356,18 @@ export async function setOverrideAction(formData: FormData) {
     return { error: "validationError", details: parsed.error.flatten() };
   }
 
+  // Moderator ownership check: verify the plan's group belongs to this moderator
+  if (session.user.role !== "admin") {
+    const plan = await db.studentMemorizationPlan.findFirst({
+      where: { id: parsed.data.planId, group: { moderator: { userId: session.user.id } } },
+    });
+    if (!plan) throw new Error("Unauthorized");
+  }
+
   try {
     await setNextOverride(parsed.data, session.user.id);
   } catch (e) {
+    logger.error({ err: e instanceof Error ? e.message : String(e), action: "setOverrideAction" }, "Action failed");
     return { error: e instanceof Error ? e.message : "unknownError" };
   }
 
@@ -337,9 +385,18 @@ export async function clearOverrideAction(formData: FormData) {
 
   const planId = formData.get("planId") as string;
 
+  // Moderator ownership check: verify the plan's group belongs to this moderator
+  if (session.user.role !== "admin") {
+    const plan = await db.studentMemorizationPlan.findFirst({
+      where: { id: planId, group: { moderator: { userId: session.user.id } } },
+    });
+    if (!plan) throw new Error("Unauthorized");
+  }
+
   try {
     await clearNextOverride(planId, session.user.id);
   } catch (e) {
+    logger.error({ err: e instanceof Error ? e.message : String(e), action: "clearOverrideAction" }, "Action failed");
     return { error: e instanceof Error ? e.message : "unknownError" };
   }
 

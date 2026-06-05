@@ -4,44 +4,51 @@ export async function getAdminKPIs() {
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-  const [activeStudents, pendingRegistrations, sessionStudents, examSubmissions] =
-    await Promise.all([
-      db.user.count({
-        where: { role: { name: "student" }, accountStatus: "ACTIVE" },
-      }),
-      db.enrollmentApplication.count({
-        where: { registrationStatus: "PENDING_REVIEW" },
-      }),
-      db.sessionStudent.findMany({
-        where: { session: { date: { gte: thirtyDaysAgo } } },
-        select: { attendance: true, numericGrade: true },
-      }),
-      db.examSubmission.findMany({
-        where: { status: "GRADED" },
-        select: { passed: true },
-      }),
-    ]);
+  const [
+    activeStudents,
+    pendingRegistrations,
+    attendanceCounts,
+    gradeAgg,
+    totalExams,
+    passedExams,
+  ] = await Promise.all([
+    db.user.count({
+      where: { role: { name: "student" }, accountStatus: "ACTIVE" },
+    }),
+    db.enrollmentApplication.count({
+      where: { registrationStatus: "PENDING_REVIEW" },
+    }),
+    db.sessionStudent.groupBy({
+      by: ["attendance"],
+      where: { session: { date: { gte: thirtyDaysAgo } } },
+      _count: true,
+    }),
+    db.sessionStudent.aggregate({
+      where: {
+        session: { date: { gte: thirtyDaysAgo } },
+        numericGrade: { not: null },
+      },
+      _avg: { numericGrade: true },
+    }),
+    db.examSubmission.count({
+      where: { status: "GRADED" },
+    }),
+    db.examSubmission.count({
+      where: { status: "GRADED", passed: true },
+    }),
+  ]);
 
-  const totalAttendance = sessionStudents.length;
-  const presentCount = sessionStudents.filter(
-    (s) => s.attendance === "PRESENT" || s.attendance === "LATE"
-  ).length;
+  const totalAttendance = attendanceCounts.reduce((sum, g) => sum + g._count, 0);
+  const presentCount = attendanceCounts
+    .filter((g) => g.attendance === "PRESENT" || g.attendance === "LATE")
+    .reduce((sum, g) => sum + g._count, 0);
   const avgAttendance =
     totalAttendance > 0 ? Math.round((presentCount / totalAttendance) * 100) : 0;
 
-  const gradedStudents = sessionStudents.filter((s) => s.numericGrade != null);
-  const avgSessionGrade =
-    gradedStudents.length > 0
-      ? Math.round(
-          gradedStudents.reduce((sum, s) => sum + (s.numericGrade ?? 0), 0) /
-            gradedStudents.length
-        )
-      : 0;
+  const avgSessionGrade = Math.round(gradeAgg._avg.numericGrade ?? 0);
 
-  const totalExams = examSubmissions.length;
-  const passedCount = examSubmissions.filter((s) => s.passed === true).length;
   const examPassRate =
-    totalExams > 0 ? Math.round((passedCount / totalExams) * 100) : 0;
+    totalExams > 0 ? Math.round((passedExams / totalExams) * 100) : 0;
 
   return { activeStudents, avgAttendance, avgSessionGrade, examPassRate, pendingRegistrations };
 }

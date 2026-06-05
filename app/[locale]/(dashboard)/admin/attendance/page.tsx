@@ -17,6 +17,8 @@ import { BarChartCard } from "@/components/charts/bar-chart-card";
 import { StackedBarChartCard } from "@/components/charts/stacked-bar-chart-card";
 import { AlertConfigForm } from "@/components/attendance/alert-config-form";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Download } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -53,7 +55,15 @@ export default async function AdminAttendancePage({
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">{t("title")}</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold">{t("title")}</h1>
+        <a href="/api/export/attendance" download>
+          <Button variant="outline" size="sm">
+            <Download className="h-4 w-4 me-2" />
+            {t("exportCsv")}
+          </Button>
+        </a>
+      </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatsCard

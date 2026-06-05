@@ -21,6 +21,7 @@ const MAIN_TABS = [
 ] as const;
 
 const MORE_LINKS = [
+  { href: "/student/calendar", labelKey: "calendar" },
   { href: "/student/profile", labelKey: "profile" },
   { href: "/student/grades", labelKey: "grades" },
   { href: "/student/exams", labelKey: "exams" },
@@ -44,6 +45,7 @@ export function BottomNav() {
 
   return (
     <nav
+      aria-label="Mobile navigation"
       className="fixed bottom-0 start-0 end-0 z-40 border-t bg-background sm:hidden"
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
@@ -54,6 +56,7 @@ export function BottomNav() {
             <Link
               key={tab.key}
               href={`/${locale}${tab.href}`}
+              aria-current={active ? "page" : undefined}
               className={`flex flex-1 flex-col items-center gap-1 py-2 text-xs ${
                 active ? "text-green-600 font-medium" : "text-muted-foreground"
               }`}

@@ -153,19 +153,25 @@ export async function getModeratorLeaveRequests(userId: string, statusFilter?: s
   });
 }
 
-export async function getAllLeaveRequests() {
-  return db.leaveRequest.findMany({
-    include: {
-      student: {
-        include: { user: { select: { name: true, nameAr: true } } },
+export async function getAllLeaveRequests(page = 1, limit = 50) {
+  const [items, total] = await Promise.all([
+    db.leaveRequest.findMany({
+      skip: (page - 1) * limit,
+      take: limit,
+      include: {
+        student: {
+          include: { user: { select: { name: true, nameAr: true } } },
+        },
+        session: {
+          select: { date: true, group: { select: { name: true } } },
+        },
+        reviewedBy: { select: { name: true, nameAr: true } },
       },
-      session: {
-        select: { date: true, group: { select: { name: true } } },
-      },
-      reviewedBy: { select: { name: true, nameAr: true } },
-    },
-    orderBy: { createdAt: "desc" },
-  });
+      orderBy: { createdAt: "desc" },
+    }),
+    db.leaveRequest.count(),
+  ]);
+  return { items, total, page, totalPages: Math.ceil(total / limit) };
 }
 
 export async function getUpcomingSessionsForStudent(studentProfileId: string) {

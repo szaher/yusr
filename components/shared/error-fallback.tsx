@@ -14,7 +14,7 @@ export function ErrorFallback({
   const t = useTranslations("common");
 
   return (
-    <div className="flex items-center justify-center py-20">
+    <div role="alert" aria-live="assertive" className="flex items-center justify-center py-20">
       <Card className="max-w-md">
         <CardContent className="flex flex-col items-center pt-6 text-center space-y-4">
           <AlertTriangle className="h-12 w-12 text-destructive" />

@@ -37,12 +37,8 @@ export default async function AdminTicketDetailPage({
   const enabled = await isFeatureEnabled("support_tickets");
   if (!enabled) notFound();
 
-  let ticket;
-  try {
-    ticket = await getTicketWithReplies(ticketId);
-  } catch {
-    notFound();
-  }
+  const ticket = await getTicketWithReplies(ticketId);
+  if (!ticket) notFound();
 
   const t = await getTranslations("supportTickets");
   const statusKey = ticket.status === "IN_PROGRESS" ? "inProgress" : ticket.status.toLowerCase();

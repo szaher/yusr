@@ -32,7 +32,7 @@ export default async function AdminLeaveRequestsPage({
   await requireApprovedUser();
 
   const t = await getTranslations("leaveRequests");
-  const requests = await getAllLeaveRequests();
+  const { items: requests } = await getAllLeaveRequests();
 
   const pending = requests.filter((r) => r.status === "PENDING");
   const reviewed = requests.filter((r) => r.status !== "PENDING");

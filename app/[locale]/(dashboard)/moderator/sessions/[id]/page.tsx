@@ -17,6 +17,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { EmptyState } from "@/components/shared/empty-state";
+import { AudioRecorder } from "@/components/shared/audio-recorder";
 import { Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -55,6 +56,7 @@ export default async function ModeratorSessionDetailPage({
   }
 
   const t = await getTranslations("sessions");
+  const tAudio = await getTranslations("audio");
 
   // Fetch eligibility for each student
   const eligibilityMap = new Map<string, { total: number; completed: number; eligible: boolean }>();
@@ -267,12 +269,20 @@ export default async function ModeratorSessionDetailPage({
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor={`voiceNoteUrl-${ss.id}`}>{t("voiceNoteUrl")}</Label>
-                    <Input
-                      id={`voiceNoteUrl-${ss.id}`}
+                    <Label>{t("voiceNoteUrl")}</Label>
+                    <AudioRecorder
                       name="voiceNoteUrl"
-                      type="url"
-                      defaultValue={ss.voiceNoteUrl || ""}
+                      existingUrl={ss.voiceNoteUrl || undefined}
+                      translations={{
+                        record: tAudio("record"),
+                        stopRecording: tAudio("stopRecording"),
+                        reRecord: tAudio("reRecord"),
+                        uploadFile: tAudio("uploadFile"),
+                        uploading: tAudio("uploading"),
+                        removeAudio: tAudio("removeAudio"),
+                        micPermission: tAudio("micPermission"),
+                        unsupported: tAudio("unsupported"),
+                      }}
                     />
                   </div>
 

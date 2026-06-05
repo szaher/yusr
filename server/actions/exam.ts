@@ -31,6 +31,7 @@ import {
 } from "@/lib/validations/exam";
 import { db } from "@/server/db/client";
 import { revalidatePath } from "next/cache";
+import { logger } from "@/server/lib/logger";
 
 function revalidateExamPaths() {
   revalidatePath("/ar/admin/exams");
@@ -54,6 +55,7 @@ export async function createTemplateAction(formData: FormData) {
   try {
     await createTemplate(parsed.data, session.user.id);
   } catch (e) {
+    logger.error({ err: e instanceof Error ? e.message : String(e), action: "createTemplateAction" }, "Action failed");
     return { error: e instanceof Error ? e.message : "unknownError" };
   }
 
@@ -74,6 +76,7 @@ export async function updateTemplateAction(formData: FormData) {
   try {
     await updateTemplate(parsed.data, session.user.id);
   } catch (e) {
+    logger.error({ err: e instanceof Error ? e.message : String(e), action: "updateTemplateAction" }, "Action failed");
     return { error: e instanceof Error ? e.message : "unknownError" };
   }
 
@@ -94,6 +97,7 @@ export async function addQuestionAction(formData: FormData) {
   try {
     await addQuestion(parsed.data, session.user.id);
   } catch (e) {
+    logger.error({ err: e instanceof Error ? e.message : String(e), action: "addQuestionAction" }, "Action failed");
     return { error: e instanceof Error ? e.message : "unknownError" };
   }
 
@@ -114,6 +118,7 @@ export async function deleteQuestionAction(formData: FormData) {
   try {
     await deleteQuestion(parsed.data.questionId, parsed.data.templateId, session.user.id);
   } catch (e) {
+    logger.error({ err: e instanceof Error ? e.message : String(e), action: "deleteQuestionAction" }, "Action failed");
     return { error: e instanceof Error ? e.message : "unknownError" };
   }
 
@@ -137,6 +142,7 @@ export async function assignToGroupsAction(formData: FormData) {
   try {
     await assignToGroups(parsed.data, session.user.id);
   } catch (e) {
+    logger.error({ err: e instanceof Error ? e.message : String(e), action: "assignToGroupsAction" }, "Action failed");
     return { error: e instanceof Error ? e.message : "unknownError" };
   }
 
@@ -172,6 +178,7 @@ export async function changeInstanceStatusAction(formData: FormData) {
   try {
     await changeInstanceStatus(parsed.data, session.user.id);
   } catch (e) {
+    logger.error({ err: e instanceof Error ? e.message : String(e), action: "changeInstanceStatusAction" }, "Action failed");
     return { error: e instanceof Error ? e.message : "unknownError" };
   }
 
@@ -205,6 +212,7 @@ export async function customizeInstanceAction(formData: FormData) {
   try {
     await customizeInstance(parsed.data.instanceId, parsed.data.customizations, session.user.id);
   } catch (e) {
+    logger.error({ err: e instanceof Error ? e.message : String(e), action: "customizeInstanceAction" }, "Action failed");
     return { error: e instanceof Error ? e.message : "unknownError" };
   }
 
@@ -260,6 +268,7 @@ export async function saveAnswersAction(formData: FormData) {
       session.user.id
     );
   } catch (e) {
+    logger.error({ err: e instanceof Error ? e.message : String(e), action: "saveAnswersAction" }, "Action failed");
     return { error: e instanceof Error ? e.message : "unknownError" };
   }
 
@@ -311,6 +320,7 @@ export async function gradeSubmissionAction(formData: FormData) {
   try {
     await gradeSubmission(parsed.data, session.user.id);
   } catch (e) {
+    logger.error({ err: e instanceof Error ? e.message : String(e), action: "gradeSubmissionAction" }, "Action failed");
     return { error: e instanceof Error ? e.message : "unknownError" };
   }
 
@@ -333,6 +343,7 @@ export async function duplicateTemplateAction(formData: FormData) {
     revalidateExamPaths();
     return { success: true, templateId: newTemplate.id };
   } catch (e) {
+    logger.error({ err: e instanceof Error ? e.message : String(e), action: "duplicateTemplateAction" }, "Action failed");
     return { error: e instanceof Error ? e.message : "unknownError" };
   }
 }
@@ -355,6 +366,7 @@ export async function createRetakeAction(formData: FormData) {
   try {
     await createRetakeSubmission(parsed.data.instanceId, studentProfile.id);
   } catch (e) {
+    logger.error({ err: e instanceof Error ? e.message : String(e), action: "createRetakeAction" }, "Action failed");
     return { error: e instanceof Error ? e.message : "unknownError" };
   }
 

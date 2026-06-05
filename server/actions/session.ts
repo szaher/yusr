@@ -18,6 +18,7 @@ import {
 import { revalidatePath } from "next/cache";
 import { db } from "@/server/db/client";
 import { checkAttendanceAlerts } from "@/server/services/attendance";
+import { logger } from "@/server/lib/logger";
 
 export async function createSessionAction(formData: FormData) {
   await requirePermission(PERMISSIONS.SESSIONS_CREATE);
@@ -82,6 +83,7 @@ export async function updateSessionStatusAction(formData: FormData) {
   try {
     await updateSessionStatus(parsed.data.sessionId, parsed.data.status, session.user.id);
   } catch (e) {
+    logger.error({ err: e instanceof Error ? e.message : String(e), action: "updateSessionStatusAction" }, "Action failed");
     return { error: e instanceof Error ? e.message : "unknownError" };
   }
 
@@ -190,6 +192,7 @@ export async function gradeStudentAction(formData: FormData) {
   try {
     await gradeStudent(parsed.data, session.user.id);
   } catch (e) {
+    logger.error({ err: e instanceof Error ? e.message : String(e), action: "gradeStudentAction" }, "Action failed");
     return { error: e instanceof Error ? e.message : "unknownError" };
   }
 

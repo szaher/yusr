@@ -1,9 +1,14 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
 import { requireApprovedUser } from "@/server/auth/session";
 import { getAllClasses, getAllLevels } from "@/server/services/organization";
-import { createClassAction } from "@/server/actions/organization";
+import { createClassAction, updateClassAction, deleteClassAction } from "@/server/actions/organization";
+import { EditClassDialog } from "./edit-class-dialog";
+import { ConfirmDialog } from "@/components/shared/confirm-dialog";
+import { Trash2 } from "lucide-react";
 
 const createClass = createClassAction as unknown as (formData: FormData) => void;
+const updateClass = updateClassAction as unknown as (formData: FormData) => void;
+const deleteClass = deleteClassAction as unknown as (formData: FormData) => void;
 
 import {
   Table,
@@ -34,6 +39,17 @@ export default async function AdminClassesPage({
 
   const t = await getTranslations("admin.organization");
   const [classes, levels] = await Promise.all([getAllClasses(), getAllLevels()]);
+
+  const editTranslations = {
+    edit: t("edit"),
+    editClass: t("editClass"),
+    className: t("className"),
+    level: t("levelName"),
+    capacity: "Capacity",
+    save: t("save"),
+  };
+
+  const levelsForDialog = levels.map((l) => ({ id: l.id, nameAr: l.nameAr }));
 
   return (
     <div className="space-y-6">
@@ -82,6 +98,7 @@ export default async function AdminClassesPage({
             <TableHead>{t("className")}</TableHead>
             <TableHead>Level</TableHead>
             <TableHead>Groups</TableHead>
+            <TableHead className="text-end">{t("edit")}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -90,6 +107,36 @@ export default async function AdminClassesPage({
               <TableCell>{cls.name}</TableCell>
               <TableCell>{cls.level.nameAr}</TableCell>
               <TableCell>{cls._count.groups}</TableCell>
+              <TableCell className="text-end">
+                <div className="flex items-center justify-end gap-2">
+                  <EditClassDialog
+                    cls={{
+                      id: cls.id,
+                      name: cls.name,
+                      levelId: cls.levelId,
+                      capacity: cls.capacity,
+                    }}
+                    levels={levelsForDialog}
+                    action={updateClass}
+                    translations={editTranslations}
+                  />
+                  <ConfirmDialog
+                    trigger={
+                      <Button size="sm" variant="destructive">
+                        <Trash2 className="h-3 w-3 me-1" />
+                        {t("delete")}
+                      </Button>
+                    }
+                    title={t("delete")}
+                    description={t("deleteConfirm")}
+                    confirmLabel={t("delete")}
+                    cancelLabel={t("save")}
+                    variant="destructive"
+                    formAction={deleteClass}
+                    hiddenFields={{ id: cls.id }}
+                  />
+                </div>
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>

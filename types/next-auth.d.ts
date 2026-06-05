@@ -6,6 +6,7 @@ declare module "next-auth" {
     role: string;
     locale: string;
     accountStatus: string | null;
+    tokenVersion: number;
   }
 
   interface Session {
@@ -26,5 +27,6 @@ declare module "next-auth/jwt" {
     role: string;
     locale: string;
     accountStatus: string | null;
+    tokenVersion: number;
   }
 }

@@ -59,7 +59,7 @@ export default async function AdminNotificationsPage({
                     <input type="hidden" name="notificationId" value={n.id} />
                     <Button type="submit" variant="ghost" size="sm">
                       <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300">
-                        {locale === "ar" ? "جديد" : "New"}
+                        {t("new")}
                       </Badge>
 
                     </Button>

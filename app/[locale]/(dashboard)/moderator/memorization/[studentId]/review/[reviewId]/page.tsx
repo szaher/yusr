@@ -63,7 +63,7 @@ export default async function ReviewDetailPage({
               <p className="text-sm">{new Date(review.reviewDate).toLocaleDateString(locale)}</p>
             </div>
             <div>
-              <Label>{locale === "ar" ? "المشرف" : "Moderator"}</Label>
+              <Label>{t("review.moderator")}</Label>
               <p className="text-sm">{moderatorName}</p>
             </div>
           </div>

@@ -11,6 +11,7 @@ import {
 } from "@/server/services/enrollment";
 import { reviewApplicationSchema } from "@/lib/validations/enrollment";
 import { revalidatePath } from "next/cache";
+import { logger } from "@/server/lib/logger";
 
 export async function reviewApplicationAction(formData: FormData) {
   await requirePermission(PERMISSIONS.USERS_APPROVE);
@@ -25,20 +26,26 @@ export async function reviewApplicationAction(formData: FormData) {
 
   const { applicationId, action, reviewNote } = parsed.data;
 
-  switch (action) {
-    case "approve":
-      await approveApplication(applicationId, session.user.id, reviewNote);
-      break;
-    case "reject":
-      await rejectApplication(applicationId, session.user.id, reviewNote);
-      break;
-    case "waitlist":
-      await waitlistApplication(applicationId, session.user.id, reviewNote);
-      break;
-  }
+  try {
+    switch (action) {
+      case "approve":
+        await approveApplication(applicationId, session.user.id, reviewNote);
+        break;
+      case "reject":
+        await rejectApplication(applicationId, session.user.id, reviewNote);
+        break;
+      case "waitlist":
+        await waitlistApplication(applicationId, session.user.id, reviewNote);
+        break;
+    }
 
-  revalidatePath("/ar/admin/enrollment");
-  return { success: true };
+    revalidatePath("/ar/admin/enrollment");
+    revalidatePath("/en/admin/enrollment");
+    return { success: true };
+  } catch (e) {
+    logger.error({ err: e instanceof Error ? e.message : String(e), action: "reviewApplicationAction" }, "Action failed");
+    return { error: e instanceof Error ? e.message : "unknownError" };
+  }
 }
 
 export async function updateEnrollmentStateAction(formData: FormData) {
@@ -52,7 +59,13 @@ export async function updateEnrollmentStateAction(formData: FormData) {
     return { error: "invalidState" };
   }
 
-  await setEnrollmentState(state, session.user.id);
-  revalidatePath("/ar/admin/settings");
-  return { success: true };
+  try {
+    await setEnrollmentState(state, session.user.id);
+    revalidatePath("/ar/admin/settings");
+    revalidatePath("/en/admin/settings");
+    return { success: true };
+  } catch (e) {
+    logger.error({ err: e instanceof Error ? e.message : String(e), action: "updateEnrollmentStateAction" }, "Action failed");
+    return { error: e instanceof Error ? e.message : "unknownError" };
+  }
 }

@@ -37,12 +37,8 @@ export default async function StudentTicketDetailPage({
 
   if (!studentProfile) notFound();
 
-  let ticket;
-  try {
-    ticket = await getTicketWithReplies(ticketId);
-  } catch {
-    notFound();
-  }
+  const ticket = await getTicketWithReplies(ticketId);
+  if (!ticket) notFound();
 
   if (ticket.studentId !== studentProfile.id) notFound();
 

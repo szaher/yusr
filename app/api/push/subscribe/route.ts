@@ -1,8 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/server/auth/config";
 import { subscribe } from "@/server/services/push-notification";
+import { validateOrigin } from "@/server/lib/validate-origin";
 
 export async function POST(request: NextRequest) {
+  if (!(await validateOrigin())) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
   const session = await auth();
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

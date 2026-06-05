@@ -10,23 +10,29 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { SearchInput } from "@/components/shared/search-input";
 
 export default async function ModeratorStudentsPage({
   params,
+  searchParams: searchParamsPromise,
 }: {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<{ search?: string }>;
 }) {
   const { locale } = await params;
+  const { search } = await searchParamsPromise;
   setRequestLocale(locale);
   const session = await requireApprovedUser();
 
   const t = await getTranslations("moderator.students");
 
-  const students = await getModeratorStudents(session.user.id);
+  const students = await getModeratorStudents(session.user.id, search);
 
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">{t("title")}</h1>
+
+      <SearchInput placeholder={t("searchPlaceholder")} />
 
       {students.length === 0 ? (
         <Card>

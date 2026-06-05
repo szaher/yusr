@@ -7,7 +7,7 @@ import {
   CardContent,
 } from "@/components/ui/card";
 import { EmptyState } from "@/components/shared/empty-state";
-import { BellOff } from "lucide-react";
+import { BellOff, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
@@ -30,9 +30,17 @@ export default async function StudentNotificationsPage({
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">{t("title")}</h1>
-        <form action={markAllRead}>
-          <Button variant="outline" size="sm">{t("markAllRead")}</Button>
-        </form>
+        <div className="flex gap-2">
+          <a href={`/${locale}/student/notifications/preferences`}>
+            <Button variant="outline" size="sm">
+              <Settings className="h-4 w-4 me-2" />
+              {t("preferences")}
+            </Button>
+          </a>
+          <form action={markAllRead}>
+            <Button variant="outline" size="sm">{t("markAllRead")}</Button>
+          </form>
+        </div>
       </div>
 
       {notifications.length === 0 ? (
@@ -59,7 +67,7 @@ export default async function StudentNotificationsPage({
                     <input type="hidden" name="notificationId" value={n.id} />
                     <Button type="submit" variant="ghost" size="sm">
                       <Badge className="bg-blue-100 text-blue-800">
-                        {locale === "ar" ? "جديد" : "New"}
+                        {t("new")}
                       </Badge>
                     </Button>
                   </form>

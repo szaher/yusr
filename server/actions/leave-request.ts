@@ -7,6 +7,7 @@ import { createLeaveRequest, reviewLeaveRequest } from "@/server/services/leave-
 import { createLeaveRequestSchema, reviewLeaveRequestSchema } from "@/lib/validations/leave-request";
 import { db } from "@/server/db/client";
 import { revalidatePath } from "next/cache";
+import { logger } from "@/server/lib/logger";
 
 export async function createLeaveRequestAction(formData: FormData) {
   const session = await requireApprovedUser();
@@ -29,6 +30,7 @@ export async function createLeaveRequestAction(formData: FormData) {
   try {
     await createLeaveRequest(parsed.data, studentProfile.id, session.user.id);
   } catch (e) {
+    logger.error({ err: e instanceof Error ? e.message : String(e), action: "createLeaveRequestAction" }, "Action failed");
     return { error: e instanceof Error ? e.message : "unknownError" };
   }
 
@@ -52,6 +54,7 @@ export async function reviewLeaveRequestAction(formData: FormData) {
   try {
     await reviewLeaveRequest(parsed.data, session.user.id);
   } catch (e) {
+    logger.error({ err: e instanceof Error ? e.message : String(e), action: "reviewLeaveRequestAction" }, "Action failed");
     return { error: e instanceof Error ? e.message : "unknownError" };
   }
 

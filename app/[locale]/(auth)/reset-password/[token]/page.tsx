@@ -31,7 +31,10 @@ async function resetPasswordAction(formData: FormData) {
   await db.$transaction(async (tx) => {
     await tx.user.update({
       where: { id: resetToken.userId },
-      data: { passwordHash: hashedPassword },
+      data: {
+        passwordHash: hashedPassword,
+        tokenVersion: { increment: 1 },
+      },
     });
     await tx.passwordResetToken.update({
       where: { id: resetToken.id },

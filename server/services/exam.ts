@@ -65,7 +65,7 @@ export async function updateTemplate(input: UpdateTemplateInput, actorId: string
 }
 
 export async function getTemplate(templateId: string) {
-  return db.examTemplate.findUniqueOrThrow({
+  return db.examTemplate.findUnique({
     where: { id: templateId },
     include: {
       questions: {
@@ -92,13 +92,6 @@ export async function listTemplates() {
 // ── Questions ──
 
 export async function addQuestion(input: AddQuestionInput, actorId: string) {
-  const maxOrder = await db.examQuestion.findFirst({
-    where: { templateId: input.templateId },
-    orderBy: { order: "desc" },
-    select: { order: true },
-  });
-  const nextOrder = (maxOrder?.order ?? 0) + 1;
-
   let parsedOptions: { label: string; isCorrect: boolean }[] | undefined;
   if (input.type === "TRUE_FALSE") {
     const correctIsTrue = input.correctAnswer === "true";
@@ -107,46 +100,90 @@ export async function addQuestion(input: AddQuestionInput, actorId: string) {
       { label: "False", isCorrect: !correctIsTrue },
     ];
   } else if (input.type === "MULTIPLE_CHOICE" && input.options) {
-    parsedOptions = JSON.parse(input.options);
+    try {
+      parsedOptions = JSON.parse(input.options);
+    } catch {
+      throw new Error("Invalid JSON format for question options");
+    }
   }
 
   const tags = input.tags
     ? input.tags.split(",").map((t) => t.trim().toLowerCase()).filter(Boolean)
     : [];
 
-  const question = await db.examQuestion.create({
-    data: {
-      templateId: input.templateId,
-      type: input.type,
-      text: input.text,
-      points: input.points,
-      order: nextOrder,
-      options: parsedOptions || undefined,
-      correctAnswer: (input.type === "SHORT_ANSWER" || input.type === "TRUE_FALSE") ? input.correctAnswer : undefined,
-      fromSurahNumber: input.type === "RECITATION" ? input.fromSurahNumber : undefined,
-      fromAyah: input.type === "RECITATION" ? input.fromAyah : undefined,
-      toSurahNumber: input.type === "RECITATION" ? input.toSurahNumber : undefined,
-      toAyah: input.type === "RECITATION" ? input.toAyah : undefined,
-      tags,
-    },
-  });
+  const MAX_RETRIES = 3;
+  for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+    try {
+      const question = await db.$transaction(async (tx) => {
+        const maxOrder = await tx.examQuestion.findFirst({
+          where: { templateId: input.templateId },
+          orderBy: { order: "desc" },
+          select: { order: true },
+        });
+        const nextOrder = (maxOrder?.order ?? 0) + 1 + attempt;
 
-  await recalculateTotalPoints(input.templateId);
+        const q = await tx.examQuestion.create({
+          data: {
+            templateId: input.templateId,
+            type: input.type,
+            text: input.text,
+            points: input.points,
+            order: nextOrder,
+            options: parsedOptions || undefined,
+            correctAnswer: (input.type === "SHORT_ANSWER" || input.type === "TRUE_FALSE") ? input.correctAnswer : undefined,
+            fromSurahNumber: input.type === "RECITATION" ? input.fromSurahNumber : undefined,
+            fromAyah: input.type === "RECITATION" ? input.fromAyah : undefined,
+            toSurahNumber: input.type === "RECITATION" ? input.toSurahNumber : undefined,
+            toAyah: input.type === "RECITATION" ? input.toAyah : undefined,
+            tags,
+          },
+        });
 
-  await createAuditLog({
-    actorId,
-    action: "exam_question.add",
-    entityType: "ExamTemplate",
-    entityId: input.templateId,
-    metadata: { questionId: question.id, type: input.type, tags },
-  });
+        const result = await tx.examQuestion.aggregate({
+          where: { templateId: input.templateId },
+          _sum: { points: true },
+        });
+        await tx.examTemplate.update({
+          where: { id: input.templateId },
+          data: { totalPoints: result._sum.points ?? 0 },
+        });
 
-  return question;
+        return q;
+      });
+
+      await createAuditLog({
+        actorId,
+        action: "exam_question.add",
+        entityType: "ExamTemplate",
+        entityId: input.templateId,
+        metadata: { questionId: question.id, type: input.type, tags },
+      });
+
+      return question;
+    } catch (error: unknown) {
+      const prismaError = error as { code?: string };
+      if (prismaError.code === "P2002" && attempt < MAX_RETRIES - 1) {
+        continue;
+      }
+      throw error;
+    }
+  }
+  throw new Error("Failed to add question after maximum retries");
 }
 
 export async function deleteQuestion(questionId: string, templateId: string, actorId: string) {
-  await db.examQuestion.delete({ where: { id: questionId } });
-  await recalculateTotalPoints(templateId);
+  await db.$transaction(async (tx) => {
+    await tx.examQuestion.delete({ where: { id: questionId } });
+
+    const result = await tx.examQuestion.aggregate({
+      where: { templateId },
+      _sum: { points: true },
+    });
+    await tx.examTemplate.update({
+      where: { id: templateId },
+      data: { totalPoints: result._sum.points ?? 0 },
+    });
+  });
 
   await createAuditLog({
     actorId,
@@ -171,7 +208,12 @@ async function recalculateTotalPoints(templateId: string) {
 // ── Instances ──
 
 export async function assignToGroups(input: AssignToGroupsInput, actorId: string) {
-  const groupIds: string[] = JSON.parse(input.groupIds);
+  let groupIds: string[];
+  try {
+    groupIds = JSON.parse(input.groupIds);
+  } catch {
+    throw new Error("Invalid JSON format for groupIds");
+  }
 
   let poolConfig: { pick: number; tags?: string[] } | null = null;
   if (input.poolPick) {
@@ -197,25 +239,25 @@ export async function assignToGroups(input: AssignToGroupsInput, actorId: string
     poolConfig = { pick: input.poolPick, ...(poolTags ? { tags: poolTags } : {}) };
   }
 
-  const instances = [];
-  for (const groupId of groupIds) {
-    const instance = await db.examInstance.create({
-      data: {
-        templateId: input.templateId,
-        groupId,
-        sessionId: input.sessionId || null,
-        startDate: new Date(input.startDate),
-        endDate: new Date(input.endDate),
-        status: "DRAFT",
-        createdById: actorId,
-        timeLimitMinutes: input.timeLimitMinutes || null,
-        shuffleQuestions: input.shuffleQuestions === "true",
-        maxAttempts: input.maxAttempts || null,
-        poolConfig: poolConfig || undefined,
-      },
-    });
-    instances.push(instance);
-  }
+  const instances = await Promise.all(
+    groupIds.map((groupId) =>
+      db.examInstance.create({
+        data: {
+          templateId: input.templateId,
+          groupId,
+          sessionId: input.sessionId || null,
+          startDate: new Date(input.startDate),
+          endDate: new Date(input.endDate),
+          status: "DRAFT",
+          createdById: actorId,
+          timeLimitMinutes: input.timeLimitMinutes || null,
+          shuffleQuestions: input.shuffleQuestions === "true",
+          maxAttempts: input.maxAttempts || null,
+          poolConfig: poolConfig || undefined,
+        },
+      }),
+    ),
+  );
 
   await createAuditLog({
     actorId,
@@ -283,10 +325,16 @@ export async function changeInstanceStatus(input: ChangeInstanceStatusInput, act
 }
 
 export async function customizeInstance(instanceId: string, customizations: string, actorId: string) {
-  const parsed = JSON.parse(customizations);
+  let parsed;
+  try {
+    parsed = JSON.parse(customizations);
+  } catch {
+    throw new Error("Invalid JSON format for customizations");
+  }
   const instance = await db.examInstance.update({
     where: { id: instanceId },
-    data: { customizations: parsed },
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    data: { customizations: parsed as any },
   });
 
   await createAuditLog({
@@ -326,7 +374,7 @@ export async function getModeratorInstances(userId: string, filter?: "active" | 
 }
 
 export async function getInstanceDetail(instanceId: string) {
-  return db.examInstance.findUniqueOrThrow({
+  return db.examInstance.findUnique({
     where: { id: instanceId },
     include: {
       template: {
@@ -535,14 +583,26 @@ export async function createRetakeSubmission(instanceId: string, studentProfileI
     instance.shuffleQuestions
   );
 
-  return db.examSubmission.create({
-    data: {
-      instanceId,
-      studentId: studentProfileId,
-      attemptNumber: latestSubmission.attemptNumber + 1,
-      questionOrder,
-    },
-  });
+  const MAX_RETRIES = 3;
+  for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+    try {
+      return await db.examSubmission.create({
+        data: {
+          instanceId,
+          studentId: studentProfileId,
+          attemptNumber: latestSubmission.attemptNumber + 1 + attempt,
+          questionOrder,
+        },
+      });
+    } catch (error: unknown) {
+      const prismaError = error as { code?: string };
+      if (prismaError.code === "P2002" && attempt < MAX_RETRIES - 1) {
+        continue;
+      }
+      throw error;
+    }
+  }
+  throw new Error("Failed to create retake submission after maximum retries");
 }
 
 export async function getBestSubmission(instanceId: string, studentId: string) {
@@ -562,7 +622,12 @@ export async function saveAnswers(
   shouldSubmit: boolean,
   actorId: string
 ) {
-  const answers: { questionId: string; answer: string | null }[] = JSON.parse(answersJson);
+  let answers: { questionId: string; answer: string | null }[];
+  try {
+    answers = JSON.parse(answersJson);
+  } catch {
+    throw new Error("Invalid JSON format for answers");
+  }
 
   const instance = await db.examInstance.findUniqueOrThrow({
     where: { id: instanceId },
@@ -629,43 +694,46 @@ export async function saveAnswers(
     instance.template.questions.map((q) => [q.id, q])
   );
 
-  for (const ans of answers) {
-    const question = questionMap.get(ans.questionId);
-    if (!question) continue;
+  await db.$transaction(
+    answers
+      .filter((ans) => questionMap.has(ans.questionId))
+      .map((ans) => {
+        const question = questionMap.get(ans.questionId)!;
 
-    let isCorrect: boolean | null = null;
-    let autoScore: number | null = null;
+        let isCorrect: boolean | null = null;
+        let autoScore: number | null = null;
 
-    if (question.type === "MULTIPLE_CHOICE" || question.type === "TRUE_FALSE") {
-      const opts = question.options as { label: string; isCorrect: boolean }[];
-      if (opts && ans.answer !== null) {
-        const idx = parseInt(ans.answer, 10);
-        isCorrect = opts[idx]?.isCorrect ?? false;
-        autoScore = isCorrect ? question.points : 0;
-      }
-    }
+        if (question.type === "MULTIPLE_CHOICE" || question.type === "TRUE_FALSE") {
+          const opts = question.options as { label: string; isCorrect: boolean }[];
+          if (opts && ans.answer !== null) {
+            const idx = parseInt(ans.answer, 10);
+            isCorrect = opts[idx]?.isCorrect ?? false;
+            autoScore = isCorrect ? question.points : 0;
+          }
+        }
 
-    await db.examAnswer.upsert({
-      where: {
-        submissionId_questionId: {
-          submissionId: submission.id,
-          questionId: ans.questionId,
-        },
-      },
-      update: {
-        answer: ans.answer,
-        isCorrect,
-        score: autoScore,
-      },
-      create: {
-        submissionId: submission.id,
-        questionId: ans.questionId,
-        answer: ans.answer,
-        isCorrect,
-        score: autoScore,
-      },
-    });
-  }
+        return db.examAnswer.upsert({
+          where: {
+            submissionId_questionId: {
+              submissionId: submission.id,
+              questionId: ans.questionId,
+            },
+          },
+          update: {
+            answer: ans.answer,
+            isCorrect,
+            score: autoScore,
+          },
+          create: {
+            submissionId: submission.id,
+            questionId: ans.questionId,
+            answer: ans.answer,
+            isCorrect,
+            score: autoScore,
+          },
+        });
+      }),
+  );
 
   if (shouldSubmit) {
     await db.examSubmission.update({
@@ -703,7 +771,7 @@ export async function saveAnswers(
 }
 
 export async function getSubmissionForGrading(submissionId: string) {
-  return db.examSubmission.findUniqueOrThrow({
+  return db.examSubmission.findUnique({
     where: { id: submissionId },
     include: {
       student: {
@@ -732,14 +800,19 @@ export async function getSubmissionForGrading(submissionId: string) {
 }
 
 export async function gradeSubmission(input: GradeSubmissionInput, actorId: string) {
-  const grades: {
+  let grades: {
     questionId: string;
     score: number;
     moderatorNotes?: string;
     recitationResult?: string;
     tajweedNotes?: string;
     fluencyNotes?: string;
-  }[] = JSON.parse(input.grades);
+  }[];
+  try {
+    grades = JSON.parse(input.grades);
+  } catch {
+    throw new Error("Invalid JSON format for grades");
+  }
 
   const submission = await db.examSubmission.findUniqueOrThrow({
     where: { id: input.submissionId },
@@ -757,42 +830,46 @@ export async function gradeSubmission(input: GradeSubmissionInput, actorId: stri
     throw new Error("Submission is not in SUBMITTED status");
   }
 
-  for (const grade of grades) {
-    await db.examAnswer.update({
-      where: {
-        submissionId_questionId: {
-          submissionId: input.submissionId,
-          questionId: grade.questionId,
+  const { percentage, passed } = await db.$transaction(async (tx) => {
+    for (const grade of grades) {
+      await tx.examAnswer.update({
+        where: {
+          submissionId_questionId: {
+            submissionId: input.submissionId,
+            questionId: grade.questionId,
+          },
         },
-      },
+        data: {
+          score: grade.score,
+          moderatorNotes: grade.moderatorNotes || null,
+          recitationResult: grade.recitationResult || null,
+          tajweedNotes: grade.tajweedNotes || null,
+          fluencyNotes: grade.fluencyNotes || null,
+        },
+      });
+    }
+
+    const allAnswers = await tx.examAnswer.findMany({
+      where: { submissionId: input.submissionId },
+      select: { score: true },
+    });
+
+    const totalEarned = allAnswers.reduce((sum, a) => sum + (a.score ?? 0), 0);
+    const totalPoints = submission.instance.template.totalPoints;
+    const pct = totalPoints > 0 ? (totalEarned / totalPoints) * 100 : 0;
+    const pass = pct >= submission.instance.template.passingScore;
+
+    await tx.examSubmission.update({
+      where: { id: input.submissionId },
       data: {
-        score: grade.score,
-        moderatorNotes: grade.moderatorNotes || null,
-        recitationResult: grade.recitationResult || null,
-        tajweedNotes: grade.tajweedNotes || null,
-        fluencyNotes: grade.fluencyNotes || null,
+        status: "GRADED",
+        gradedAt: new Date(),
+        totalScore: Math.round(pct * 100) / 100,
+        passed: pass,
       },
     });
-  }
 
-  const allAnswers = await db.examAnswer.findMany({
-    where: { submissionId: input.submissionId },
-    select: { score: true },
-  });
-
-  const totalEarned = allAnswers.reduce((sum, a) => sum + (a.score ?? 0), 0);
-  const totalPoints = submission.instance.template.totalPoints;
-  const percentage = totalPoints > 0 ? (totalEarned / totalPoints) * 100 : 0;
-  const passed = percentage >= submission.instance.template.passingScore;
-
-  await db.examSubmission.update({
-    where: { id: input.submissionId },
-    data: {
-      status: "GRADED",
-      gradedAt: new Date(),
-      totalScore: Math.round(percentage * 100) / 100,
-      passed,
-    },
+    return { percentage: pct, passed: pass };
   });
 
   await createNotification({
@@ -806,7 +883,7 @@ export async function gradeSubmission(input: GradeSubmissionInput, actorId: stri
     action: "exam_submission.grade",
     entityType: "ExamSubmission",
     entityId: input.submissionId,
-    metadata: { totalScore: percentage, passed },
+    metadata: { totalScore: Math.round(percentage * 100) / 100, passed },
   });
 }
 
@@ -880,9 +957,9 @@ export async function duplicateTemplate(templateId: string, actorId: string) {
       },
     });
 
-    for (const q of original.questions) {
-      await tx.examQuestion.create({
-        data: {
+    if (original.questions.length > 0) {
+      await tx.examQuestion.createMany({
+        data: original.questions.map((q) => ({
           templateId: newTemplate.id,
           type: q.type,
           text: q.text,
@@ -895,7 +972,7 @@ export async function duplicateTemplate(templateId: string, actorId: string) {
           fromAyah: q.fromAyah,
           toSurahNumber: q.toSurahNumber,
           toAyah: q.toAyah,
-        },
+        })),
       });
     }
 

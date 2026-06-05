@@ -23,7 +23,7 @@ services:
       - "3000:3000"
     environment:
       DATABASE_URL: "postgresql://yusr:yusr@db:5432/yusr"
-      AUTH_SECRET: "dev-secret-change-in-production"
+      AUTH_SECRET: "yusr-docker-local-secret-change-in-real-production"
       AUTH_TRUST_HOST: "true"
     depends_on:
       db:

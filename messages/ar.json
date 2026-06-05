@@ -40,7 +40,17 @@
     "reactivate": "إعادة تفعيل",
     "login": "تسجيل الدخول",
     "register": "التسجيل",
-    "rights": "جميع الحقوق محفوظة"
+    "rights": "جميع الحقوق محفوظة",
+    "searchPlaceholder": "بحث...",
+    "all": "الكل",
+    "moderator": "مشرف",
+    "student": "طالب",
+    "confirmAction": "هل أنت متأكد؟",
+    "confirmBanDesc": "سيتم حظر هذا المستخدم ولن يتمكن من الوصول.",
+    "confirmDeactivateDesc": "سيتم تعطيل حساب هذا المستخدم.",
+    "skipToContent": "انتقل إلى المحتوى الرئيسي",
+    "mainNavigation": "التنقل الرئيسي",
+    "mobileNavigation": "التنقل المحمول"
   },
   "auth": {
     "ban": "حظر",
@@ -139,7 +149,8 @@
     "attendance": "الحضور",
     "progress": "التقدم",
     "planTemplates": "قوالب الخطط",
-    "more": "المزيد"
+    "more": "المزيد",
+    "calendar": "التقويم"
   },
   "pwa": {
     "offline": "أنت غير متصل بالإنترنت",
@@ -406,6 +417,7 @@
     },
     "users": {
       "title": "إدارة المستخدمين",
+      "exportUsers": "تصدير المستخدمين",
       "createModerator": "إضافة مشرف",
       "ban": "حظر",
       "deactivate": "تعطيل",
@@ -414,7 +426,10 @@
       "roleAdmin": "مدير",
       "roleModerator": "مشرف",
       "roleStudent": "طالب",
-      "roleSupport": "دعم"
+      "roleSupport": "دعم",
+      "promoteToModerator": "ترقية لمشرف",
+      "exportUsers": "تصدير المستخدمين",
+      "searchPlaceholder": "بحث بالاسم أو البريد الإلكتروني..."
     },
     "organization": {
       "createLevel": "إضافة مستوى",
@@ -424,7 +439,8 @@
       "className": "اسم الفصل",
       "groupName": "اسم المجموعة",
       "assignModerator": "تعيين مشرف",
-      "assignStudent": "إضافة طالب"
+      "assignStudent": "إضافة طالب",
+      "noModerator": "-- بدون مشرف --"
     },
     "featureFlags": {
       "title": "إعدادات الميزات",
@@ -473,7 +489,8 @@
       "quranLevel": "مستوى الحفظ",
       "group": "المجموعة",
       "noStudents": "لا يوجد طلاب في مجموعاتك",
-      "noStudentsDesc": "سيظهر الطلاب هنا بمجرد تسجيلهم في مجموعاتك."
+      "noStudentsDesc": "سيظهر الطلاب هنا بمجرد تسجيلهم في مجموعاتك.",
+      "searchPlaceholder": "بحث بالاسم أو البريد الإلكتروني..."
     }
   },
   "assignments": {
@@ -643,7 +660,8 @@
     "students": "الطلاب",
     "assignments": "الواجبات",
     "studentCount": "عدد الطلاب",
-    "openMemorizationReview": "فتح مراجعة الحفظ"
+    "openMemorizationReview": "فتح مراجعة الحفظ",
+    "searchPlaceholder": "بحث بالمجموعة أو المشرف..."
   },
   "grades": {
     "title": "الدرجات",
@@ -679,7 +697,14 @@
       "quranLevel": "مستوى الحفظ",
       "tajweedLevel": "مستوى التجويد",
       "preferredDay": "اليوم المفضل",
-      "saved": "تم حفظ التغييرات بنجاح"
+      "saved": "تم حفظ التغييرات بنجاح",
+      "changePassword": "تغيير كلمة المرور",
+      "currentPassword": "كلمة المرور الحالية",
+      "newPassword": "كلمة المرور الجديدة",
+      "confirmNewPassword": "تأكيد كلمة المرور الجديدة",
+      "passwordChanged": "تم تغيير كلمة المرور بنجاح",
+      "currentPasswordIncorrect": "كلمة المرور الحالية غير صحيحة",
+      "validationError": "يرجى التحقق من المدخلات"
     }
   },
   "landing": {
@@ -791,12 +816,19 @@
     "title": "الإشعارات",
     "markAllRead": "تعيين الكل كمقروء",
     "viewAll": "عرض الكل",
+    "preferences": "الإعدادات",
+    "preferencesTitle": "إعدادات الإشعارات",
+    "preferencesDesc": "اختر الإشعارات التي تريد استلامها",
+    "notificationType": "نوع الإشعار",
+    "inApp": "داخل التطبيق",
+    "pushNotifications": "إشعارات الدفع",
     "noNotifications": "لا توجد إشعارات",
     "noNotificationsDesc": "أنت على اطلاع بكل شيء! ستظهر الإشعارات الجديدة هنا.",
     "justNow": "الآن",
     "minutesAgo": "منذ {count} دقيقة",
     "hoursAgo": "منذ {count} ساعة",
-    "daysAgo": "منذ {count} يوم"
+    "daysAgo": "منذ {count} يوم",
+    "new": "جديد"
   },
   "supportTickets": {
     "title": "تذاكر الدعم",
@@ -834,7 +866,9 @@
     "showActive": "عرض النشطة فقط",
     "threadTitle": "المحادثة",
     "you": "أنت",
-    "readOnly": "هذه التذكرة مغلقة وللقراءة فقط."
+    "readOnly": "هذه التذكرة مغلقة وللقراءة فقط.",
+    "dashboardTitle": "لوحة تحكم الدعم",
+    "comingSoon": "قريباً"
   },
   "memorization": {
     "title": "خطط الحفظ",
@@ -913,7 +947,8 @@
       "mistakes": "الأخطاء",
       "mistakeCount": "الأخطاء",
       "openReview": "فتح مراجعة الحفظ",
-      "reviewDetail": "تفاصيل المراجعة"
+      "reviewDetail": "تفاصيل المراجعة",
+      "moderator": "المشرف"
     },
     "tajweed": {
       "title": "فئات التجويد",
@@ -977,7 +1012,9 @@
       "ofQuran": "من القرآن الكريم",
       "lastReview": "آخر مراجعة",
       "juzDetail": "تفاصيل الجزء",
-      "ayahs": "آيات"
+      "ayahs": "آيات",
+      "student": "الطالب",
+      "group": "المجموعة"
     },
     "search": {
       "placeholder": "ابحث عن طالب...",
@@ -1114,6 +1151,7 @@
   },
   "attendance": {
     "title": "الحضور",
+    "exportCsv": "تصدير CSV",
     "schoolOverview": "نظرة عامة على المدرسة",
     "groupOverview": "نظرة عامة على الحلقة",
     "myAttendance": "حضوري",
@@ -1161,10 +1199,36 @@
     "configSaved": "تم حفظ الإعدادات",
     "sessions": "{count} حصة",
     "consecutiveDays": "{count} متتالية",
-    "na": "غ/م"
+    "na": "غ/م",
+    "exportCsv": "تصدير CSV"
+  },
+  "calendar": {
+    "title": "التقويم",
+    "today": "اليوم",
+    "previousMonth": "الشهر السابق",
+    "nextMonth": "الشهر التالي",
+    "session": "جلسة",
+    "assignment": "واجب",
+    "exam": "اختبار",
+    "noEvents": "لا توجد أحداث في هذا اليوم",
+    "eventsOnDay": "الأحداث",
+    "event": "حدث",
+    "events": "أحداث"
+  },
+  "audio": {
+    "record": "تسجيل",
+    "stopRecording": "إيقاف",
+    "reRecord": "إعادة التسجيل",
+    "uploadFile": "رفع ملف",
+    "uploading": "جاري الرفع...",
+    "removeAudio": "إزالة",
+    "audioUploaded": "تم رفع الصوت",
+    "micPermission": "تم رفض الوصول للميكروفون. يرجى السماح بالوصول من إعدادات المتصفح.",
+    "unsupported": "التسجيل الصوتي غير مدعوم في متصفحك."
   },
   "progress": {
     "title": "التقدم",
+    "exportCsv": "تصدير CSV",
     "myProgress": "تقدمي",
     "groupProgress": "تقدم المجموعة",
     "schoolProgress": "تقدم المدرسة",
@@ -1210,6 +1274,7 @@
     "confirmDeleteGoal": "هل تريد حذف هذا الهدف؟",
     "studentName": "اسم الطالب",
     "group": "المجموعة",
-    "na": "غ/م"
+    "na": "غ/م",
+    "exportCsv": "تصدير CSV"
   }
 }

@@ -3,13 +3,41 @@ import { hashPassword } from "@/server/auth/password";
 import { createAuditLog } from "./audit-log";
 import type { CreateModeratorInput } from "@/lib/validations/user";
 
-export async function getAllUsers() {
-  return db.user.findMany({
-    include: {
-      role: { select: { name: true, nameAr: true } },
-    },
-    orderBy: { createdAt: "desc" },
-  });
+export async function getAllUsers(
+  page = 1,
+  limit = 50,
+  search?: string,
+  role?: string,
+  status?: string
+) {
+  const where: Record<string, unknown> = {};
+
+  if (search) {
+    where.OR = [
+      { name: { contains: search, mode: "insensitive" } },
+      { email: { contains: search, mode: "insensitive" } },
+    ];
+  }
+  if (role) {
+    where.role = { name: role };
+  }
+  if (status) {
+    where.accountStatus = status;
+  }
+
+  const [items, total] = await Promise.all([
+    db.user.findMany({
+      where,
+      skip: (page - 1) * limit,
+      take: limit,
+      include: {
+        role: { select: { name: true, nameAr: true } },
+      },
+      orderBy: { createdAt: "desc" },
+    }),
+    db.user.count({ where }),
+  ]);
+  return { items, total, page, totalPages: Math.ceil(total / limit) };
 }
 
 export async function createModerator(

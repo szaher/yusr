@@ -58,24 +58,32 @@ export async function createSession(input: CreateSessionInput, actorId: string) 
   });
 }
 
-export async function getModeratorSessions(userId: string) {
+export async function getModeratorSessions(userId: string, page = 1, limit = 50) {
   const profile = await db.moderatorProfile.findUnique({
     where: { userId },
     select: { id: true, groups: { select: { id: true } } },
   });
 
-  if (!profile) return [];
+  if (!profile) return { items: [], total: 0, page, totalPages: 0 };
 
   const groupIds = profile.groups.map((g) => g.id);
+  const where = { groupId: { in: groupIds } };
 
-  return db.weeklySession.findMany({
-    where: { groupId: { in: groupIds } },
-    include: {
-      group: { select: { id: true, name: true } },
-      _count: { select: { students: true } },
-    },
-    orderBy: { date: "desc" },
-  });
+  const [items, total] = await Promise.all([
+    db.weeklySession.findMany({
+      where,
+      skip: (page - 1) * limit,
+      take: limit,
+      include: {
+        group: { select: { id: true, name: true } },
+        _count: { select: { students: true } },
+      },
+      orderBy: { date: "desc" },
+    }),
+    db.weeklySession.count({ where }),
+  ]);
+
+  return { items, total, page, totalPages: Math.ceil(total / limit) };
 }
 
 export async function getStudentSessions(userId: string) {
@@ -101,23 +109,51 @@ export async function getStudentSessions(userId: string) {
   return sessionStudents;
 }
 
-export async function getAdminSessions() {
-  return db.weeklySession.findMany({
-    include: {
-      group: {
-        select: {
-          id: true,
-          name: true,
-          class: { select: { name: true, level: { select: { nameAr: true } } } },
+export async function getAdminSessions(
+  page = 1,
+  limit = 50,
+  search?: string,
+  status?: string
+) {
+  const where: Record<string, unknown> = {};
+
+  if (search) {
+    where.OR = [
+      { group: { name: { contains: search, mode: "insensitive" } } },
+      {
+        moderator: {
+          user: { name: { contains: search, mode: "insensitive" } },
         },
       },
-      moderator: {
-        select: { user: { select: { name: true, nameAr: true } } },
+    ];
+  }
+  if (status) {
+    where.status = status;
+  }
+
+  const [items, total] = await Promise.all([
+    db.weeklySession.findMany({
+      where,
+      skip: (page - 1) * limit,
+      take: limit,
+      include: {
+        group: {
+          select: {
+            id: true,
+            name: true,
+            class: { select: { name: true, level: { select: { nameAr: true } } } },
+          },
+        },
+        moderator: {
+          select: { user: { select: { name: true, nameAr: true } } },
+        },
+        _count: { select: { students: true } },
       },
-      _count: { select: { students: true } },
-    },
-    orderBy: { date: "desc" },
-  });
+      orderBy: { date: "desc" },
+    }),
+    db.weeklySession.count({ where }),
+  ]);
+  return { items, total, page, totalPages: Math.ceil(total / limit) };
 }
 
 export async function getSessionDetail(sessionId: string) {

@@ -1,4 +1,4 @@
-import { setRequestLocale } from "next-intl/server";
+import { setRequestLocale, getTranslations } from "next-intl/server";
 import { requireApprovedUser } from "@/server/auth/session";
 import { getActiveAnnouncementsForUser } from "@/server/services/announcement";
 
@@ -11,12 +11,13 @@ export default async function SupportDashboardPage({
   setRequestLocale(locale);
   const session = await requireApprovedUser();
 
+  const t = await getTranslations("supportTickets");
   const announcements = await getActiveAnnouncementsForUser(session.user.id);
 
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">
-        {locale === "ar" ? "لوحة تحكم الدعم" : "Support Dashboard"}
+        {t("dashboardTitle")}
       </h1>
 
       {announcements.length > 0 && (
@@ -40,7 +41,7 @@ export default async function SupportDashboardPage({
       )}
 
       <p className="text-muted-foreground">
-        {locale === "ar" ? "قريباً" : "Coming soon"}
+        {t("comingSoon")}
       </p>
     </div>
   );

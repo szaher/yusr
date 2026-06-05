@@ -14,16 +14,20 @@ export async function getAllLevels() {
 }
 
 export async function createLevel(input: CreateLevelInput, actorId: string) {
-  const level = await db.level.create({ data: input });
+  return db.$transaction(async (tx) => {
+    const level = await tx.level.create({ data: input });
 
-  await createAuditLog({
-    actorId,
-    action: "level.created",
-    entityType: "Level",
-    entityId: level.id,
+    await tx.auditLog.create({
+      data: {
+        actorId,
+        action: "level.created",
+        entityType: "Level",
+        entityId: level.id,
+      },
+    });
+
+    return level;
   });
-
-  return level;
 }
 
 export async function getClassesByLevel(levelId: string) {
@@ -48,16 +52,20 @@ export async function getAllClasses() {
 }
 
 export async function createClass(input: CreateClassInput, actorId: string) {
-  const cls = await db.class.create({ data: input });
+  return db.$transaction(async (tx) => {
+    const cls = await tx.class.create({ data: input });
 
-  await createAuditLog({
-    actorId,
-    action: "class.created",
-    entityType: "Class",
-    entityId: cls.id,
+    await tx.auditLog.create({
+      data: {
+        actorId,
+        action: "class.created",
+        entityType: "Class",
+        entityId: cls.id,
+      },
+    });
+
+    return cls;
   });
-
-  return cls;
 }
 
 export async function getAllModerators() {
@@ -89,16 +97,20 @@ export async function getAllGroups() {
 }
 
 export async function createGroup(input: CreateGroupInput, actorId: string) {
-  const group = await db.group.create({ data: input });
+  return db.$transaction(async (tx) => {
+    const group = await tx.group.create({ data: input });
 
-  await createAuditLog({
-    actorId,
-    action: "group.created",
-    entityType: "Group",
-    entityId: group.id,
+    await tx.auditLog.create({
+      data: {
+        actorId,
+        action: "group.created",
+        entityType: "Group",
+        entityId: group.id,
+      },
+    });
+
+    return group;
   });
-
-  return group;
 }
 
 export async function getModeratorGroups(userId: string) {
@@ -120,13 +132,27 @@ export async function getModeratorGroups(userId: string) {
   return profile?.groups ?? [];
 }
 
-export async function getModeratorStudents(userId: string) {
+export async function getModeratorStudents(userId: string, search?: string) {
+  const studentFilter = search
+    ? {
+        student: {
+          user: {
+            OR: [
+              { name: { contains: search, mode: "insensitive" as const } },
+              { email: { contains: search, mode: "insensitive" as const } },
+            ],
+          },
+        },
+      }
+    : {};
+
   const profile = await db.moderatorProfile.findUnique({
     where: { userId },
     include: {
       groups: {
         include: {
           students: {
+            where: studentFilter,
             include: {
               student: {
                 include: {
@@ -153,6 +179,114 @@ export async function getModeratorStudents(userId: string) {
   );
 }
 
+// ============================================================
+// Level CRUD
+// ============================================================
+
+export async function updateLevel(
+  id: string,
+  data: { nameAr: string; nameEn?: string; description?: string; sortOrder?: number },
+  actorId: string
+) {
+  return db.$transaction(async (tx) => {
+    const level = await tx.level.update({ where: { id }, data });
+    await createAuditLog({
+      actorId,
+      action: "level.updated",
+      entityType: "Level",
+      entityId: id,
+      metadata: data,
+    });
+    return level;
+  });
+}
+
+export async function deleteLevel(id: string, actorId: string) {
+  const childCount = await db.class.count({ where: { levelId: id } });
+  if (childCount > 0) throw new Error("hasChildren");
+  return db.$transaction(async (tx) => {
+    await tx.level.delete({ where: { id } });
+    await createAuditLog({
+      actorId,
+      action: "level.deleted",
+      entityType: "Level",
+      entityId: id,
+    });
+  });
+}
+
+// ============================================================
+// Class CRUD
+// ============================================================
+
+export async function updateClass(
+  id: string,
+  data: { name: string; levelId: string; defaultDay?: string; timezone?: string; sessionTime?: string; capacity?: number; genderPolicy?: string },
+  actorId: string
+) {
+  return db.$transaction(async (tx) => {
+    const cls = await tx.class.update({ where: { id }, data });
+    await createAuditLog({
+      actorId,
+      action: "class.updated",
+      entityType: "Class",
+      entityId: id,
+      metadata: data,
+    });
+    return cls;
+  });
+}
+
+export async function deleteClass(id: string, actorId: string) {
+  const childCount = await db.group.count({ where: { classId: id } });
+  if (childCount > 0) throw new Error("hasChildren");
+  return db.$transaction(async (tx) => {
+    await tx.class.delete({ where: { id } });
+    await createAuditLog({
+      actorId,
+      action: "class.deleted",
+      entityType: "Class",
+      entityId: id,
+    });
+  });
+}
+
+// ============================================================
+// Group CRUD
+// ============================================================
+
+export async function updateGroup(
+  id: string,
+  data: { name: string; classId: string; moderatorId?: string; weeklyDay?: string; weeklyTime?: string },
+  actorId: string
+) {
+  return db.$transaction(async (tx) => {
+    const group = await tx.group.update({ where: { id }, data });
+    await createAuditLog({
+      actorId,
+      action: "group.updated",
+      entityType: "Group",
+      entityId: id,
+      metadata: data,
+    });
+    return group;
+  });
+}
+
+export async function deleteGroup(id: string, actorId: string) {
+  const childCount = await db.groupStudent.count({ where: { groupId: id } });
+  if (childCount > 0) throw new Error("hasChildren");
+  return db.$transaction(async (tx) => {
+    await tx.group.delete({ where: { id } });
+    await createAuditLog({
+      actorId,
+      action: "group.deleted",
+      entityType: "Group",
+      entityId: id,
+    });
+  });
+}
+
 export async function assignStudentToGroup(
   userId: string,
   groupId: string,
@@ -163,18 +297,22 @@ export async function assignStudentToGroup(
   });
   if (!studentProfile) throw new Error("Student profile not found");
 
-  await db.groupStudent.create({
-    data: {
-      groupId,
-      studentId: studentProfile.id,
-    },
-  });
+  await db.$transaction(async (tx) => {
+    await tx.groupStudent.create({
+      data: {
+        groupId,
+        studentId: studentProfile.id,
+      },
+    });
 
-  await createAuditLog({
-    actorId,
-    action: "student.assigned_to_group",
-    entityType: "GroupStudent",
-    entityId: `${groupId}:${studentProfile.id}`,
-    metadata: { userId, groupId },
+    await tx.auditLog.create({
+      data: {
+        actorId,
+        action: "student.assigned_to_group",
+        entityType: "GroupStudent",
+        entityId: `${groupId}:${studentProfile.id}`,
+        metadata: { userId, groupId },
+      },
+    });
   });
 }

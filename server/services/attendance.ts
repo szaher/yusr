@@ -5,30 +5,33 @@ export async function getSchoolAttendanceStats() {
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-  const [allRecords, monthRecords, sessionCount] = await Promise.all([
-    db.sessionStudent.findMany({
-      select: { attendance: true },
+  const [allCounts, monthCounts, sessionCount] = await Promise.all([
+    db.sessionStudent.groupBy({
+      by: ["attendance"],
+      _count: true,
     }),
-    db.sessionStudent.findMany({
+    db.sessionStudent.groupBy({
+      by: ["attendance"],
       where: { session: { date: { gte: thirtyDaysAgo } } },
-      select: { attendance: true },
+      _count: true,
     }),
     db.weeklySession.count({
       where: { date: { gte: thirtyDaysAgo } },
     }),
   ]);
 
-  const total = allRecords.length;
-  const present = allRecords.filter(
-    (r) => r.attendance === "PRESENT" || r.attendance === "LATE"
-  ).length;
+  const total = allCounts.reduce((sum, g) => sum + g._count, 0);
+  const present = allCounts
+    .filter((g) => g.attendance === "PRESENT" || g.attendance === "LATE")
+    .reduce((sum, g) => sum + g._count, 0);
   const overallRate = total > 0 ? Math.round((present / total) * 100) : null;
 
+  const monthMap = new Map(monthCounts.map((g) => [g.attendance, g._count]));
   const breakdown = {
-    present: monthRecords.filter((r) => r.attendance === "PRESENT").length,
-    absent: monthRecords.filter((r) => r.attendance === "ABSENT").length,
-    late: monthRecords.filter((r) => r.attendance === "LATE").length,
-    excused: monthRecords.filter((r) => r.attendance === "EXCUSED_ABSENCE").length,
+    present: monthMap.get("PRESENT") ?? 0,
+    absent: monthMap.get("ABSENT") ?? 0,
+    late: monthMap.get("LATE") ?? 0,
+    excused: monthMap.get("EXCUSED_ABSENCE") ?? 0,
   };
 
   return { overallRate, sessionsThisMonth: sessionCount, breakdown };
@@ -179,32 +182,48 @@ export async function getAttendanceByMonth(
 }
 
 export async function getAttendanceGroupComparison() {
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
   const groups = await db.group.findMany({
     where: { active: true },
-    select: {
-      id: true,
-      name: true,
-      sessions: {
-        select: {
-          students: { select: { attendance: true } },
-        },
-      },
-    },
+    select: { id: true, name: true },
   });
 
-  return groups
-    .map((g) => {
-      const all = g.sessions.flatMap((s) => s.students);
-      const total = all.length;
-      const present = all.filter(
-        (s) => s.attendance === "PRESENT" || s.attendance === "LATE"
-      ).length;
+  const counts = await db.sessionStudent.groupBy({
+    by: ["sessionId"],
+    where: {
+      session: {
+        groupId: { in: groups.map((g) => g.id) },
+        date: { gte: thirtyDaysAgo },
+      },
+    },
+    _count: true,
+  });
+
+  // Get per-group attendance counts using aggregate queries
+  const results = await Promise.all(
+    groups.map(async (g) => {
+      const [totalCount, presentCount] = await Promise.all([
+        db.sessionStudent.count({
+          where: { session: { groupId: g.id, date: { gte: thirtyDaysAgo } } },
+        }),
+        db.sessionStudent.count({
+          where: {
+            session: { groupId: g.id, date: { gte: thirtyDaysAgo } },
+            attendance: { in: ["PRESENT", "LATE"] },
+          },
+        }),
+      ]);
+
       return {
         label: g.name,
-        rate: total > 0 ? Math.round((present / total) * 100) : 0,
+        rate: totalCount > 0 ? Math.round((presentCount / totalCount) * 100) : 0,
       };
     })
-    .sort((a, b) => b.rate - a.rate);
+  );
+
+  return results.sort((a, b) => b.rate - a.rate);
 }
 
 export async function getStudentAttendanceLog(

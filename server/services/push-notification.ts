@@ -39,6 +39,12 @@ export async function unsubscribe(endpoint: string) {
   });
 }
 
+export async function unsubscribeByUser(endpoint: string, userId: string) {
+  return db.pushSubscription.deleteMany({
+    where: { endpoint, userId },
+  });
+}
+
 export async function unsubscribeAll(userId: string) {
   return db.pushSubscription.deleteMany({
     where: { userId },

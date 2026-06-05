@@ -40,7 +40,17 @@
     "reactivate": "Reactivate",
     "login": "Log In",
     "register": "Register",
-    "rights": "All rights reserved"
+    "rights": "All rights reserved",
+    "searchPlaceholder": "Search...",
+    "all": "All",
+    "moderator": "Moderator",
+    "student": "Student",
+    "confirmAction": "Are you sure?",
+    "confirmBanDesc": "This user will be banned and lose access.",
+    "confirmDeactivateDesc": "This user's account will be deactivated.",
+    "skipToContent": "Skip to main content",
+    "mainNavigation": "Main navigation",
+    "mobileNavigation": "Mobile navigation"
   },
   "auth": {
     "ban": "Ban",
@@ -139,7 +149,8 @@
     "attendance": "Attendance",
     "progress": "Progress",
     "planTemplates": "Plan Templates",
-    "more": "More"
+    "more": "More",
+    "calendar": "Calendar"
   },
   "pwa": {
     "offline": "You are offline",
@@ -406,6 +417,7 @@
     },
     "users": {
       "title": "User Management",
+      "exportUsers": "Export Users",
       "createModerator": "Add Moderator",
       "ban": "Ban",
       "deactivate": "Deactivate",
@@ -414,7 +426,10 @@
       "roleAdmin": "Admin",
       "roleModerator": "Moderator",
       "roleStudent": "Student",
-      "roleSupport": "Support"
+      "roleSupport": "Support",
+      "promoteToModerator": "Promote to Moderator",
+      "exportUsers": "Export Users",
+      "searchPlaceholder": "Search by name or email..."
     },
     "organization": {
       "createLevel": "Add Level",
@@ -424,7 +439,8 @@
       "className": "Class Name",
       "groupName": "Group Name",
       "assignModerator": "Assign Moderator",
-      "assignStudent": "Add Student"
+      "assignStudent": "Add Student",
+      "noModerator": "-- No moderator --"
     },
     "featureFlags": {
       "title": "Feature Flags",
@@ -473,7 +489,8 @@
       "quranLevel": "Quran Level",
       "group": "Group",
       "noStudents": "No students in your groups",
-      "noStudentsDesc": "Students will appear here once they are assigned to your groups."
+      "noStudentsDesc": "Students will appear here once they are assigned to your groups.",
+      "searchPlaceholder": "Search by name or email..."
     }
   },
   "assignments": {
@@ -643,7 +660,8 @@
     "students": "Students",
     "assignments": "Assignments",
     "studentCount": "Student Count",
-    "openMemorizationReview": "Open Memorization Review"
+    "openMemorizationReview": "Open Memorization Review",
+    "searchPlaceholder": "Search by group or moderator..."
   },
   "grades": {
     "title": "Grades",
@@ -679,7 +697,14 @@
       "quranLevel": "Quran Level",
       "tajweedLevel": "Tajweed Level",
       "preferredDay": "Preferred Day",
-      "saved": "Changes saved successfully"
+      "saved": "Changes saved successfully",
+      "changePassword": "Change Password",
+      "currentPassword": "Current Password",
+      "newPassword": "New Password",
+      "confirmNewPassword": "Confirm New Password",
+      "passwordChanged": "Password changed successfully",
+      "currentPasswordIncorrect": "Current password is incorrect",
+      "validationError": "Please check your input"
     }
   },
   "landing": {
@@ -791,12 +816,19 @@
     "title": "Notifications",
     "markAllRead": "Mark All as Read",
     "viewAll": "View All",
+    "preferences": "Settings",
+    "preferencesTitle": "Notification Preferences",
+    "preferencesDesc": "Choose which notifications you receive",
+    "notificationType": "Notification Type",
+    "inApp": "In-App",
+    "pushNotifications": "Push",
     "noNotifications": "No notifications",
     "noNotificationsDesc": "You're all caught up! New notifications will appear here.",
     "justNow": "Just now",
     "minutesAgo": "{count}m ago",
     "hoursAgo": "{count}h ago",
-    "daysAgo": "{count}d ago"
+    "daysAgo": "{count}d ago",
+    "new": "New"
   },
   "supportTickets": {
     "title": "Support Tickets",
@@ -834,7 +866,9 @@
     "showActive": "Show Active Only",
     "threadTitle": "Conversation",
     "you": "You",
-    "readOnly": "This ticket is closed and read-only."
+    "readOnly": "This ticket is closed and read-only.",
+    "dashboardTitle": "Support Dashboard",
+    "comingSoon": "Coming soon"
   },
   "memorization": {
     "title": "Memorization Plans",
@@ -913,7 +947,8 @@
       "mistakes": "Mistakes",
       "mistakeCount": "Mistakes",
       "openReview": "Open Memorization Review",
-      "reviewDetail": "Review Detail"
+      "reviewDetail": "Review Detail",
+      "moderator": "Moderator"
     },
     "tajweed": {
       "title": "Tajweed Categories",
@@ -977,7 +1012,9 @@
       "ofQuran": "of the Holy Quran",
       "lastReview": "Last Review",
       "juzDetail": "Juz Detail",
-      "ayahs": "ayahs"
+      "ayahs": "ayahs",
+      "student": "Student",
+      "group": "Group"
     },
     "search": {
       "placeholder": "Search student...",
@@ -1114,6 +1151,7 @@
   },
   "attendance": {
     "title": "Attendance",
+    "exportCsv": "Export CSV",
     "schoolOverview": "School Overview",
     "groupOverview": "Group Overview",
     "myAttendance": "My Attendance",
@@ -1163,8 +1201,33 @@
     "consecutiveDays": "{count} consecutive",
     "na": "N/A"
   },
+  "calendar": {
+    "title": "Calendar",
+    "today": "Today",
+    "previousMonth": "Previous Month",
+    "nextMonth": "Next Month",
+    "session": "Session",
+    "assignment": "Assignment",
+    "exam": "Exam",
+    "noEvents": "No events on this day",
+    "eventsOnDay": "Events",
+    "event": "event",
+    "events": "events"
+  },
+  "audio": {
+    "record": "Record",
+    "stopRecording": "Stop",
+    "reRecord": "Re-record",
+    "uploadFile": "Upload",
+    "uploading": "Uploading...",
+    "removeAudio": "Remove",
+    "audioUploaded": "Audio uploaded",
+    "micPermission": "Microphone access denied. Please allow microphone access in your browser settings.",
+    "unsupported": "Audio recording is not supported in your browser."
+  },
   "progress": {
     "title": "Progress",
+    "exportCsv": "Export CSV",
     "myProgress": "My Progress",
     "groupProgress": "Group Progress",
     "schoolProgress": "School Progress",

@@ -44,12 +44,8 @@ export default async function ModeratorExamDetailPage({
 
   const t = await getTranslations("exams");
 
-  let instance;
-  try {
-    instance = await getInstanceDetail(instanceId);
-  } catch {
-    notFound();
-  }
+  const instance = await getInstanceDetail(instanceId);
+  if (!instance) notFound();
 
   if (instance.group.moderator?.userId !== session.user.id) {
     notFound();

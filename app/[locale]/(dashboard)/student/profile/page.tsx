@@ -4,6 +4,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { redirect } from "next/navigation";
 import { StudentProfileForm } from "./profile-form";
+import { PasswordForm } from "./password-form";
 
 export default async function StudentProfilePage({
   params,
@@ -54,6 +55,25 @@ export default async function StudentProfilePage({
               preferredDay: t("preferredDay"),
               save: t("editProfile"),
               saved: t("saved"),
+            }}
+          />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>{t("changePassword")}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <PasswordForm
+            translations={{
+              currentPassword: t("currentPassword"),
+              newPassword: t("newPassword"),
+              confirmNewPassword: t("confirmNewPassword"),
+              passwordChanged: t("passwordChanged"),
+              currentPasswordIncorrect: t("currentPasswordIncorrect"),
+              validationError: t("validationError"),
+              submit: t("changePassword"),
             }}
           />
         </CardContent>

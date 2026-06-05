@@ -43,7 +43,7 @@ export async function Header({
   }));
 
   return (
-    <header className="flex h-16 items-center justify-between border-b bg-card px-4 md:px-6">
+    <header aria-label="Page header" className="flex h-16 items-center justify-between border-b bg-card px-4 md:px-6">
       <div className="flex items-center gap-2 md:gap-3">
         {role && <MobileSidebar role={role} enabledFlags={enabledFlags} />}
         <span className="text-sm font-medium">{session.user.name}</span>

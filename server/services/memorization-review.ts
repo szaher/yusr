@@ -5,6 +5,7 @@ import type { CreateReviewInput } from "@/lib/validations/memorization";
 import type { MeetingCadence } from "@/prisma/generated/prisma/enums";
 import { checkMilestones, checkCustomGoals } from "./progress";
 import { checkBadges } from "@/server/services/gamification";
+import { logger } from "@/server/lib/logger";
 
 function calculateNextReviewDate(
   fromDate: Date,
@@ -117,9 +118,9 @@ export async function createReview(input: CreateReviewInput, actorId: string) {
   });
 
   // Fire-and-forget milestone detection
-  checkMilestones(input.planId, oldSurahNumber, oldAyahNumber, input.toSurahNumber, input.toAyah).catch(() => {});
-  checkCustomGoals(input.planId, input.toSurahNumber, input.toAyah).catch(() => {});
-  checkBadges(plan.studentId).catch(() => {});
+  checkMilestones(input.planId, oldSurahNumber, oldAyahNumber, input.toSurahNumber, input.toAyah).catch((err) => { logger.warn({ err: err instanceof Error ? err.message : String(err) }, "Background task failed"); });
+  checkCustomGoals(input.planId, input.toSurahNumber, input.toAyah).catch((err) => { logger.warn({ err: err instanceof Error ? err.message : String(err) }, "Background task failed"); });
+  checkBadges(plan.studentId).catch((err) => { logger.warn({ err: err instanceof Error ? err.message : String(err) }, "Background task failed"); });
 
   return review;
 }

@@ -16,7 +16,7 @@ export function EmptyState({
   return (
     <Card>
       <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-        <Icon className="h-12 w-12 text-muted-foreground/50" />
+        <Icon aria-hidden="true" className="h-12 w-12 text-muted-foreground/50" />
         <h3 className="mt-4 text-lg font-semibold">{title}</h3>
         {description && (
           <p className="mt-1 max-w-sm text-sm text-muted-foreground">
