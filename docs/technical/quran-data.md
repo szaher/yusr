@@ -1,3 +1,9 @@
+---
+title: Quran Data
+parent: Technical Documentation
+nav_order: 9
+---
+
 # Quran Data Model & Seeding
 
 ## Overview

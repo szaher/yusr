@@ -1,3 +1,9 @@
+---
+title: Exams
+parent: User Guide (EN)
+nav_order: 5
+---
+
 # Exams
 
 Take assessments to demonstrate your Quran knowledge, memorization, and understanding.

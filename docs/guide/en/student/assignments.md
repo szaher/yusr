@@ -1,3 +1,9 @@
+---
+title: Assignments
+parent: User Guide (EN)
+nav_order: 4
+---
+
 # Assignments
 
 View, complete, and track your Quran study assignments including memorization, revision, Tajweed practice, and homework.

@@ -1,3 +1,9 @@
+---
+title: Student Dashboard
+parent: User Guide (EN)
+nav_order: 2
+---
+
 # Student Dashboard
 
 Your dashboard is your home base in Yusr Academy, providing an at-a-glance view of your Quran memorization journey.

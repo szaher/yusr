@@ -1,3 +1,9 @@
+---
+title: Reports
+parent: User Guide (EN)
+nav_order: 20
+---
+
 # Reports and Analytics
 
 Generate comprehensive reports on attendance, progress, and exam results for data-driven decision making.

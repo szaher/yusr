@@ -1,3 +1,9 @@
+---
+title: Exam Management
+parent: User Guide (EN)
+nav_order: 14
+---
+
 # Creating and Managing Exams
 
 Design exam templates, assign assessments to groups, customize exam instances, and grade student submissions.

@@ -1,3 +1,9 @@
+---
+title: Student Progress
+parent: User Guide (EN)
+nav_order: 15
+---
+
 # Student Progress Tracking
 
 Monitor individual and group progress, view leaderboards, award badges, and track milestones.

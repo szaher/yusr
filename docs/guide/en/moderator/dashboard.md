@@ -1,3 +1,9 @@
+---
+title: Moderator Dashboard
+parent: User Guide (EN)
+nav_order: 9
+---
+
 # Moderator Dashboard
 
 Your command center for managing memorization groups, tracking student progress, and conducting effective halaqat.

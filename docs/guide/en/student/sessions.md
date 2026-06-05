@@ -1,3 +1,9 @@
+---
+title: Sessions
+parent: User Guide (EN)
+nav_order: 3
+---
+
 # Sessions
 
 View, join, and track your attendance for live memorization sessions with your halaqah group.

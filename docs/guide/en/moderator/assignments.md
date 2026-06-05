@@ -1,3 +1,9 @@
+---
+title: Assignment Management
+parent: User Guide (EN)
+nav_order: 13
+---
+
 # Creating and Managing Assignments
 
 Assign Quran memorization, revision, Tajweed practice, and homework to your students.

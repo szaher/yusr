@@ -1,3 +1,9 @@
+---
+title: User Guide (EN)
+nav_order: 6
+has_children: true
+---
+
 # Welcome to Yusr Academy
 
 Yusr Academy is a comprehensive web platform designed for managing Quran memorization circles (حلقات). The platform connects students, moderators, and administrators in a collaborative learning environment focused on Quran memorization, recitation excellence, and spiritual growth.

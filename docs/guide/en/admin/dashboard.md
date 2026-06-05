@@ -1,3 +1,9 @@
+---
+title: Admin Dashboard
+parent: User Guide (EN)
+nav_order: 16
+---
+
 # Admin Dashboard
 
 System-wide overview and management hub for academy administrators.

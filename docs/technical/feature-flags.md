@@ -1,3 +1,9 @@
+---
+title: Feature Flags
+parent: Technical Documentation
+nav_order: 6
+---
+
 # Feature Flags
 
 ## Overview

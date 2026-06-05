@@ -1,3 +1,9 @@
+---
+title: Progress
+parent: User Guide (EN)
+nav_order: 7
+---
+
 # Progress & Achievements
 
 Track your Quran memorization milestones, earn badges, compete on leaderboards, and monitor your learning journey.

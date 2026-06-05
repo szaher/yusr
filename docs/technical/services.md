@@ -1,3 +1,9 @@
+---
+title: Services
+parent: Technical Documentation
+nav_order: 5
+---
+
 # Services Layer Reference
 
 ## Overview

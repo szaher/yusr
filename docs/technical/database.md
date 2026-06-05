@@ -1,3 +1,9 @@
+---
+title: Database Schema
+parent: Technical Documentation
+nav_order: 2
+---
+
 # Database Schema Reference
 
 ## Overview

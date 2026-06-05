@@ -1,3 +1,9 @@
+---
+title: User Management
+parent: User Guide (EN)
+nav_order: 17
+---
+
 # User Management
 
 Manage all users, approve enrollments, create moderator accounts, and handle account actions.

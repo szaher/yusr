@@ -1,3 +1,9 @@
+---
+title: Architecture
+parent: Technical Documentation
+nav_order: 1
+---
+
 # System Architecture
 
 ## Overview

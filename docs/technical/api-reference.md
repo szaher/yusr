@@ -1,3 +1,9 @@
+---
+title: API Reference
+parent: Technical Documentation
+nav_order: 4
+---
+
 # API Reference - Server Actions
 
 ## Overview

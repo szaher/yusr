@@ -1,3 +1,9 @@
+---
+title: Support
+parent: User Guide (EN)
+nav_order: 8
+---
+
 # Support & Communication
 
 Get help, submit tickets, request leave, manage notifications, and stay updated with academy announcements.

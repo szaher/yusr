@@ -1,3 +1,9 @@
+---
+title: Development
+parent: Technical Documentation
+nav_order: 11
+---
+
 # Development Guide
 
 ## Prerequisites

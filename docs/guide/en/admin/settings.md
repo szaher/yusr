@@ -1,3 +1,9 @@
+---
+title: Settings
+parent: User Guide (EN)
+nav_order: 19
+---
+
 # System Settings & Configuration
 
 Configure platform features, manage templates, set system preferences, and review audit logs.

@@ -1,0 +1,24 @@
+title: Yusr Academy
+description: Quran Memorization School Management Platform — Bilingual (Arabic/English) PWA
+remote_theme: just-the-docs/just-the-docs
+url: https://szaher.github.io
+baseurl: /yusr
+
+color_scheme: light
+search_enabled: true
+search.button: true
+
+nav_sort: case_insensitive
+heading_anchors: true
+
+back_to_top: true
+back_to_top_text: Back to top
+
+aux_links:
+  GitHub: https://github.com/szaher/yusr
+
+footer_content: "Yusr Academy &copy; 2026. Distributed under the MIT License."
+
+exclude:
+  - superpowers/
+  - guide/ar/

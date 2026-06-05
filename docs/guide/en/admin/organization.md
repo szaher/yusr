@@ -1,3 +1,9 @@
+---
+title: Organization
+parent: User Guide (EN)
+nav_order: 18
+---
+
 # Organization Management
 
 Manage levels, classes, groups, and student assignments to structure your academy.

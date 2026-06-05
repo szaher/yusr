@@ -1,3 +1,9 @@
+---
+title: Deployment
+parent: Technical Documentation
+nav_order: 10
+---
+
 # Deployment Guide
 
 ## Overview

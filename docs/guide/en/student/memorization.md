@@ -1,3 +1,9 @@
+---
+title: Memorization
+parent: User Guide (EN)
+nav_order: 6
+---
+
 # Memorization Progress
 
 Track your Quran memorization journey with comprehensive progress tracking, review history, and detailed analytics.

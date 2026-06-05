@@ -1,3 +1,9 @@
+---
+title: PWA
+parent: Technical Documentation
+nav_order: 8
+---
+
 # Progressive Web App (PWA)
 
 ## Overview

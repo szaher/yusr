@@ -1,3 +1,9 @@
+---
+title: Memorization Plans
+parent: User Guide (EN)
+nav_order: 12
+---
+
 # Memorization Plans & Reviews
 
 Create and manage student memorization plans, log reviews, and track Quran progress.

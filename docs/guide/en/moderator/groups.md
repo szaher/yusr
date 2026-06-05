@@ -1,3 +1,9 @@
+---
+title: Groups Management
+parent: User Guide (EN)
+nav_order: 10
+---
+
 # Managing Groups
 
 View, configure, and manage your assigned memorization groups (halaqat).

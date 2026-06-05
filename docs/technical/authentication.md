@@ -1,3 +1,9 @@
+---
+title: Authentication
+parent: Technical Documentation
+nav_order: 3
+---
+
 # Authentication & Authorization
 
 ## Overview

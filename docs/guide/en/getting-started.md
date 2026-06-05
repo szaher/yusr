@@ -1,3 +1,9 @@
+---
+title: Getting Started
+parent: User Guide (EN)
+nav_order: 1
+---
+
 # Getting Started with Yusr Academy
 
 This guide will help you create your account, log in, and navigate the Yusr Academy platform.

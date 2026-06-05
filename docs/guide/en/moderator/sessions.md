@@ -1,3 +1,9 @@
+---
+title: Session Management
+parent: User Guide (EN)
+nav_order: 11
+---
+
 # Managing Sessions
 
 Create, conduct, and manage live memorization sessions with your students.
